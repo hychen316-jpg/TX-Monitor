@@ -2,66 +2,70 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 v10.0 (Radar)</title>
+  <title>極速戰情室 (Original)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#32d74b; --blue:#0a84ff; }
-    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow-y:auto; }
+    /* === 1. 原汁原味的 CSS 設定 (完全保留) === */
+    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --blue:#0a84ff; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow:hidden; }
+    
     .dashboard-container { filter: blur(10px); transition: filter 0.5s; pointer-events: none; }
     .unlocked { filter: blur(0); pointer-events: auto; }
     
-    /* 1. 頂部區塊 (價格 + P6) */
-    .top-section { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px; }
-
-    /* 2. 核心區塊 (拔河) */
-    .battle-box { background: #2c2c2e; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 2px solid #444; position: relative; overflow: hidden; }
-    .battle-title { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    /* 這裡還原成您原來的 1 : 1.3 比例 */
+    .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:12px; margin-bottom:15px; }
     
-    /* 拔河條 */
-    .tug-container { height: 44px; background: #111; border-radius: 22px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 8px rgba(0,0,0,0.6); }
-    .bull-bar { height: 100%; background: var(--red); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; min-width: 15%; }
-    .bear-bar { height: 100%; background: var(--green); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; padding-left: 12px; min-width: 15%; }
-    .percent-text { font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); white-space: nowrap; }
-
-    /* 軍力數值 */
-    .army-stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; }
-    .bull-val { color: var(--red); font-weight: bold; }
-    .bear-val { color: var(--green); font-weight: bold; }
-
-    /* 戰術文字 */
-    .logic-text { text-align: center; font-size: 22px; font-weight: 800; margin-top: 20px; text-shadow: 0 0 10px rgba(0,0,0,0.8); letter-spacing: 1px; }
-
-    /* 通用盒子 */
-    .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
+    .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; }
+    
     .big-val { font-size:32px; font-weight:600; letter-spacing:-1px; margin-top:5px; }
-    .power-val { font-size:38px; font-weight:700; text-align:right; }
-    .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; background:#333; color:#ccc; width: fit-content; align-self: flex-end;}
+    .power-val { font-size:38px; font-weight:700; text-align:right; } /* P6 專用原版樣式 */
     
-    /* 3. 底部區塊 (C1~C4) */
+    .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; width:fit-content; background:#333; color:#ccc; }
     .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .chip-card { background:var(--card); padding:12px; border-radius:14px; display:flex; flex-direction:column; }
-    .label { font-size:12px; color:#8e8e93; font-weight:600; text-transform:uppercase; margin-bottom: 5px; }
+    .label { font-size:12px; color:#8e8e93; font-weight:600; text-transform:uppercase; }
     
     .c-red { color:var(--red); } .c-green { color:var(--green); }
-    
-    /* 登入與特效 */
+    .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
+    .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
+
+    /* === 2. 新增：拔河條專用樣式 (融入原版風格) === */
+    .battle-box {
+        background: var(--card); border-radius: 18px; padding: 16px; 
+        margin-bottom: 15px; border: 1px solid #333;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+    .tug-container { 
+        height: 30px; background: #111; border-radius: 15px; 
+        position: relative; overflow: hidden; display: flex; 
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); 
+    }
+    .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
+    .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
+    .percent-text { 
+        position: absolute; width: 100%; text-align: center; top: 6px;
+        font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 1px 2px #000;
+        z-index: 5;
+    }
+    .army-stats { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; }
+    .logic-text { text-align: center; font-size: 16px; font-weight: 700; color: #fff; margin-top: 5px; }
+
+    /* 呼吸燈特效 (保留) */
+    .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 15px rgba(255, 69, 58, 0.2); }
+    .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 15px rgba(48, 209, 88, 0.2); }
+
+    /* 登入遮罩 (保留原樣) */
     #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .login-box { text-align: center; width: 80%; max-width: 300px; }
     input[type="password"] { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1c1c1e; color: #fff; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none; }
     button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
     .error-msg { color: var(--red); font-size: 14px; margin-top: 10px; min-height: 20px; }
-
-    .glow-red { box-shadow: 0 0 25px rgba(255, 69, 58, 0.3); border-color: var(--red); animation: pulse-red 2s infinite; }
-    .glow-green { box-shadow: 0 0 25px rgba(50, 215, 75, 0.3); border-color: var(--green); animation: pulse-green 2s infinite; }
-    @keyframes pulse-red { 0%{box-shadow:0 0 0 0 rgba(255,69,58,0.3)} 70%{box-shadow:0 0 0 15px rgba(255,69,58,0)} 100%{box-shadow:0 0 0 0} }
-    @keyframes pulse-green { 0%{box-shadow:0 0 0 0 rgba(50,215,75,0.3)} 70%{box-shadow:0 0 0 15px rgba(50,215,75,0)} 100%{box-shadow:0 0 0 0} }
-    .alert-red { animation:pulse-red 2s infinite; border:1px solid var(--red)!important; background:rgba(255,69,58,0.2)!important; }
-    .alert-green { animation:pulse-green 2s infinite; border:1px solid var(--green)!important; background:rgba(48,209,88,0.2)!important; }
   </style>
 </head>
 <body>
+
   <div id="login-overlay">
     <div class="login-box">
       <div style="font-size:20px; margin-bottom:20px; color:#fff; font-weight:600;">🔒 戰情室登入</div>
@@ -77,37 +81,33 @@
       <div class="box">
         <div class="label">TX 台指期</div>
         <div id="price" class="big-val">---</div>
-        <div id="update-time" style="font-size:10px; color:#666; font-family:monospace; margin-top:5px;">Wait...</div>
+        <div id="update-time" class="label" style="margin-top:5px; color:#aaa; font-size:10px;">--:--:--</div>
       </div>
       
       <div class="box" style="text-align:right" id="pwr-box">
         <div class="label">🚀 P6 買方動能</div>
         <div id="pwr-val" class="power-val">0%</div>
-        <div id="pwr-tag" class="chip-tag">Wait</div>
+        <div id="pwr-tag" class="chip-tag" style="align-self: flex-end;">Wait</div>
       </div>
     </div>
 
+    <div class="label" style="margin-bottom:8px">⚔️ 多空拔河 (三檔雷達)</div>
     <div class="battle-box" id="battle-card">
-        <div class="battle-title">OP MARKET DOMINANCE (三檔籌碼)</div>
-        
         <div class="tug-container">
-            <div id="bull-bar" class="bull-bar" style="width: 50%;">
-                <span id="bull-pct" class="percent-text" style="opacity:0.5;">50%</span>
-            </div>
-            <div id="bear-bar" class="bear-bar" style="width: 50%;">
-                <span id="bear-pct" class="percent-text" style="opacity:0.5;">50%</span>
-            </div>
+            <div id="bull-bar" class="bull-bar" style="width: 50%;"></div>
+            <div id="bear-bar" class="bear-bar" style="width: 50%;"></div>
+            <div id="ratio-text" class="percent-text">50% vs 50%</div>
         </div>
 
         <div class="army-stats">
-            <div>🔴 多方: <span id="bull-force" class="bull-val">--</span></div>
-            <div>🟢 空方: <span id="bear-force" class="bear-val">--</span></div>
+            <div>🔴 多方: <span id="bull-force">--</span></div>
+            <div>🟢 空方: <span id="bear-force">--</span></div>
         </div>
 
-        <div id="logic-text" class="logic-text">等待數據...</div>
+        <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
-    <div class="label" style="margin-bottom:8px">📊 歷史籌碼分佈</div>
+    <div class="label" style="margin-bottom:8px">📊 籌碼分佈</div>
     <div class="chip-grid">
       <div class="chip-card" id="c1-card"><span class="label">近 全日</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c2-card"><span class="label">近 日盤</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
@@ -144,29 +144,37 @@
 
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
-      document.getElementById('update-time').innerText = "Time: " + data.t;
+      document.getElementById('update-time').innerText = "Update: " + data.t;
 
-      // 1. P6 動能 (右上方)
-      let pVal = parseFloat(data.pwr_v);
+      // 1. P6 動能 (原版邏輯)
+      let pVal = 0; 
+      let pText = "--%";
+      if (data.pwr_v !== undefined) {
+          pVal = parseFloat(data.pwr_v);
+          pText = data.pwr_t;
+      }
+      
       let pEl = document.getElementById('pwr-val');
       let pTag = document.getElementById('pwr-tag');
       let pBox = document.getElementById('pwr-box');
       
-      pEl.innerText = data.pwr_t;
+      pEl.innerText = pText;
+      // P6 顏色邏輯：大於0紅，小於0綠
       pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
       
-      // 動能過大時外框發光
+      // 動能過大時 P6 格子發光
       pBox.className = "box"; 
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       
-      pTag.className = "chip-tag"; 
+      // P6 Tag
+      pTag.className = "chip-tag"; pTag.style = "align-self: flex-end;";
       if (pVal > 50) { pTag.className += " bg-red"; pTag.innerText = "極端多頭"; }
       else if (pVal >= 30) { pTag.className += " bg-red"; pTag.innerText = "強勢多頭"; }
       else if (pVal <= -50) { pTag.className += " bg-green"; pTag.innerText = "極端崩跌"; }
       else if (pVal <= -30) { pTag.className += " bg-green"; pTag.innerText = "強勢空頭"; }
       else { pTag.innerText = "震盪盤整"; }
 
-      // 2. 拔河數據
+      // 2. 多空拔河 (新功能)
       let bullF = parseFloat(data.bull_f || 0);
       let bearF = parseFloat(data.bear_f || 0);
       let bullR = parseFloat(data.bull_r || 50); 
@@ -175,44 +183,48 @@
       document.getElementById('bull-force').innerText = bullF;
       document.getElementById('bear-force').innerText = bearF;
 
-      let bBar = document.getElementById('bull-bar');
-      let rBar = document.getElementById('bear-bar');
-      bBar.style.width = bullR + "%";
-      rBar.style.width = bearR + "%";
+      document.getElementById('bull-bar').style.width = bullR + "%";
+      document.getElementById('bear-bar').style.width = bearR + "%";
+      
+      // 中間顯示佔比文字
+      document.getElementById('ratio-text').innerText = Math.round(bullR) + "%  vs  " + Math.round(bearR) + "%";
 
-      let bTxt = document.getElementById('bull-pct');
-      let rTxt = document.getElementById('bear-pct');
-      bTxt.innerText = Math.round(bullR) + "%";
-      rTxt.innerText = Math.round(bearR) + "%";
-      bTxt.style.opacity = bullR > 20 ? 1 : 0;
-      rTxt.style.opacity = bearR > 20 ? 1 : 0;
-
-      // 3. 戰術指令
+      // 戰術指令與邊框變色
       let logicText = data.logic || "分析中...";
       let logicEl = document.getElementById('logic-text');
-      let card = document.getElementById('battle-card');
+      let battleCard = document.getElementById('battle-card');
 
       logicEl.innerText = logicText;
-      card.className = "battle-box"; 
+      battleCard.className = "battle-box"; // Reset
+      
       if (bullR >= 55) {
           logicEl.style.color = "var(--red)";
-          card.classList.add("glow-red");
+          battleCard.classList.add("alert-red");
       } else if (bullR <= 45) {
           logicEl.style.color = "var(--green)";
-          card.classList.add("glow-green");
+          battleCard.classList.add("alert-green");
       } else {
           logicEl.style.color = "#aaa";
       }
 
-      // 4. 舊籌碼 (C1~C4)
+      // 3. 舊籌碼 C1~C4 (完全保留原邏輯)
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|');
         let v = parseFloat(parts[0].replace('%',''));
         let el = document.getElementById(id+'-val');
-        el.innerText = parts[0]; el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); el.style.fontSize = "20px";
+        el.innerText = parts[0]; 
+        el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
+        el.style.fontSize = "20px";
+        
         let tag = document.getElementById(id+'-tag');
-        tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
+        tag.innerText = parts[1]; 
+        tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
+        
+        // 只有 C1~C4 卡片的邊框邏輯保留
+        let card = document.getElementById(id+'-card');
+        if(parts[1].includes("強")) card.style.border = v>0?"1px solid rgba(255,69,58,0.3)":"1px solid rgba(48,209,88,0.3)";
+        else card.style.border = "none";
       });
     }
   </script>
