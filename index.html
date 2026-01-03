@@ -2,56 +2,58 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 v4.0 (OP Power)</title>
+  <title>極速戰情室 v9.0 (Dominance)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --blue:#0a84ff; }
+    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#32d74b; --blue:#0a84ff; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow-y:auto; }
     .dashboard-container { filter: blur(10px); transition: filter 0.5s; pointer-events: none; }
     .unlocked { filter: blur(0); pointer-events: auto; }
     
-    /* 上方區塊 (維持原樣) */
-    .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:12px; margin-bottom:12px; }
-    
-    /* [NEW] OP 力道專用樣式 */
-    .op-section { margin-bottom: 15px; }
-    .op-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5px; }
-    .op-col { display: flex; flex-direction: column; }
-    .op-val { font-size: 26px; font-weight: 700; }
-    .total-power { font-size: 52px; font-weight: 800; text-align: center; margin: 5px 0; line-height: 1; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-    .divider { height: 1px; background: #333; width: 100%; margin: 15px 0; }
+    .top-section { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px; }
 
-    .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
-    .big-val { font-size:32px; font-weight:600; letter-spacing:-1px; margin-top:5px; }
-    .power-val { font-size:38px; font-weight:700; text-align:right; }
-    .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; width:fit-content; background:#333; color:#ccc; }
+    /* 拔河戰場 */
+    .battle-box { background: #2c2c2e; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 2px solid #444; position: relative; overflow: hidden; }
     
-    /* 戰術指令文字 */
-    .logic-box { background: #2c2c2e; border-radius: 18px; padding: 15px; margin-bottom: 15px; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .logic-text { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.4; text-align: center; }
+    .battle-title { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* 巨大的拔河條 */
+    .tug-container { height: 44px; background: #111; border-radius: 22px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 8px rgba(0,0,0,0.6); }
+    
+    .bull-bar { height: 100%; background: var(--red); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; min-width: 15%; }
+    .bear-bar { height: 100%; background: var(--green); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; padding-left: 12px; min-width: 15%; }
+    
+    .percent-text { font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); white-space: nowrap; }
 
+    /* 雙方軍力數值 */
+    .army-stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; }
+    .bull-val { color: var(--red); font-weight: bold; }
+    .bear-val { color: var(--green); font-weight: bold; }
+
+    .logic-text { text-align: center; font-size: 22px; font-weight: 800; margin-top: 20px; text-shadow: 0 0 10px rgba(0,0,0,0.8); letter-spacing: 1px; }
+
+    .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:center; align-items: center; border: 1px solid #333; }
     .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .chip-card { background:var(--card); padding:12px; border-radius:14px; display:flex; flex-direction:column; }
-    .label { font-size:12px; color:#8e8e93; font-weight:600; text-transform:uppercase; }
+    .big-val { font-size:32px; font-weight:600; letter-spacing:-1px; }
+    .label { font-size:12px; color:#8e8e93; font-weight:600; text-transform:uppercase; margin-bottom: 5px; }
+    .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; background:#333; color:#ccc; width: fit-content; }
     
     .c-red { color:var(--red); } .c-green { color:var(--green); }
-    .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
-    .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
     
-    /* 登入遮罩 */
-    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
+    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .login-box { text-align: center; width: 80%; max-width: 300px; }
     input[type="password"] { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1c1c1e; color: #fff; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none; }
     button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
     .error-msg { color: var(--red); font-size: 14px; margin-top: 10px; min-height: 20px; }
 
     /* 呼吸燈特效 */
-    @keyframes pulse-red { 0%{box-shadow:0 0 0 0 rgba(255,69,58,0.4)} 70%{box-shadow:0 0 0 10px rgba(255,69,58,0)} 100%{box-shadow:0 0 0 0} }
-    @keyframes pulse-green { 0%{box-shadow:0 0 0 0 rgba(48,209,88,0.4)} 70%{box-shadow:0 0 0 10px rgba(48,209,88,0)} 100%{box-shadow:0 0 0 0} }
-    .alert-red { animation:pulse-red 2s infinite; border:1px solid var(--red)!important; background:rgba(255,69,58,0.2)!important; }
-    .alert-green { animation:pulse-green 2s infinite; border:1px solid var(--green)!important; background:rgba(48,209,88,0.2)!important; }
+    .glow-red { box-shadow: 0 0 25px rgba(255, 69, 58, 0.3); border-color: var(--red); animation: pulse-red 2s infinite; }
+    .glow-green { box-shadow: 0 0 25px rgba(50, 215, 75, 0.3); border-color: var(--green); animation: pulse-green 2s infinite; }
+    @keyframes pulse-red { 0%{box-shadow:0 0 0 0 rgba(255,69,58,0.3)} 70%{box-shadow:0 0 0 15px rgba(255,69,58,0)} 100%{box-shadow:0 0 0 0} }
+    @keyframes pulse-green { 0%{box-shadow:0 0 0 0 rgba(50,215,75,0.3)} 70%{box-shadow:0 0 0 15px rgba(50,215,75,0)} 100%{box-shadow:0 0 0 0} }
   </style>
 </head>
 <body>
@@ -65,60 +67,43 @@
   </div>
 
   <div class="dashboard-container" id="dashboard">
-    
-    <div class="top-section">
-      <div class="box">
-        <div class="label">TX 台指期</div>
-        <div id="price" class="big-val">---</div>
-        <div id="status-text" class="label" style="margin-top:5px; color:#aaa">待命中...</div>
-      </div>
-      <div class="box" style="text-align:right" id="pwr-box">
-        <div class="label">🚀 P6 買方動能</div>
-        <div id="pwr-val" class="power-val">0%</div>
-        <div id="pwr-tag" class="chip-tag" style="align-self: flex-end;">Wait</div>
-      </div>
+    <div class="top-section" style="display:block; text-align:center; margin-bottom:20px;">
+      <div class="label">TX 台指期現價</div>
+      <div id="price" style="font-size:52px; font-weight:800; color:#fff;">---</div>
+      <div id="update-time" style="font-size:12px; color:#666; font-family:monospace;">--:--:--</div>
     </div>
 
-    <div class="op-section">
-        <div class="box" id="chip-box" style="align-items: center;">
-            <div class="label" style="margin-bottom:5px;">🚀 OP 總力道差 (P7)</div>
-            <div id="total-val" class="total-power">--</div>
-            
-            <div class="divider"></div>
-            
-            <div class="op-row">
-                <div class="op-col" style="align-items: flex-start;">
-                    <div class="label" style="color:#ff453a;">🔴 CALL 力道</div>
-                    <div id="call-val" class="op-val" style="color:#ff453a;">--</div>
-                </div>
-                <div class="op-col" style="align-items: flex-end;">
-                    <div class="label" style="color:#30d158;">🟢 PUT 力道</div>
-                    <div id="put-val" class="op-val" style="color:#30d158;">--</div>
-                </div>
+    <div class="battle-box" id="battle-card">
+        <div class="battle-title">OP MARKET DOMINANCE (多空佔比)</div>
+        
+        <div class="tug-container">
+            <div id="bull-bar" class="bull-bar" style="width: 50%;">
+                <span id="bull-pct" class="percent-text" style="opacity:0.5;">50%</span>
+            </div>
+            <div id="bear-bar" class="bear-bar" style="width: 50%;">
+                <span id="bear-pct" class="percent-text" style="opacity:0.5;">50%</span>
             </div>
         </div>
+
+        <div class="army-stats">
+            <div>🔴 多方軍力: <span id="bull-force" class="bull-val">--</span></div>
+            <div>🟢 空方軍力: <span id="bear-force" class="bear-val">--</span></div>
+        </div>
+
+        <div id="logic-text" class="logic-text">等待數據...</div>
     </div>
 
-    <div class="logic-box" id="logic-box">
-        <div class="label" style="margin-bottom:8px;">💡 戰術指令</div>
-        <div id="logic-text" class="logic-text">分析中...</div>
-    </div>
-
-    <div class="label" style="margin-bottom:8px">📊 籌碼分佈 (E5~E8)</div>
+    <div class="label" style="margin-bottom:8px">📊 籌碼分佈</div>
     <div class="chip-grid">
       <div class="chip-card" id="c1-card"><span class="label">近 全日</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c2-card"><span class="label">近 日盤</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c3-card"><span class="label">次 全日</span><span id="c3-val" class="big-val" style="font-size:20px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c4-card"><span class="label">次 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
-    
-    <div style="text-align:center; font-size:11px; color:#444; margin-top:20px" id="update-time">--:--</div>
   </div>
 
   <script>
-    // ★★★ 設定區 ★★★
     const MY_PASSWORD = "168"; 
-    // 請確認這裡是您的 Firebase 網址
     const FIREBASE_URL = "https://tx-monitor-93eb2-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
 
     function checkPass() {
@@ -143,68 +128,55 @@
     }
 
     function updateUI(data) {
-      // 1. 基礎資訊
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
-      document.getElementById('status-text').innerText = data.st;
 
-      // 2. P6 動能 (原功能)
-      let pVal = parseFloat(data.pwr_v);
-      let pEl = document.getElementById('pwr-val');
-      let pTag = document.getElementById('pwr-tag');
+      // 1. 讀取拔河數據
+      let bullF = parseFloat(data.bull_f || 0);
+      let bearF = parseFloat(data.bear_f || 0);
+      let bullR = parseFloat(data.bull_r || 50); // 多方佔比 %
+      let bearR = 100 - bullR;                   // 空方佔比 %
+
+      // 更新軍力數值
+      document.getElementById('bull-force').innerText = bullF;
+      document.getElementById('bear-force').innerText = bearF;
+
+      // 更新拔河條 (Width)
+      let bBar = document.getElementById('bull-bar');
+      let rBar = document.getElementById('bear-bar');
       
-      pEl.innerText = data.pwr_t;
-      pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
+      bBar.style.width = bullR + "%";
+      rBar.style.width = bearR + "%";
+
+      // 更新百分比文字 (字體透明度調整，太小就不顯示)
+      let bTxt = document.getElementById('bull-pct');
+      let rTxt = document.getElementById('bear-pct');
       
-      pTag.className = "chip-tag"; pTag.style = "";
-      if (pVal > 50) { pTag.className += " bg-red alert-red"; pTag.innerText = "極端多頭"; }
-      else if (pVal >= 30) { pTag.className += " bg-red"; pTag.innerText = "強勢多頭"; }
-      else if (pVal <= -50) { pTag.className += " bg-green alert-green"; pTag.innerText = "極端崩跌"; }
-      else if (pVal <= -30) { pTag.className += " bg-green"; pTag.innerText = "強勢空頭"; }
-      else { pTag.innerText = "震盪盤整"; }
+      bTxt.innerText = Math.round(bullR) + "%";
+      rTxt.innerText = Math.round(bearR) + "%";
+      
+      bTxt.style.opacity = bullR > 20 ? 1 : 0;
+      rTxt.style.opacity = bearR > 20 ? 1 : 0;
 
-      // 3. [NEW] OP 力道拆解 (Call / Total / Put)
-      let total = data.chip_p7 || 0;
-      let callPwr = data.call_pwr || 0;
-      let putPwr = data.put_pwr || 0;
-
-      // 更新總力道 (P7)
-      let tEl = document.getElementById('total-val');
-      let tBox = document.getElementById('chip-box');
-      tEl.innerText = (total > 0 ? "+" : "") + total;
-      tEl.className = "total-power " + (total > 0 ? "c-red" : (total < 0 ? "c-green" : ""));
-
-      // 總力道過大時發光
-      tBox.className = "box"; // Reset
-      if (Math.abs(total) >= 100) {
-          tBox.classList.add(total > 0 ? "alert-red" : "alert-green");
-      }
-
-      // 更新 Call 力道
-      let cEl = document.getElementById('call-val');
-      cEl.innerText = (callPwr > 0 ? "+" : "") + callPwr;
-      cEl.style.color = callPwr > 0 ? "var(--red)" : (callPwr < 0 ? "var(--green)" : "#888");
-
-      // 更新 Put 力道
-      let pEl2 = document.getElementById('put-val');
-      pEl2.innerText = (putPwr > 0 ? "+" : "") + putPwr;
-      pEl2.style.color = putPwr > 0 ? "var(--red)" : (putPwr < 0 ? "var(--green)" : "#888");
-
-      // 4. 戰術指令
-      let logicText = data.logic || "⚪ 等待訊號...";
+      // 2. 戰術指令與變色
+      let logicText = data.logic || "分析中...";
       let logicEl = document.getElementById('logic-text');
-      let logicBox = document.getElementById('logic-box');
-      
+      let card = document.getElementById('battle-card');
+
       logicEl.innerText = logicText;
-      logicBox.className = "logic-box"; // Reset
       
-      if (logicText.includes("助漲") || logicText.includes("誘空")) {
-          logicBox.classList.add("alert-red");
-      } else if (logicText.includes("助跌") || logicText.includes("誘多")) {
-          logicBox.classList.add("alert-green");
+      card.className = "battle-box"; // Reset
+      if (bullR >= 55) {
+          logicEl.style.color = "var(--red)";
+          card.classList.add("glow-red");
+      } else if (bullR <= 45) {
+          logicEl.style.color = "var(--green)";
+          card.classList.add("glow-green");
+      } else {
+          logicEl.style.color = "#aaa";
       }
 
-      // 5. C1~C4 籌碼分佈 (原功能)
+      // 3. 舊籌碼
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|');
@@ -213,9 +185,6 @@
         el.innerText = parts[0]; el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); el.style.fontSize = "20px";
         let tag = document.getElementById(id+'-tag');
         tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
-        let card = document.getElementById(id+'-card');
-        if(parts[1].includes("強")) card.style.border = v>0?"1px solid rgba(255,69,58,0.3)":"1px solid rgba(48,209,88,0.3)";
-        else card.style.border = "none";
       });
     }
   </script>
