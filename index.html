@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 v2.2 (Pro)</title>
+  <title>極速戰情室 v4.0 (OP Power)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -15,8 +15,13 @@
     /* 上方區塊 (維持原樣) */
     .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:12px; margin-bottom:12px; }
     
-    /* [NEW] 中間區塊 (P7 + Logic) */
-    .mid-section { display:grid; grid-template-columns:1fr 1.3fr; gap:12px; margin-bottom:15px; }
+    /* [NEW] OP 力道專用樣式 */
+    .op-section { margin-bottom: 15px; }
+    .op-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5px; }
+    .op-col { display: flex; flex-direction: column; }
+    .op-val { font-size: 26px; font-weight: 700; }
+    .total-power { font-size: 52px; font-weight: 800; text-align: center; margin: 5px 0; line-height: 1; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    .divider { height: 1px; background: #333; width: 100%; margin: 15px 0; }
 
     .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
     .big-val { font-size:32px; font-weight:600; letter-spacing:-1px; margin-top:5px; }
@@ -24,7 +29,8 @@
     .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; width:fit-content; background:#333; color:#ccc; }
     
     /* 戰術指令文字 */
-    .logic-text { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: center; }
+    .logic-box { background: #2c2c2e; border-radius: 18px; padding: 15px; margin-bottom: 15px; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .logic-text { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.4; text-align: center; }
 
     .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .chip-card { background:var(--card); padding:12px; border-radius:14px; display:flex; flex-direction:column; }
@@ -73,15 +79,29 @@
       </div>
     </div>
 
-    <div class="mid-section">
-        <div class="box" id="chip-box" style="justify-content:center;">
-            <div class="label" style="margin-bottom:5px;">🛡️ P7 籌碼力道</div>
-            <div id="p7-val" class="power-val" style="text-align:center; font-size:32px;">--</div>
+    <div class="op-section">
+        <div class="box" id="chip-box" style="align-items: center;">
+            <div class="label" style="margin-bottom:5px;">🚀 OP 總力道差 (P7)</div>
+            <div id="total-val" class="total-power">--</div>
+            
+            <div class="divider"></div>
+            
+            <div class="op-row">
+                <div class="op-col" style="align-items: flex-start;">
+                    <div class="label" style="color:#ff453a;">🔴 CALL 力道</div>
+                    <div id="call-val" class="op-val" style="color:#ff453a;">--</div>
+                </div>
+                <div class="op-col" style="align-items: flex-end;">
+                    <div class="label" style="color:#30d158;">🟢 PUT 力道</div>
+                    <div id="put-val" class="op-val" style="color:#30d158;">--</div>
+                </div>
+            </div>
         </div>
-        <div class="box" id="logic-box" style="justify-content:center; align-items:center;">
-            <div class="label" style="margin-bottom:8px;">💡 戰術指令</div>
-            <div id="logic-text" class="logic-text">分析中...</div>
-        </div>
+    </div>
+
+    <div class="logic-box" id="logic-box">
+        <div class="label" style="margin-bottom:8px;">💡 戰術指令</div>
+        <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
     <div class="label" style="margin-bottom:8px">📊 籌碼分佈 (E5~E8)</div>
@@ -143,30 +163,41 @@
       else if (pVal <= -30) { pTag.className += " bg-green"; pTag.innerText = "強勢空頭"; }
       else { pTag.innerText = "震盪盤整"; }
 
-      // 3. [NEW] P7 籌碼 (新功能)
-      let chipVal = data.chip_p7;
-      if (chipVal === undefined) chipVal = 0;
-      let p7El = document.getElementById('p7-val');
-      let chipBox = document.getElementById('chip-box');
+      // 3. [NEW] OP 力道拆解 (Call / Total / Put)
+      let total = data.chip_p7 || 0;
+      let callPwr = data.call_pwr || 0;
+      let putPwr = data.put_pwr || 0;
 
-      p7El.innerText = (chipVal > 0 ? "+" : "") + chipVal;
-      p7El.className = "power-val " + (chipVal > 0 ? "c-red" : (chipVal < 0 ? "c-green" : ""));
-      
-      // P7 數值過大時發光
-      chipBox.className = "box"; // 重置
-      if (Math.abs(chipVal) >= 100) {
-          chipBox.classList.add(chipVal > 0 ? "alert-red" : "alert-green");
+      // 更新總力道 (P7)
+      let tEl = document.getElementById('total-val');
+      let tBox = document.getElementById('chip-box');
+      tEl.innerText = (total > 0 ? "+" : "") + total;
+      tEl.className = "total-power " + (total > 0 ? "c-red" : (total < 0 ? "c-green" : ""));
+
+      // 總力道過大時發光
+      tBox.className = "box"; // Reset
+      if (Math.abs(total) >= 100) {
+          tBox.classList.add(total > 0 ? "alert-red" : "alert-green");
       }
 
-      // 4. [NEW] 戰術指令 (新功能)
+      // 更新 Call 力道
+      let cEl = document.getElementById('call-val');
+      cEl.innerText = (callPwr > 0 ? "+" : "") + callPwr;
+      cEl.style.color = callPwr > 0 ? "var(--red)" : (callPwr < 0 ? "var(--green)" : "#888");
+
+      // 更新 Put 力道
+      let pEl2 = document.getElementById('put-val');
+      pEl2.innerText = (putPwr > 0 ? "+" : "") + putPwr;
+      pEl2.style.color = putPwr > 0 ? "var(--red)" : (putPwr < 0 ? "var(--green)" : "#888");
+
+      // 4. 戰術指令
       let logicText = data.logic || "⚪ 等待訊號...";
       let logicEl = document.getElementById('logic-text');
       let logicBox = document.getElementById('logic-box');
       
       logicEl.innerText = logicText;
-      logicBox.className = "box"; // 重置
+      logicBox.className = "logic-box"; // Reset
       
-      // 根據指令變色 (誘多誘空/真突破)
       if (logicText.includes("助漲") || logicText.includes("誘空")) {
           logicBox.classList.add("alert-red");
       } else if (logicText.includes("助跌") || logicText.includes("誘多")) {
