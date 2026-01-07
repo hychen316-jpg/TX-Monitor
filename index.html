@@ -2,14 +2,14 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro)</title>
+  <title>極速戰情室 (Pro Max)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    /* === 1. 原汁原味的 CSS 設定 (完全保留) === */
-    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --blue:#0a84ff; }
-    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow:hidden; }
+    /* === 1. CSS 設定 (保留原味 + 新增樣式) === */
+    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --blue:#0a84ff; --gray:#8e8e93; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow-x:hidden; }
     
     .dashboard-container { filter: blur(10px); transition: filter 0.5s; pointer-events: none; }
     .unlocked { filter: blur(0); pointer-events: auto; }
@@ -24,7 +24,7 @@
     .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; width:fit-content; background:#333; color:#ccc; }
     .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .chip-card { background:var(--card); padding:12px; border-radius:14px; display:flex; flex-direction:column; }
-    .label { font-size:12px; color:#8e8e93; font-weight:600; text-transform:uppercase; }
+    .label { font-size:12px; color:var(--gray); font-weight:600; text-transform:uppercase; }
     
     .c-red { color:var(--red); } .c-green { color:var(--green); }
     .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
@@ -45,24 +45,41 @@
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
     .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
     
-    /* 條上的百分比文字 */
     .percent-text { 
         position: absolute; width: 100%; text-align: center; top: 4px;
         font-size: 12px; font-weight: bold; color: rgba(255,255,255,0.8); text-shadow: 0 1px 2px #000;
         z-index: 5; letter-spacing: 1px;
     }
 
-    /* 新增：淨力道數值顯示 */
     .force-display {
         text-align: center; font-size: 28px; font-weight: 800; 
         margin: 5px 0; letter-spacing: -0.5px;
     }
-    .force-label {
-        text-align: center; font-size: 12px; color: #8e8e93; margin-top: -5px;
-    }
+    .force-label { text-align: center; font-size: 12px; color: var(--gray); margin-top: -5px; }
 
     .army-stats { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-top: 5px; padding: 0 10px; }
     .logic-text { text-align: center; font-size: 15px; font-weight: 700; color: #fff; margin-top: 5px; padding-top: 10px; border-top: 1px solid #333; }
+
+    /* === 3. [新增] 壓力支撐區塊樣式 === */
+    .range-box {
+        background: var(--card); border-radius: 18px; padding: 12px 16px;
+        margin-bottom: 15px; display: grid; grid-template-rows: 1fr 1fr; gap: 10px;
+        position: relative; overflow: hidden;
+    }
+    /* 中間的分隔線 */
+    .range-box::after {
+        content: ""; position: absolute; top: 50%; left: 16px; right: 16px;
+        height: 1px; background: #333;
+    }
+
+    .range-row { display: flex; justify-content: space-between; align-items: center; }
+    .range-title { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .range-val { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+    .range-vol { font-size: 11px; color: #666; font-weight: normal; margin-left: 4px; }
+    
+    /* 舊數據顯示 (小字) */
+    .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
+    .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
     /* 呼吸燈特效 */
     .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 15px rgba(255, 69, 58, 0.2); }
@@ -122,6 +139,30 @@
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
+    <div class="label" style="margin-bottom:8px">🚧 戰場邊界 (壓力 / 支撐)</div>
+    <div class="range-box">
+        <div class="range-row">
+            <div class="range-title c-red">🔴 壓力牆</div>
+            <div class="range-val c-red">
+                <span id="p-strike">--</span>
+                <span class="range-old" id="p-old-box" style="display:none;">
+                    <span class="arrow-icon">⬅</span> <span id="p-old">--</span>
+                </span>
+                <span id="p-vol" class="range-vol">(--)</span>
+            </div>
+        </div>
+        <div class="range-row">
+            <div class="range-title c-green">🟢 支撐牆</div>
+            <div class="range-val c-green">
+                <span id="s-strike">--</span>
+                <span class="range-old" id="s-old-box" style="display:none;">
+                    <span class="arrow-icon">⬅</span> <span id="s-old">--</span>
+                </span>
+                <span id="s-vol" class="range-vol">(--)</span>
+            </div>
+        </div>
+    </div>
+
     <div class="label" style="margin-bottom:8px">📊 籌碼分佈</div>
     <div class="chip-grid">
       <div class="chip-card" id="c1-card"><span class="label">近 全日</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
@@ -162,12 +203,8 @@
       document.getElementById('update-time').innerText = "Update: " + data.t;
 
       // 1. P6 動能
-      let pVal = 0; 
-      let pText = "--%";
-      if (data.pwr_v !== undefined) {
-          pVal = parseFloat(data.pwr_v);
-          pText = data.pwr_t;
-      }
+      let pVal = 0; let pText = "--%";
+      if (data.pwr_v !== undefined) { pVal = parseFloat(data.pwr_v); pText = data.pwr_t; }
       
       let pEl = document.getElementById('pwr-val');
       let pTag = document.getElementById('pwr-tag');
@@ -175,7 +212,6 @@
       
       pEl.innerText = pText;
       pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
-      
       pBox.className = "box"; 
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       
@@ -186,46 +222,66 @@
       else if (pVal <= -30) { pTag.className += " bg-green"; pTag.innerText = "強勢空頭"; }
       else { pTag.innerText = "震盪盤整"; }
 
-      // 2. OP 多空力道差 (新邏輯)
-      let bullF = parseFloat(data.bull_f || 0); // P7 (Call Net)
-      let bearF = parseFloat(data.bear_f || 0); // Q7 (Put Net)
-      let force = parseFloat(data.force || 0);  // R7 (Net Force)
-      let bullR = parseFloat(data.bull_r || 50); // R8 (Ratio)
+      // 2. OP 多空力道
+      let bullF = parseFloat(data.bull_f || 0);
+      let bearF = parseFloat(data.bear_f || 0);
+      let force = parseFloat(data.force || 0); 
+      let bullR = parseFloat(data.bull_r || 50);
       let bearR = 100 - bullR;
 
-      // 更新 Call/Put 淨值 (小字)
       document.getElementById('bull-force').innerText = bullF;
       document.getElementById('bear-force').innerText = bearF;
-
-      // 更新拔河條 (根據 VBA 算好的 R8)
       document.getElementById('bull-bar').style.width = bullR + "%";
       document.getElementById('bear-bar').style.width = bearR + "%";
       document.getElementById('ratio-text').innerText = Math.round(bullR) + "%  vs  " + Math.round(bearR) + "%";
 
-      // [核心新增] 更新中間大字的 Force 數值
       let forceEl = document.getElementById('net-force-val');
       forceEl.innerText = (force > 0 ? "+" : "") + force + " 口";
       forceEl.className = "force-display " + (force > 0 ? "c-red" : (force < 0 ? "c-green" : ""));
 
-      // 戰術指令與邊框變色
       let logicText = data.logic || "分析中...";
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
 
       logicEl.innerText = logicText;
       battleCard.className = "battle-box"; 
+      if (force >= 1500) { logicEl.style.color = "var(--red)"; battleCard.classList.add("alert-red"); }
+      else if (force <= -1500) { logicEl.style.color = "var(--green)"; battleCard.classList.add("alert-green"); }
+      else { logicEl.style.color = "#aaa"; }
+
+      // 3. [新增] 壓力支撐
+      let ps = parseInt(data.now_p_s || 0); // 壓力價
+      let pv = parseInt(data.now_p_v || 0); // 壓力量
+      let ss = parseInt(data.now_s_s || 0); // 支撐價
+      let sv = parseInt(data.now_s_v || 0); // 支撐量
       
-      if (force >= 1500) { // 配合 VBA 的 +3000 極限，這裡設個閾值讓邊框發光
-          logicEl.style.color = "var(--red)";
-          battleCard.classList.add("alert-red");
-      } else if (force <= -1500) {
-          logicEl.style.color = "var(--green)";
-          battleCard.classList.add("alert-green");
+      let lps = parseInt(data.last_p_s || 0); // 上次壓力
+      let lss = parseInt(data.last_s_s || 0); // 上次支撐
+
+      // 更新數值 (若為0則顯示--)
+      document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
+      document.getElementById('p-vol').innerText = ps > 0 ? "("+pv+")" : "";
+      document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
+      document.getElementById('s-vol').innerText = ss > 0 ? "("+sv+")" : "";
+
+      // 判斷是否移動 (舊 != 新 且 舊 > 0)
+      let pOldBox = document.getElementById('p-old-box');
+      if (lps > 0 && lps !== ps) {
+          pOldBox.style.display = "inline-flex";
+          document.getElementById('p-old').innerText = lps;
       } else {
-          logicEl.style.color = "#aaa";
+          pOldBox.style.display = "none";
       }
 
-      // 3. 舊籌碼 C1~C4 (完全保留)
+      let sOldBox = document.getElementById('s-old-box');
+      if (lss > 0 && lss !== ss) {
+          sOldBox.style.display = "inline-flex";
+          document.getElementById('s-old').innerText = lss;
+      } else {
+          sOldBox.style.display = "none";
+      }
+
+      // 4. 籌碼 C1~C4
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|');
