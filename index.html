@@ -60,12 +60,13 @@
     .army-stats { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-top: 5px; padding: 0 10px; }
     .logic-text { text-align: center; font-size: 15px; font-weight: 700; color: #fff; margin-top: 5px; padding-top: 10px; border-top: 1px solid #333; }
 
-    /* === 3. 壓力支撐區塊 (新增 OI 標記樣式) === */
+    /* === 3. 壓力支撐區塊樣式 (顏色修改版) === */
     .range-box {
         background: var(--card); border-radius: 18px; padding: 12px 16px;
         margin-bottom: 15px; display: grid; grid-template-rows: 1fr 1fr; gap: 10px;
         position: relative; overflow: hidden;
     }
+    /* 中間的分隔線 */
     .range-box::after {
         content: ""; position: absolute; top: 50%; left: 16px; right: 16px;
         height: 1px; background: #333;
@@ -74,14 +75,9 @@
     .range-row { display: flex; justify-content: space-between; align-items: center; }
     .range-title { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .range-val { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
-    .range-vol { font-size: 11px; color: #666; font-weight: normal; margin-left: 2px; }
+    .range-vol { font-size: 11px; color: #666; font-weight: normal; margin-left: 4px; }
     
-    /* [新增/修改] 鐵壁、有守、虛牆標籤樣式 */
-    .wall-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold; border: 1px solid #444; }
-    .wall-iron { background: rgba(255, 215, 0, 0.15); color: #ffd700; border-color: #ffd700; } /* 鐵壁: 金色 */
-    .wall-guarded { background: rgba(100, 100, 100, 0.2); color: #ccc; border-color: #666; } /* 有守: 灰色 */
-    .wall-ghost { background: rgba(128, 128, 128, 0.1); color: #666; border-color: #444; opacity: 0.7; } /* 虛牆: 暗灰 */
-
+    /* 舊數據顯示 (小字) */
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
@@ -143,12 +139,10 @@
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
-    <div class="label" style="margin-bottom:8px">🚧 戰場邊界 (掛單 vs OI)</div>
+    <div class="label" style="margin-bottom:8px">🚧 戰場邊界 (壓力 / 支撐)</div>
     <div class="range-box">
         <div class="range-row">
-            <div class="range-title c-green">
-                🟢 壓力牆 <span id="p-tag" class="wall-tag" style="display:none">--</span>
-            </div>
+            <div class="range-title c-green">🟢 壓力牆</div>
             <div class="range-val c-green">
                 <span id="p-strike">--</span>
                 <span class="range-old" id="p-old-box" style="display:none;">
@@ -158,9 +152,7 @@
             </div>
         </div>
         <div class="range-row">
-            <div class="range-title c-red">
-                🔴 支撐牆 <span id="s-tag" class="wall-tag" style="display:none">--</span>
-            </div>
+            <div class="range-title c-red">🔴 支撐牆</div>
             <div class="range-val c-red">
                 <span id="s-strike">--</span>
                 <span class="range-old" id="s-old-box" style="display:none;">
@@ -257,64 +249,37 @@
       else if (force <= -1500) { logicEl.style.color = "var(--green)"; battleCard.classList.add("alert-green"); }
       else { logicEl.style.color = "#aaa"; }
 
-      // 3. 壓力支撐 (改良版：覆蓋率邏輯)
+      // 3. 壓力支撐
       let ps = parseInt(data.now_p_s || 0); // 壓力價
       let pv = parseInt(data.now_p_v || 0); // 壓力量
-      let poi = parseInt(data.now_p_oi || 0); // 壓力OI
-      
       let ss = parseInt(data.now_s_s || 0); // 支撐價
       let sv = parseInt(data.now_s_v || 0); // 支撐量
-      let soi = parseInt(data.now_s_oi || 0); // 支撐OI
       
       let lps = parseInt(data.last_p_s || 0); // 上次壓力
       let lss = parseInt(data.last_s_s || 0); // 上次支撐
 
-      // --- 壓力處理 ---
+      // 更新數值 (若為0則顯示--)
       document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('p-vol').innerText = ps > 0 ? "("+pv+")" : "";
-      
-      // [修正] 壓力標籤邏輯
-      let pTagEl = document.getElementById('p-tag');
-      if (ps > 0) {
-          pTagEl.style.display = "inline-block";
-          if (poi > 2000) {
-              pTagEl.innerText = "🏰 鐵壁"; pTagEl.className = "wall-tag wall-iron";
-          } else if (poi > (pv * 0.3)) {
-              pTagEl.innerText = "🛡️ 有守"; pTagEl.className = "wall-tag wall-guarded";
-          } else {
-              pTagEl.innerText = "👻 虛牆"; pTagEl.className = "wall-tag wall-ghost";
-          }
-      } else { pTagEl.style.display = "none"; }
-
-      // 判斷歷史移位 (壓力)
-      let pOldBox = document.getElementById('p-old-box');
-      if (lps > 0 && lps !== ps) {
-          pOldBox.style.display = "inline-flex"; document.getElementById('p-old').innerText = lps;
-      } else { pOldBox.style.display = "none"; }
-
-
-      // --- 支撐處理 ---
       document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
       document.getElementById('s-vol').innerText = ss > 0 ? "("+sv+")" : "";
 
-      // [修正] 支撐標籤邏輯
-      let sTagEl = document.getElementById('s-tag');
-      if (ss > 0) {
-          sTagEl.style.display = "inline-block";
-          if (soi > 2000) {
-              sTagEl.innerText = "🏰 鐵壁"; sTagEl.className = "wall-tag wall-iron";
-          } else if (soi > (sv * 0.3)) {
-              sTagEl.innerText = "🛡️ 有守"; sTagEl.className = "wall-tag wall-guarded";
-          } else {
-              sTagEl.innerText = "👻 虛牆"; sTagEl.className = "wall-tag wall-ghost";
-          }
-      } else { sTagEl.style.display = "none"; }
+      // 判斷是否移動
+      let pOldBox = document.getElementById('p-old-box');
+      if (lps > 0 && lps !== ps) {
+          pOldBox.style.display = "inline-flex";
+          document.getElementById('p-old').innerText = lps;
+      } else {
+          pOldBox.style.display = "none";
+      }
 
-      // 判斷歷史移位 (支撐)
       let sOldBox = document.getElementById('s-old-box');
       if (lss > 0 && lss !== ss) {
-          sOldBox.style.display = "inline-flex"; document.getElementById('s-old').innerText = lss;
-      } else { sOldBox.style.display = "none"; }
+          sOldBox.style.display = "inline-flex";
+          document.getElementById('s-old').innerText = lss;
+      } else {
+          sOldBox.style.display = "none";
+      }
 
       // 4. 籌碼 C1~C4
       ['c1','c2','c3','c4'].forEach(id => {
@@ -338,3 +303,4 @@
   </script>
 </body>
 </html>
+
