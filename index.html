@@ -76,10 +76,11 @@
     .range-val { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
     .range-vol { font-size: 11px; color: #666; font-weight: normal; margin-left: 2px; }
     
-    /* [新增] 鐵壁與虛牆標籤 */
+    /* [新增/修改] 鐵壁、有守、虛牆標籤樣式 */
     .wall-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold; border: 1px solid #444; }
-    .wall-iron { background: rgba(255, 215, 0, 0.15); color: #ffd700; border-color: #ffd700; } /* 金色鐵壁 */
-    .wall-ghost { background: rgba(128, 128, 128, 0.2); color: #aaa; border-color: #666; } /* 灰色虛牆 */
+    .wall-iron { background: rgba(255, 215, 0, 0.15); color: #ffd700; border-color: #ffd700; } /* 鐵壁: 金色 */
+    .wall-guarded { background: rgba(100, 100, 100, 0.2); color: #ccc; border-color: #666; } /* 有守: 灰色 */
+    .wall-ghost { background: rgba(128, 128, 128, 0.1); color: #666; border-color: #444; opacity: 0.7; } /* 虛牆: 暗灰 */
 
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
@@ -256,7 +257,7 @@
       else if (force <= -1500) { logicEl.style.color = "var(--green)"; battleCard.classList.add("alert-green"); }
       else { logicEl.style.color = "#aaa"; }
 
-      // 3. 壓力支撐 (含 OI 虛實判斷)
+      // 3. 壓力支撐 (改良版：覆蓋率邏輯)
       let ps = parseInt(data.now_p_s || 0); // 壓力價
       let pv = parseInt(data.now_p_v || 0); // 壓力量
       let poi = parseInt(data.now_p_oi || 0); // 壓力OI
@@ -272,12 +273,14 @@
       document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('p-vol').innerText = ps > 0 ? "("+pv+")" : "";
       
-      // 判斷虛實標籤 (壓力)
+      // [修正] 壓力標籤邏輯
       let pTagEl = document.getElementById('p-tag');
       if (ps > 0) {
           pTagEl.style.display = "inline-block";
-          if (poi > pv) {
+          if (poi > 2000) {
               pTagEl.innerText = "🏰 鐵壁"; pTagEl.className = "wall-tag wall-iron";
+          } else if (poi > (pv * 0.3)) {
+              pTagEl.innerText = "🛡️ 有守"; pTagEl.className = "wall-tag wall-guarded";
           } else {
               pTagEl.innerText = "👻 虛牆"; pTagEl.className = "wall-tag wall-ghost";
           }
@@ -294,12 +297,14 @@
       document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
       document.getElementById('s-vol').innerText = ss > 0 ? "("+sv+")" : "";
 
-      // 判斷虛實標籤 (支撐)
+      // [修正] 支撐標籤邏輯
       let sTagEl = document.getElementById('s-tag');
       if (ss > 0) {
           sTagEl.style.display = "inline-block";
-          if (soi > sv) {
+          if (soi > 2000) {
               sTagEl.innerText = "🏰 鐵壁"; sTagEl.className = "wall-tag wall-iron";
+          } else if (soi > (sv * 0.3)) {
+              sTagEl.innerText = "🛡️ 有守"; sTagEl.className = "wall-tag wall-guarded";
           } else {
               sTagEl.innerText = "👻 虛牆"; sTagEl.className = "wall-tag wall-ghost";
           }
