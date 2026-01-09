@@ -110,7 +110,13 @@
       <div class="box">
         <div class="label">TX 台指期</div>
         <div id="price" class="big-val">---</div>
-        <div id="update-time" class="label" style="margin-top:5px; color:#aaa; font-size:10px;">--:--:--</div>
+        
+        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:#aaa; font-weight:500;">
+            <div>🌞 日 <span id="vwap-day" style="color:#fff; font-weight:600; margin-left:2px;">--</span></div>
+            <div>🌙 夜 <span id="vwap-night" style="color:#fff; font-weight:600; margin-left:2px;">--</span></div>
+        </div>
+
+        <div id="update-time" class="label" style="margin-top:8px; color:#666; font-size:10px; text-align:right;">--:--:--</div>
       </div>
       
       <div class="box" style="text-align:right" id="pwr-box">
@@ -201,6 +207,10 @@
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
+
+      // ★★★ [新增] 更新 VWAP (若無資料則顯示 --) ★★★
+      document.getElementById('vwap-day').innerText = data.vwap_day || "--";
+      document.getElementById('vwap-night').innerText = data.vwap_night || "--";
 
       // 1. P6 動能
       let pVal = 0; let pText = "--%";
@@ -303,4 +313,3 @@
   </script>
 </body>
 </html>
-
