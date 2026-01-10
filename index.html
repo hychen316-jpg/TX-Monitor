@@ -153,7 +153,10 @@
     // --- Config ---
     const MY_PASSWORD = "168"; 
     const FIREBASE_URL = "https://tx-monitor-93eb2-default-rtdb.asia-southeast1.firebasedatabase.app/"; 
-    const NODE_NAME = 'monitor_history'; 
+    
+    // 定義兩個監聽節點
+    const NODE_REALTIME = 'monitor_realtime'; // 給 UI 數字用 (5秒)
+    const NODE_HISTORY  = 'monitor_history';  // 給圖表用 (2分鐘)
 
     let trendChart = null;
 
@@ -173,22 +176,31 @@
       }
     }
 
-    // --- Firebase ---
+    // --- Firebase (雙流架構) ---
     function initFirebase() {
       if (!firebase.apps.length) firebase.initializeApp({ databaseURL: FIREBASE_URL });
-      const dbRef = firebase.database().ref(NODE_NAME);
+      
+      const dbRefRT = firebase.database().ref(NODE_REALTIME);
+      const dbRefHist = firebase.database().ref(NODE_HISTORY);
 
-      // 監聽即時新資料
-      dbRef.limitToLast(1).on('child_added', (snapshot) => {
+      // 1. [即時監聽] 負責更新 UI 數字 (每5秒覆蓋)
+      dbRefRT.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            updateUI(data);
+            updateUI(data); 
+        }
+      });
+      
+      // 2. [歷史監聽] 負責畫圖 (每2分鐘新增)
+      dbRefHist.limitToLast(1).on('child_added', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
             updateChartNewData(data); 
         }
       });
       
-      // 載入歷史資料：只抓最後 120 筆 (配合 Excel 滾動視窗)
-      dbRef.limitToLast(120).once('value', (snapshot) => {
+      // 3. [初始載入] 載入歷史圖表 (滾動 120 筆)
+      dbRefHist.limitToLast(120).once('value', (snapshot) => {
         const fullData = snapshot.val();
         if(fullData) {
             const dataArray = Object.values(fullData);
@@ -197,7 +209,7 @@
       });
     }
 
-    // --- 關鍵邏輯：根據「資料時間」判斷要畫哪條線 (修正版) ---
+    // --- 關鍵邏輯：根據「資料時間」判斷要畫哪條線 ---
     function getChipValueForTime(d) {
         // d.t 格式通常為 "HH:mm:ss"
         let hour = parseInt(d.t.split(':')[0]);
@@ -219,15 +231,12 @@
         if (!trendChart) return;
         
         let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
-        
-        // [自動切換] 根據這筆資料的時間決定 E5 或 E6
         let chipInfo = getChipValueForTime(d);
 
         trendChart.data.labels.push(d.t.substring(0,5)); 
         trendChart.data.datasets[0].data.push(chipInfo.val);
         trendChart.data.datasets[1].data.push(p6Raw);
 
-        // 更新當前線條顏色與標題 (反映最新狀態)
         trendChart.data.datasets[0].label = chipInfo.label;
         trendChart.data.datasets[0].borderColor = chipInfo.color;
 
@@ -248,12 +257,8 @@
         dataArray.forEach(d => {
             labels.push(d.t.substring(0,5));
             dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
-            
-            // [歷史回放] 每一筆都獨立判斷它是日盤還是夜盤，解決回看問題
             let info = getChipValueForTime(d);
             dataChips.push(info.val);
-            
-            // 紀錄最後一筆的狀態，用來設定圖表標題
             lastChipInfo = info;
         });
 
@@ -261,7 +266,6 @@
         trendChart.data.datasets[0].data = dataChips;
         trendChart.data.datasets[0].label = lastChipInfo.label;
         trendChart.data.datasets[0].borderColor = lastChipInfo.color;
-        
         trendChart.data.datasets[1].data = dataP6;
         trendChart.update();
     }
@@ -280,11 +284,11 @@
             data: { 
                 labels: [], 
                 datasets: [
-                    // Dataset 0: 籌碼 (上方 50%) - 顏色會隨日夜盤變動
+                    // Dataset 0: 籌碼 (上方 50%)
                     { 
                         label: '籌碼', 
                         data: [], 
-                        borderColor: '#30d158', // 預設綠色
+                        borderColor: '#30d158', 
                         borderWidth: 2, 
                         pointRadius: 0, 
                         tension: 0.4, 
@@ -294,7 +298,7 @@
                     { 
                         label: 'P6 動能', 
                         data: [], 
-                        borderColor: '#ff453a', // 紅色
+                        borderColor: '#ff453a', 
                         backgroundColor: 'rgba(255, 69, 58, 0.1)', 
                         borderWidth: 2, 
                         tension: 0.4, 
@@ -322,7 +326,7 @@
                         ticks: { color: '#666', maxTicksLimit: 6 }, 
                         grid: { display: false } 
                     },
-                    // --- 50/50 上下分割設定 ---
+                    // --- 50/50 上下分割 ---
                     y_chips: { 
                         type: 'linear', 
                         display: true, 
@@ -350,7 +354,7 @@
         });
     }
 
-    // --- UI Update (保持不變) ---
+    // --- UI Update ---
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
@@ -416,7 +420,6 @@
       if (lss > 0 && lss !== ss) { sOldBox.style.display = "inline-flex"; document.getElementById('s-old').innerText = lss; } 
       else { sOldBox.style.display = "none"; }
 
-      // 標籤更新
       const chipLabels = {
           'c1': '近 全日 (E5)',
           'c2': '近 日盤 (E6)',
