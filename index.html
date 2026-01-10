@@ -9,10 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
-    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --blue:#0a84ff; --gray:#8e8e93; }
+    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:15px; margin:0; overflow-x:hidden; }
     
-    /* 模糊鎖定效果 */
     .dashboard-container { filter: blur(10px); transition: filter 0.5s; pointer-events: none; }
     .unlocked { filter: blur(0); pointer-events: auto; }
 
@@ -20,17 +19,14 @@
     .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:12px; margin-bottom:15px; }
     .box { background:var(--card); border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; }
     
-    /* 數值樣式 */
     .big-val { font-size:32px; font-weight:600; letter-spacing:-1px; margin-top:5px; }
     .power-val { font-size:38px; font-weight:700; text-align:right; } 
     .chip-tag { font-size:11px; padding:3px 8px; border-radius:6px; width:fit-content; background:#333; color:#ccc; }
     
-    /* 籌碼卡片網格 */
     .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .chip-card { background:var(--card); padding:12px; border-radius:14px; display:flex; flex-direction:column; }
     .label { font-size:12px; color:var(--gray); font-weight:600; text-transform:uppercase; }
     
-    /* 顏色定義 */
     .c-red { color:var(--red); } .c-green { color:var(--green); }
     .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
     .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
@@ -58,8 +54,8 @@
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
-    /* 圖表區塊 (加高一點以容納兩個區域) */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 400px; position: relative; }
+    /* 圖表區塊 (加高以容納兩個均分區域) */
+    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 450px; position: relative; }
 
     /* 登入遮罩 */
     #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -140,8 +136,8 @@
 
     <div class="label" style="margin-bottom:8px">📊 籌碼分佈</div>
     <div class="chip-grid">
-      <div class="chip-card" id="c1-card"><span class="label">近 全日</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c2-card"><span class="label">近 日盤</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c1-card"><span class="label">近 全日 (E5)</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c2-card"><span class="label">近 日盤 (E6)</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c3-card"><span class="label">次 全日</span><span id="c3-val" class="big-val" style="font-size:20px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
       <div class="chip-card" id="c4-card"><span class="label">次 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
@@ -159,6 +155,7 @@
     const NODE_NAME = 'monitor_history'; 
 
     let trendChart = null;
+    let currentChipLabel = "籌碼"; // 動態標題
 
     // --- Login ---
     function checkPass() {
@@ -181,7 +178,6 @@
       if (!firebase.apps.length) firebase.initializeApp({ databaseURL: FIREBASE_URL });
       const dbRef = firebase.database().ref(NODE_NAME);
 
-      // 監聽最新一筆資料 (即時更新)
       dbRef.limitToLast(1).on('child_added', (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -190,7 +186,6 @@
         }
       });
       
-      // 讀取歷史資料 (初始化圖表)
       dbRef.limitToLast(60).once('value', (snapshot) => {
         const fullData = snapshot.val();
         if(fullData) {
@@ -200,48 +195,73 @@
       });
     }
 
+    // --- Helper: 判斷是否為日盤 (08:00 ~ 14:00) ---
+    function isDaySession() {
+        const h = new Date().getHours();
+        return (h >= 8 && h < 14);
+    }
+
+    // --- Helper: 根據時段取得對應籌碼數值與標題 ---
+    function getChipDataBasedOnTime(d) {
+        if (isDaySession()) {
+            return { val: parseChipValue(d.c2), label: "籌碼 (近 日盤 E6)", color: '#ffd60a' }; // 黃色
+        } else {
+            return { val: parseChipValue(d.c1), label: "籌碼 (近 全日 E5)", color: '#30d158' }; // 綠色
+        }
+    }
+
     // --- Chart Logic ---
     function updateChartNewData(d) {
         if (!trendChart) return;
         
-        // 數值處理：確保移除 % 並轉為浮點數
         let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
-        let e5Raw = parseChipValue(d.c1);
-        let e6Raw = parseChipValue(d.c2);
+        let chipInfo = getChipDataBasedOnTime(d); // 智慧切換
 
+        // 更新數據
         trendChart.data.labels.push(d.t.substring(0,5)); 
-        trendChart.data.datasets[0].data.push(e5Raw); // E5 (近 全日)
-        trendChart.data.datasets[1].data.push(e6Raw); // E6 (近 日盤)
-        trendChart.data.datasets[2].data.push(p6Raw); // P6 (動能)
+        trendChart.data.datasets[0].data.push(chipInfo.val); // 上半部: 籌碼
+        trendChart.data.datasets[1].data.push(p6Raw);       // 下半部: P6
 
-        // 保持 60 筆資料
+        // 更新標題與顏色 (即時反應日夜盤切換)
+        trendChart.data.datasets[0].label = chipInfo.label;
+        trendChart.data.datasets[0].borderColor = chipInfo.color;
+
         if (trendChart.data.labels.length > 60) {
             trendChart.data.labels.shift();
             trendChart.data.datasets[0].data.shift();
             trendChart.data.datasets[1].data.shift();
-            trendChart.data.datasets[2].data.shift();
         }
-        trendChart.update('none'); // 無動畫更新
+        trendChart.update('none');
     }
 
     function loadChartHistory(dataArray) {
         if (!trendChart) return;
-        let labels = [], dataP6 = [], dataE5 = [], dataE6 = [];
+        let labels = [], dataP6 = [], dataChips = [];
+        
+        // 載入歷史時，以「當下時間」決定要秀哪一條線，保持圖表一致性
+        let chipMeta = getChipDataBasedOnTime({}); // 取得當前時段設定
+
         dataArray.forEach(d => {
             labels.push(d.t.substring(0,5));
             dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
-            dataE5.push(parseChipValue(d.c1));
-            dataE6.push(parseChipValue(d.c2));
+            
+            // 根據當前時段決定歷史資料要讀取 E5 還是 E6
+            if (isDaySession()) {
+                dataChips.push(parseChipValue(d.c2)); // E6
+            } else {
+                dataChips.push(parseChipValue(d.c1)); // E5
+            }
         });
+
         trendChart.data.labels = labels;
-        // 注意 Dataset 順序要與 initChart 一致
-        trendChart.data.datasets[0].data = dataE5;
-        trendChart.data.datasets[1].data = dataE6;
-        trendChart.data.datasets[2].data = dataP6;
+        trendChart.data.datasets[0].data = dataChips;
+        trendChart.data.datasets[0].label = chipMeta.label;
+        trendChart.data.datasets[0].borderColor = chipMeta.color;
+        
+        trendChart.data.datasets[1].data = dataP6;
         trendChart.update();
     }
 
-    // 解析 "10.5%|強多" 格式
     function parseChipValue(str) {
         if (!str) return 0;
         let valStr = str.split('|')[0].replace('%', '');
@@ -250,33 +270,25 @@
 
     function initChart() {
         const ctx = document.getElementById('trendChart').getContext('2d');
+        // 預設顏色，會被 update 覆蓋
+        let initialChipConfig = getChipDataBasedOnTime({});
+
         trendChart = new Chart(ctx, {
             type: 'line',
             data: { 
                 labels: [], 
                 datasets: [
-                    // Dataset 0: E5 (近 全日) - 上半部
+                    // Dataset 0: 籌碼 (上方 50%)
                     { 
-                        label: '近 全日', 
+                        label: initialChipConfig.label, 
                         data: [], 
-                        borderColor: '#30d158', // 綠色
+                        borderColor: initialChipConfig.color, 
                         borderWidth: 2, 
                         pointRadius: 0, 
                         tension: 0.4, 
-                        yAxisID: 'y_chips' // 綁定到籌碼軸
+                        yAxisID: 'y_chips' 
                     },
-                    // Dataset 1: E6 (近 日盤) - 上半部
-                    { 
-                        label: '近 日盤', 
-                        data: [], 
-                        borderColor: '#ffd60a', // 黃色
-                        borderWidth: 2, 
-                        borderDash: [5, 5], 
-                        pointRadius: 0, 
-                        tension: 0.4, 
-                        yAxisID: 'y_chips' // 綁定到籌碼軸
-                    },
-                    // Dataset 2: P6 (動能) - 下半部
+                    // Dataset 1: P6 動能 (下方 50%)
                     { 
                         label: 'P6 動能', 
                         data: [], 
@@ -285,7 +297,7 @@
                         borderWidth: 2, 
                         tension: 0.4, 
                         fill: true, 
-                        yAxisID: 'y_p6' // 綁定到動能軸
+                        yAxisID: 'y_p6'
                     }
                 ]
             },
@@ -308,27 +320,27 @@
                         ticks: { color: '#666', maxTicksLimit: 6 }, 
                         grid: { display: false } 
                     },
-                    // Y軸設定：上下分開 (使用 stack 和 stackWeight)
-                    // 上方區域 (70%)：顯示 E5, E6 籌碼
+                    // --- 關鍵設定：50/50 分割 ---
+                    // 上方區域 (stackWeight: 1)
                     y_chips: { 
                         type: 'linear', 
                         display: true, 
                         position: 'left', 
                         stack: 'demo', 
-                        stackWeight: 2, // 權重較大，佔比較高
+                        stackWeight: 1,  // 權重 1
                         grid: { color: '#333' }, 
-                        ticks: { color: '#30d158', callback: function(val){ return val + '%' } },
+                        ticks: { color: '#aaa', callback: function(val){ return val + '%' } },
                         border: { color: '#666' }
                     },
-                    // 下方區域 (30%)：顯示 P6 動能
+                    // 下方區域 (stackWeight: 1)
                     y_p6: { 
                         type: 'linear', 
                         display: true, 
                         position: 'left', 
                         stack: 'demo', 
-                        stackWeight: 1, // 權重較小，佔比較低
+                        stackWeight: 1,  // 權重 1 (與上方均分)
                         offset: true, 
-                        grid: { color: '#222', drawOnChartArea: true }, // 淡格線區分
+                        grid: { color: '#222', drawOnChartArea: true }, 
                         ticks: { color: '#ff453a', callback: function(val){ return val + '%' } },
                         suggestedMin: -20, 
                         suggestedMax: 20 
@@ -404,19 +416,34 @@
       if (lss > 0 && lss !== ss) { sOldBox.style.display = "inline-flex"; document.getElementById('s-old').innerText = lss; } 
       else { sOldBox.style.display = "none"; }
 
+      // 標籤更新
+      const chipLabels = {
+          'c1': '近 全日 (E5)',
+          'c2': '近 日盤 (E6)',
+          'c3': '次 全日',
+          'c4': '次 日盤'
+      };
+
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|');
         let v = parseFloat(parts[0].replace('%',''));
+        
         let el = document.getElementById(id+'-val');
         el.innerText = parts[0]; 
         el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
+        
         let tag = document.getElementById(id+'-tag');
         tag.innerText = parts[1]; 
         tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
+        
         let card = document.getElementById(id+'-card');
         if(parts[1].includes("強")) card.style.border = v>0?"1px solid rgba(255,69,58,0.3)":"1px solid rgba(48,209,88,0.3)";
         else card.style.border = "none";
+
+        // 更新卡片標題
+        let labelSpan = card.querySelector('.label');
+        if(labelSpan && chipLabels[id]) labelSpan.innerText = chipLabels[id];
       });
     }
   </script>
