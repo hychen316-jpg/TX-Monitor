@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 會員驗證版)</title>
+  <title>極速戰情室 (Pro Max - 審核制)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -62,7 +62,7 @@
     /* 圖表區塊 */
     .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 450px; position: relative; }
 
-    /* === 登入/註冊 遮罩樣式 === */
+    /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .auth-box { text-align: center; width: 85%; max-width: 320px; background: #1c1c1e; padding: 30px 20px; border-radius: 20px; border: 1px solid #333; }
     .auth-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
@@ -96,7 +96,7 @@
 
     <div id="register-form" class="auth-box" style="display:none;">
       <div class="auth-title">📝 註冊新帳號</div>
-      <div style="font-size:12px; color:#aaa; margin-bottom:15px;">註冊後請至信箱點擊驗證連結</div>
+      <div style="font-size:12px; color:#aaa; margin-bottom:15px;">註冊後請至信箱點擊驗證連結<br>並等待管理員審核</div>
       <input type="email" id="reg-email" class="auth-input" placeholder="輸入您的 Email">
       <input type="password" id="reg-pass" class="auth-input" placeholder="設定密碼 (至少6位)">
       <button onclick="doRegister()" class="auth-btn secondary">註冊並發送驗證信</button>
@@ -180,15 +180,15 @@
   </div>
 
   <script>
-    // ★★★ 1. 必填：請在此填入您的 Firebase Config ★★★
+    // ★★★ 1. 您的 Firebase Config (已保留) ★★★
     const firebaseConfig = {
-    apiKey: "AIzaSyCPkFmEOfCRBBR6TQbji8G5kNZk7XBi_JQ",
-    authDomain: "tx-monitor-93eb2.firebaseapp.com",
-    databaseURL: "https://tx-monitor-93eb2-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "tx-monitor-93eb2",
-    storageBucket: "tx-monitor-93eb2.firebasestorage.app",
-    messagingSenderId: "351988516076",
-    appId: "1:351988516076:web:1127a8cc9144db8f3951c9"
+      apiKey: "AIzaSyCPkFmEOfCRBBR6TQbji8G5kNZk7XBi_JQ",
+      authDomain: "tx-monitor-93eb2.firebaseapp.com",
+      databaseURL: "https://tx-monitor-93eb2-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tx-monitor-93eb2",
+      storageBucket: "tx-monitor-93eb2.firebasestorage.app",
+      messagingSenderId: "351988516076",
+      appId: "1:351988516076:web:1127a8cc9144db8f3951c9"
     };
 
     // 初始化 Firebase
@@ -203,7 +203,7 @@
     let trendChart = null;
 
     // ==========================================================
-    // 2. Auth 邏輯 (登入 / 註冊 / 驗證)
+    // 2. Auth 邏輯 (登入 / 註冊 / 驗證 / 審核)
     // ==========================================================
     
     // 監聽登入狀態 (核心開關)
@@ -214,34 +214,87 @@
       const loginMsg = document.getElementById('login-msg');
 
       if (user) {
-        // 已登入 -> 檢查 Email 是否驗證
-        if (user.emailVerified) {
-          // --- 通過驗證：解鎖畫面 ---
-          overlay.style.display = 'none';
-          dashboard.classList.add('unlocked');
-          logoutBtn.style.display = 'block';
-          
-          // 啟動數據監聽 (避免重複綁定)
-          if(!trendChart) {
-             initChart();
-             startDataSync();
-          }
-        } else {
-          // --- 未驗證：強制擋住 ---
-          document.getElementById('login-form').style.display = 'block';
-          document.getElementById('register-form').style.display = 'none';
-          loginMsg.innerHTML = `⚠️ Email 尚未驗證！<br>請去信箱確認，完成後請<a href="#" onclick="location.reload()" style="color:#fff">重新整理</a>`;
-          
-          // 為了安全性，未驗證者先登出 (視需求也可不登出，但就看不到資料)
-          auth.signOut(); 
+        // A. 檢查 Email 是否驗證
+        if (!user.emailVerified) {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+            loginMsg.innerHTML = `⚠️ Email 尚未驗證！<br>請去信箱確認，完成後請<a href="#" onclick="location.reload()" style="color:#fff">重新整理</a>`;
+            auth.signOut();
+            return;
         }
+
+        // B. 檢查資料庫的審核狀態 (Approved Check)
+        const userRef = db.ref('users/' + user.uid);
+        
+        userRef.once('value').then((snapshot) => {
+            const userData = snapshot.val();
+
+            if (!userData) {
+                // 情境 1: 新用戶 (資料庫沒資料) -> 自動建立「待審核 (false)」名片
+                userRef.set({
+                    email: user.email,
+                    approved: false,
+                    reg_time: new Date().toISOString()
+                }).then(() => {
+                    showPendingScreen(); // 顯示等待畫面
+                });
+            } else if (userData.approved === true) {
+                // 情境 2: 已通過 -> 解鎖畫面
+                // 隱藏所有遮罩元素
+                overlay.style.display = 'none';
+                if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
+                
+                dashboard.classList.add('unlocked');
+                logoutBtn.style.display = 'block';
+                
+                // 啟動數據監聽 (避免重複綁定)
+                if(!trendChart) {
+                   initChart();
+                   startDataSync();
+                }
+            } else {
+                // 情境 3: 未通過 -> 顯示等待畫面
+                showPendingScreen();
+            }
+        });
+
       } else {
-        // --- 未登入：鎖定 ---
+        // --- 未登入 ---
         overlay.style.display = 'flex';
+        // 恢復登入框，隱藏等待訊息
+        document.getElementById('login-form').style.display = 'block';
+        if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
+        
         dashboard.classList.remove('unlocked');
         logoutBtn.style.display = 'none';
       }
     });
+
+    // 顯示「等待審核」的畫面
+    function showPendingScreen() {
+        // 隱藏登入表單
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'none';
+        
+        // 檢查是否已經有等待訊息框，沒有就建立
+        let pendingBox = document.getElementById('pending-msg-box');
+        if (!pendingBox) {
+            pendingBox = document.createElement('div');
+            pendingBox.id = 'pending-msg-box';
+            pendingBox.className = 'auth-box';
+            pendingBox.innerHTML = `
+                <div class="auth-title">⏳ 審核中</div>
+                <div style="color:#ccc; font-size:14px; line-height:1.6; margin-bottom:20px;">
+                    您的帳號已建立，但需要管理員核准才能進入。<br><br>
+                    請通知管理員開通您的權限。
+                </div>
+                <button onclick="location.reload()" class="auth-btn">我已開通，重新整理</button>
+                <button onclick="doLogout()" class="auth-btn secondary">登出</button>
+            `;
+            document.getElementById('auth-overlay').appendChild(pendingBox);
+        }
+        pendingBox.style.display = 'block';
+    }
 
     // 登入函數
     function doLogin() {
@@ -276,9 +329,9 @@
           // 註冊成功 -> 發送驗證信
           const user = userCredential.user;
           user.sendEmailVerification().then(() => {
-             msgBox.innerHTML = "✅ <b>驗證信已發送！</b><br>請前往信箱點擊連結，然後返回登入。";
+             msgBox.innerHTML = "✅ <b>驗證信已發送！</b><br>請前往信箱點擊連結，然後返回登入。<br>驗證後將進入審核流程。";
              // 4秒後自動切回登入頁
-             setTimeout(() => { showLogin(); auth.signOut(); }, 4000);
+             setTimeout(() => { showLogin(); auth.signOut(); }, 5000);
           });
         })
         .catch((error) => {
@@ -319,7 +372,7 @@
         const data = snapshot.val();
         if (data) updateUI(data); 
       }, (error) => {
-         console.log("讀取失敗(權限不足):", error); // 若規則設定正確，未登入者會報錯
+         console.log("讀取失敗(權限不足):", error);
       });
       
       // B. [歷史監聽] 即時畫新點
@@ -338,7 +391,7 @@
       });
     }
 
-    // --- 圖表輔助函數 (日/夜盤 顏色切換) ---
+    // --- 圖表輔助函數 ---
     function getChipValueForTime(d) {
         let hour = parseInt(d.t.split(':')[0]);
         // 日盤定義 (08:00 ~ 13:59)
@@ -390,7 +443,6 @@
         trendChart.update();
     }
 
-    // 籌碼文字轉數字
     function parseChipValue(str) {
         if (!str) return 0;
         let valStr = str.split('|')[0].replace('%', '');
@@ -511,4 +563,3 @@
   </script>
 </body>
 </html>
-
