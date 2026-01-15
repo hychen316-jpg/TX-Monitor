@@ -59,8 +59,8 @@
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
-    /* 圖表區塊 - ★★★ 修改：高度增加至 750px (拉開距離) ★★★ */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 750px; position: relative; }
+    /* 圖表區塊 - ★★★ 修改：高度增加至 950px，確保三層圖表完全拉開不擁擠 ★★★ */
+    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 950px; position: relative; }
 
     /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -521,10 +521,10 @@
                 scales: {
                     x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
                     
-                    // 上層 (期貨) - Weight 3 (最上方) - ★★★ 修改: stackWeight 1.2 (加大空間), grace 25% (加大間距) ★★★
+                    // 上層 (期貨) - Weight 3 (最上方) - ★★★ 修改: stackWeight 1.5, grace 25% ★★★
                     y_price: { 
                         type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1.2, 
+                        stack: 'demo', stackWeight: 1.5, 
                         weight: 3,
                         grace: '25%', 
                         grid: { display: false }, 
@@ -532,7 +532,7 @@
                         border: { color: '#666' } 
                     },
                     
-                    // 中層 (籌碼) - Weight 2 (中間) - ★★★ 修改: grace 25% ★★★
+                    // 中層 (籌碼) - Weight 2 (中間) - ★★★ 修改: stackWeight 1, grace 25% ★★★
                     y_chips: { 
                         type: 'linear', display: true, position: 'left', 
                         stack: 'demo', stackWeight: 1, 
@@ -543,7 +543,7 @@
                         border: { color: '#666' } 
                     },
                     
-                    // 下層 (P6) - Weight 1 (最下方) - ★★★ 修改: grace 25% ★★★
+                    // 下層 (P6) - Weight 1 (最下方) - ★★★ 修改: stackWeight 1, grace 25% ★★★
                     y_p6: { 
                         type: 'linear', display: true, position: 'left', 
                         stack: 'demo', stackWeight: 1, 
