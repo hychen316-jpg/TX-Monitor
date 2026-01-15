@@ -60,7 +60,7 @@
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
     /* 圖表區塊 */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 500px; position: relative; } /* 高度稍微增加以容納三層 */
+    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 500px; position: relative; }
 
     /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -463,7 +463,7 @@
         return parseFloat(valStr);
     }
 
-    // 初始化 Chart.js (三層結構)
+    // 初始化 Chart.js (三層結構 - 順序修正版)
     function initChart() {
         const ctx = document.getElementById('trendChart').getContext('2d');
         trendChart = new Chart(ctx, {
@@ -517,32 +517,35 @@
                         } 
                     } }
                 },
-                // ★★★ 堆疊式 Y 軸配置 ★★★
+                // ★★★ 堆疊式 Y 軸配置 (加入 weight 強制排序) ★★★
                 scales: {
                     x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
                     
-                    // 上層 (期貨)
+                    // 上層 (期貨) - Weight 3 (最上方)
                     y_price: { 
                         type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, // 權重1
+                        stack: 'demo', stackWeight: 1, 
+                        weight: 3,  // <--- 關鍵修改
                         grid: { display: false }, 
                         ticks: { color: '#ffd700', callback: function(val){ return val } },
                         border: { color: '#666' } 
                     },
                     
-                    // 中層 (籌碼)
+                    // 中層 (籌碼) - Weight 2 (中間)
                     y_chips: { 
                         type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, // 權重1
+                        stack: 'demo', stackWeight: 1, 
+                        weight: 2,  // <--- 關鍵修改
                         grid: { color: '#333' }, 
                         ticks: { color: '#aaa', callback: function(val){ return val + '%' } }, 
                         border: { color: '#666' } 
                     },
                     
-                    // 下層 (P6)
+                    // 下層 (P6) - Weight 1 (最下方)
                     y_p6: { 
                         type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, // 權重1
+                        stack: 'demo', stackWeight: 1, 
+                        weight: 1,  // <--- 關鍵修改
                         grid: { color: '#222', drawOnChartArea: true }, 
                         ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, 
                         suggestedMin: -20, suggestedMax: 20 
