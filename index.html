@@ -59,8 +59,8 @@
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
-    /* 圖表區塊 - ★★★ 修改：高度由 500px 增加至 650px，增加空間 ★★★ */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 650px; position: relative; }
+    /* 圖表區塊 - ★★★ 修改：高度增加至 750px (拉開距離) ★★★ */
+    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 750px; position: relative; }
 
     /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -521,34 +521,34 @@
                 scales: {
                     x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
                     
-                    // 上層 (期貨) - Weight 3 (最上方)
+                    // 上層 (期貨) - Weight 3 (最上方) - ★★★ 修改: stackWeight 1.2 (加大空間), grace 25% (加大間距) ★★★
                     y_price: { 
                         type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, 
+                        stack: 'demo', stackWeight: 1.2, 
                         weight: 3,
-                        grace: '15%', // ★★★ 增加上下緩衝區
+                        grace: '25%', 
                         grid: { display: false }, 
                         ticks: { color: '#ffd700', callback: function(val){ return val } },
                         border: { color: '#666' } 
                     },
                     
-                    // 中層 (籌碼) - Weight 2 (中間)
+                    // 中層 (籌碼) - Weight 2 (中間) - ★★★ 修改: grace 25% ★★★
                     y_chips: { 
                         type: 'linear', display: true, position: 'left', 
                         stack: 'demo', stackWeight: 1, 
                         weight: 2,
-                        grace: '15%', // ★★★ 增加上下緩衝區
+                        grace: '25%', 
                         grid: { color: '#333' }, 
                         ticks: { color: '#aaa', callback: function(val){ return val + '%' } }, 
                         border: { color: '#666' } 
                     },
                     
-                    // 下層 (P6) - Weight 1 (最下方)
+                    // 下層 (P6) - Weight 1 (最下方) - ★★★ 修改: grace 25% ★★★
                     y_p6: { 
                         type: 'linear', display: true, position: 'left', 
                         stack: 'demo', stackWeight: 1, 
                         weight: 1,
-                        grace: '15%', // ★★★ 增加上下緩衝區
+                        grace: '25%', 
                         grid: { color: '#222', drawOnChartArea: true }, 
                         ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, 
                         suggestedMin: -20, suggestedMax: 20 
@@ -562,7 +562,7 @@
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
-      // ★★★ 修改：四捨五入取整數 ★★★
+      // 四捨五入取整數
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
