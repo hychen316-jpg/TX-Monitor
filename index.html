@@ -60,7 +60,7 @@
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
     /* 圖表區塊 */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 450px; position: relative; }
+    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 500px; position: relative; } /* 高度稍微增加以容納三層 */
 
     /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -173,7 +173,7 @@
       <div class="chip-card" id="c4-card"><span class="label">次 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
 
-    <div class="label" style="margin-top:25px; margin-bottom:8px">📈 戰情趨勢 (上:籌碼 / 下:動能)</div>
+    <div class="label" style="margin-top:25px; margin-bottom:8px">📈 戰情趨勢 (上:期貨 / 中:籌碼 / 下:動能)</div>
     <div class="chart-box">
         <canvas id="trendChart"></canvas>
     </div>
@@ -364,7 +364,7 @@
     }
 
     // ==========================================================
-    // 3. 資料串接與圖表 (Pro Max 核心邏輯)
+    // 3. 資料串接與圖表 (Pro Max 核心邏輯 - 三層式圖表)
     // ==========================================================
     function startDataSync() {
       // A. [即時監聽] 5秒更新 UI
@@ -404,19 +404,27 @@
     function updateChartNewData(d) {
         if (!trendChart) return;
         let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
+        let priceRaw = parseFloat(d.price || 0); // 讀取期貨價格
         let chipInfo = getChipValueForTime(d);
 
         trendChart.data.labels.push(d.t.substring(0,5)); 
-        trendChart.data.datasets[0].data.push(chipInfo.val);
-        trendChart.data.datasets[1].data.push(p6Raw);
-        trendChart.data.datasets[0].label = chipInfo.label;
-        trendChart.data.datasets[0].borderColor = chipInfo.color;
+
+        // 數據推入 (注意 datasets 順序)
+        // [0] 期貨, [1] 籌碼, [2] P6
+        trendChart.data.datasets[0].data.push(priceRaw);
+        trendChart.data.datasets[1].data.push(chipInfo.val);
+        trendChart.data.datasets[2].data.push(p6Raw);
+        
+        // 更新籌碼顏色與標籤
+        trendChart.data.datasets[1].label = chipInfo.label;
+        trendChart.data.datasets[1].borderColor = chipInfo.color;
 
         // 滾動視窗 (維持 120 筆)
         if (trendChart.data.labels.length > 120) {
             trendChart.data.labels.shift();
             trendChart.data.datasets[0].data.shift();
             trendChart.data.datasets[1].data.shift();
+            trendChart.data.datasets[2].data.shift();
         }
         trendChart.update('none');
     }
@@ -424,22 +432,28 @@
     // 載入歷史圖表
     function loadChartHistory(dataArray) {
         if (!trendChart) return;
-        let labels = [], dataP6 = [], dataChips = [];
+        let labels = [], dataP6 = [], dataChips = [], dataPrice = [];
         let lastChipInfo = { label: "籌碼", color: '#30d158' };
 
         dataArray.forEach(d => {
             labels.push(d.t.substring(0,5));
             dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
+            dataPrice.push(parseFloat(d.price || 0)); // 讀取期貨價格
             let info = getChipValueForTime(d);
             dataChips.push(info.val);
             lastChipInfo = info;
         });
 
         trendChart.data.labels = labels;
-        trendChart.data.datasets[0].data = dataChips;
-        trendChart.data.datasets[0].label = lastChipInfo.label;
-        trendChart.data.datasets[0].borderColor = lastChipInfo.color;
-        trendChart.data.datasets[1].data = dataP6;
+        // [0] 期貨
+        trendChart.data.datasets[0].data = dataPrice;
+        // [1] 籌碼
+        trendChart.data.datasets[1].data = dataChips;
+        trendChart.data.datasets[1].label = lastChipInfo.label;
+        trendChart.data.datasets[1].borderColor = lastChipInfo.color;
+        // [2] P6
+        trendChart.data.datasets[2].data = dataP6;
+        
         trendChart.update();
     }
 
@@ -449,7 +463,7 @@
         return parseFloat(valStr);
     }
 
-    // 初始化 Chart.js
+    // 初始化 Chart.js (三層結構)
     function initChart() {
         const ctx = document.getElementById('trendChart').getContext('2d');
         trendChart = new Chart(ctx, {
@@ -457,20 +471,82 @@
             data: { 
                 labels: [], 
                 datasets: [
-                    { label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4, yAxisID: 'y_chips' },
-                    { label: 'P6 動能', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y_p6' }
+                    // --- 上層: 期貨 (Index 0) ---
+                    { 
+                        label: '期貨現價', 
+                        data: [], 
+                        borderColor: '#ffd700', // 金色
+                        borderWidth: 2, 
+                        pointRadius: 0, 
+                        tension: 0.2, 
+                        yAxisID: 'y_price' 
+                    },
+                    // --- 中層: 籌碼 (Index 1) ---
+                    { 
+                        label: '籌碼', 
+                        data: [], 
+                        borderColor: '#30d158', 
+                        borderWidth: 2, 
+                        pointRadius: 0, 
+                        tension: 0.4, 
+                        yAxisID: 'y_chips' 
+                    },
+                    // --- 下層: P6 (Index 2) ---
+                    { 
+                        label: 'P6 動能', 
+                        data: [], 
+                        borderColor: '#ff453a', 
+                        backgroundColor: 'rgba(255, 69, 58, 0.1)', 
+                        borderWidth: 2, 
+                        tension: 0.4, 
+                        fill: true, 
+                        yAxisID: 'y_p6' 
+                    }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                 plugins: { 
                     legend: { labels: { color: '#aaa', font: {size: 11} } },
-                    tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + '%'; } } }
+                    tooltip: { callbacks: { 
+                        label: function(context) { 
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if(context.datasetIndex === 0) return label + context.parsed.y; // 價格
+                            return label + context.parsed.y + '%'; // 籌碼與P6
+                        } 
+                    } }
                 },
+                // ★★★ 堆疊式 Y 軸配置 ★★★
                 scales: {
                     x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
-                    y_chips: { type: 'linear', display: true, position: 'left', stack: 'demo', stackWeight: 1, grid: { color: '#333' }, ticks: { color: '#aaa', callback: function(val){ return val + '%' } }, border: { color: '#666' } },
-                    y_p6: { type: 'linear', display: true, position: 'left', stack: 'demo', stackWeight: 1, offset: true, grid: { color: '#222', drawOnChartArea: true }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }
+                    
+                    // 上層 (期貨)
+                    y_price: { 
+                        type: 'linear', display: true, position: 'left', 
+                        stack: 'demo', stackWeight: 1, // 權重1
+                        grid: { display: false }, 
+                        ticks: { color: '#ffd700', callback: function(val){ return val } },
+                        border: { color: '#666' } 
+                    },
+                    
+                    // 中層 (籌碼)
+                    y_chips: { 
+                        type: 'linear', display: true, position: 'left', 
+                        stack: 'demo', stackWeight: 1, // 權重1
+                        grid: { color: '#333' }, 
+                        ticks: { color: '#aaa', callback: function(val){ return val + '%' } }, 
+                        border: { color: '#666' } 
+                    },
+                    
+                    // 下層 (P6)
+                    y_p6: { 
+                        type: 'linear', display: true, position: 'left', 
+                        stack: 'demo', stackWeight: 1, // 權重1
+                        grid: { color: '#222', drawOnChartArea: true }, 
+                        ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, 
+                        suggestedMin: -20, suggestedMax: 20 
+                    }
                 }
             }
         });
