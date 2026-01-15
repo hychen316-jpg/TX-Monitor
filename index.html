@@ -559,8 +559,9 @@
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
-      document.getElementById('vwap-day').innerText = data.vwap_day || "--";
-      document.getElementById('vwap-night').innerText = data.vwap_night || "--";
+      // ★★★ 修改：四捨五入取整數 ★★★
+      document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
+      document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
       let pVal = 0; let pText = "--%";
       if (data.pwr_v !== undefined) { pVal = parseFloat(data.pwr_v); pText = data.pwr_t; }
