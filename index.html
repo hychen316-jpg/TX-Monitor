@@ -59,8 +59,9 @@
     .range-old { font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 10px; margin: 0 4px; color: #444; }
 
-    /* 圖表區塊 - ★★★ 修改：高度增加至 950px，確保三層圖表完全拉開不擁擠 ★★★ */
-    .chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 20px; margin-bottom: 30px; height: 950px; position: relative; }
+    /* ★★★ 修改：拆分為三個獨立的圖表區塊，高度較小但各自獨立 ★★★ */
+    .split-chart-box { background: var(--card); border-radius: 18px; padding: 10px; margin-top: 5px; margin-bottom: 15px; height: 280px; position: relative; }
+    .section-title { margin-top: 25px; margin-bottom: 5px; font-size: 13px; color: #888; display: flex; align-items: center; gap: 5px; font-weight: 600; }
 
     /* === 登入/註冊/審核 遮罩樣式 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -173,10 +174,21 @@
       <div class="chip-card" id="c4-card"><span class="label">次 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
 
-    <div class="label" style="margin-top:25px; margin-bottom:8px">📈 戰情趨勢 (上:期貨 / 中:籌碼 / 下:動能)</div>
-    <div class="chart-box">
-        <canvas id="trendChart"></canvas>
+    <div class="section-title">📈 期貨現價 (Price)</div>
+    <div class="split-chart-box">
+        <canvas id="chartPrice"></canvas>
     </div>
+
+    <div class="section-title">📊 籌碼力道 (R7)</div>
+    <div class="split-chart-box">
+        <canvas id="chartChip"></canvas>
+    </div>
+
+    <div class="section-title">🚀 P6 動能 (Power)</div>
+    <div class="split-chart-box">
+        <canvas id="chartP6"></canvas>
+    </div>
+
   </div>
 
   <script>
@@ -200,7 +212,10 @@
     const NODE_REALTIME = 'monitor_realtime';
     const NODE_HISTORY  = 'monitor_history';
 
-    let trendChart = null;
+    // ★★★ 宣告三個獨立的 Chart 變數 ★★★
+    let chartPrice = null;
+    let chartChip = null;
+    let chartP6 = null;
 
     // ==========================================================
     // 2. Auth 邏輯 (登入 / 註冊 / 驗證 / 審核)
@@ -240,7 +255,6 @@
                 });
             } else if (userData.approved === true) {
                 // 情境 2: 已通過 -> 解鎖畫面
-                // 隱藏所有遮罩元素
                 overlay.style.display = 'none';
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
                 
@@ -248,8 +262,8 @@
                 logoutBtn.style.display = 'block';
                 
                 // 啟動數據監聽 (避免重複綁定)
-                if(!trendChart) {
-                   initChart();
+                if(!chartPrice) {
+                   initCharts(); // ★★★ 改為初始化三個圖表
                    startDataSync();
                 }
             } else {
@@ -261,7 +275,6 @@
       } else {
         // --- 未登入 ---
         overlay.style.display = 'flex';
-        // 恢復登入框，隱藏等待訊息
         document.getElementById('login-form').style.display = 'block';
         if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
         
@@ -272,11 +285,9 @@
 
     // 顯示「等待審核」的畫面
     function showPendingScreen() {
-        // 隱藏登入表單
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-form').style.display = 'none';
         
-        // 檢查是否已經有等待訊息框，沒有就建立
         let pendingBox = document.getElementById('pending-msg-box');
         if (!pendingBox) {
             pendingBox = document.createElement('div');
@@ -326,11 +337,9 @@
       
       auth.createUserWithEmailAndPassword(email, pass)
         .then((userCredential) => {
-          // 註冊成功 -> 發送驗證信
           const user = userCredential.user;
           user.sendEmailVerification().then(() => {
              msgBox.innerHTML = "✅ <b>驗證信已發送！</b><br>請前往信箱點擊連結，然後返回登入。<br>驗證後將進入審核流程。";
-             // 4秒後自動切回登入頁
              setTimeout(() => { showLogin(); auth.signOut(); }, 5000);
           });
         })
@@ -343,15 +352,13 @@
         });
     }
 
-    // 登出函數
     function doLogout() {
       if(confirm("確定要登出嗎？")) {
         auth.signOut();
-        location.reload(); // 重新整理頁面以清空記憶體中的數據
+        location.reload(); 
       }
     }
 
-    // UI 切換
     function showRegister() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('register-form').style.display = 'block';
@@ -364,24 +371,24 @@
     }
 
     // ==========================================================
-    // 3. 資料串接與圖表 (Pro Max 核心邏輯 - 三層式圖表)
+    // 3. 資料串接與圖表 (Pro Max 核心邏輯 - 三圖獨立版)
     // ==========================================================
     function startDataSync() {
-      // A. [即時監聽] 5秒更新 UI
+      // A. 即時監聽
       db.ref(NODE_REALTIME).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) updateUI(data); 
       }, (error) => {
-         console.log("讀取失敗(權限不足):", error);
+         console.log("讀取失敗:", error);
       });
       
-      // B. [歷史監聽] 即時畫新點
+      // B. 歷史監聽 (新增點)
       db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (snapshot) => {
         const data = snapshot.val();
         if (data) updateChartNewData(data); 
       });
       
-      // C. [初始載入] 歷史 120 筆
+      // C. 初始載入
       db.ref(NODE_HISTORY).limitToLast(120).once('value', (snapshot) => {
         const fullData = snapshot.val();
         if(fullData) {
@@ -391,70 +398,81 @@
       });
     }
 
-    // --- 圖表輔助函數 ---
     function getChipValueForTime(d) {
         let hour = parseInt(d.t.split(':')[0]);
-        // 日盤定義 (08:00 ~ 13:59)
         let isDay = (hour >= 8 && hour < 14);
         if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近 日盤 E6)", color: '#ffd60a' }; 
         else return { val: parseChipValue(d.c1), label: "籌碼 (近 全日 E5)", color: '#30d158' }; 
     }
 
-    // 更新圖表 (新增一點)
+    // ★★★ 更新圖表 (同步更新三個圖) ★★★
     function updateChartNewData(d) {
-        if (!trendChart) return;
+        if (!chartPrice) return;
+        
+        let timeLabel = d.t.substring(0,5);
         let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
-        let priceRaw = parseFloat(d.price || 0); // 讀取期貨價格
+        let priceRaw = parseFloat(d.price || 0);
         let chipInfo = getChipValueForTime(d);
 
-        trendChart.data.labels.push(d.t.substring(0,5)); 
-
-        // 數據推入 (注意 datasets 順序)
-        // [0] 期貨, [1] 籌碼, [2] P6
-        trendChart.data.datasets[0].data.push(priceRaw);
-        trendChart.data.datasets[1].data.push(chipInfo.val);
-        trendChart.data.datasets[2].data.push(p6Raw);
+        // 1. 更新 Price 圖
+        chartPrice.data.labels.push(timeLabel);
+        chartPrice.data.datasets[0].data.push(priceRaw);
         
-        // 更新籌碼顏色與標籤
-        trendChart.data.datasets[1].label = chipInfo.label;
-        trendChart.data.datasets[1].borderColor = chipInfo.color;
+        // 2. 更新 Chip 圖
+        chartChip.data.labels.push(timeLabel);
+        chartChip.data.datasets[0].data.push(chipInfo.val);
+        chartChip.data.datasets[0].label = chipInfo.label;
+        chartChip.data.datasets[0].borderColor = chipInfo.color;
 
-        // 滾動視窗 (維持 120 筆)
-        if (trendChart.data.labels.length > 120) {
-            trendChart.data.labels.shift();
-            trendChart.data.datasets[0].data.shift();
-            trendChart.data.datasets[1].data.shift();
-            trendChart.data.datasets[2].data.shift();
+        // 3. 更新 P6 圖
+        chartP6.data.labels.push(timeLabel);
+        chartP6.data.datasets[0].data.push(p6Raw);
+
+        // 滾動刪除 (保持 120 筆)
+        if (chartPrice.data.labels.length > 120) {
+            chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
+            chartChip.data.labels.shift();  chartChip.data.datasets[0].data.shift();
+            chartP6.data.labels.shift();    chartP6.data.datasets[0].data.shift();
         }
-        trendChart.update('none');
+
+        chartPrice.update('none');
+        chartChip.update('none');
+        chartP6.update('none');
     }
 
-    // 載入歷史圖表
+    // ★★★ 載入歷史 (同步載入三個圖) ★★★
     function loadChartHistory(dataArray) {
-        if (!trendChart) return;
-        let labels = [], dataP6 = [], dataChips = [], dataPrice = [];
+        if (!chartPrice) return;
+        
+        let labels = [], dataP = [], dataC = [], dataP6 = [];
         let lastChipInfo = { label: "籌碼", color: '#30d158' };
 
         dataArray.forEach(d => {
             labels.push(d.t.substring(0,5));
-            dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
-            dataPrice.push(parseFloat(d.price || 0)); // 讀取期貨價格
+            dataP.push(parseFloat(d.price || 0));
             let info = getChipValueForTime(d);
-            dataChips.push(info.val);
+            dataC.push(info.val);
+            dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
             lastChipInfo = info;
         });
 
-        trendChart.data.labels = labels;
-        // [0] 期貨
-        trendChart.data.datasets[0].data = dataPrice;
-        // [1] 籌碼
-        trendChart.data.datasets[1].data = dataChips;
-        trendChart.data.datasets[1].label = lastChipInfo.label;
-        trendChart.data.datasets[1].borderColor = lastChipInfo.color;
-        // [2] P6
-        trendChart.data.datasets[2].data = dataP6;
+        // Price
+        chartPrice.data.labels = labels;
+        chartPrice.data.datasets[0].data = dataP;
         
-        trendChart.update();
+        // Chip
+        chartChip.data.labels = labels;
+        chartChip.data.datasets[0].data = dataC;
+        chartChip.data.datasets[0].label = lastChipInfo.label;
+        chartChip.data.datasets[0].borderColor = lastChipInfo.color;
+
+        // P6
+        chartP6.data.labels = labels;
+        chartP6.data.datasets[0].data = dataP6;
+
+        chartPrice.update();
+        chartChip.update();
+        chartP6.update();
     }
 
     function parseChipValue(str) {
@@ -463,106 +481,85 @@
         return parseFloat(valStr);
     }
 
-    // 初始化 Chart.js (三層結構 - 順序修正版)
-    function initChart() {
-        const ctx = document.getElementById('trendChart').getContext('2d');
-        trendChart = new Chart(ctx, {
+    // ★★★ 初始化三個獨立的圖表 ★★★
+    function initCharts() {
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } },
+            scales: {
+                x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }
+            }
+        };
+
+        // 1. Price Chart (金色)
+        const ctxPrice = document.getElementById('chartPrice').getContext('2d');
+        chartPrice = new Chart(ctxPrice, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    y: { 
+                        display: true, position: 'right', // 價格軸在右側比較好讀
+                        grid: { color: '#333' }, 
+                        ticks: { color: '#ffd700' }
+                    }
+                }
+            }
+        });
+
+        // 2. Chip Chart (綠/黃色)
+        const ctxChip = document.getElementById('chartChip').getContext('2d');
+        chartChip = new Chart(ctxChip, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    y: { 
+                        display: true, position: 'left',
+                        grid: { color: '#333' }, 
+                        ticks: { color: '#aaa' }
+                    }
+                }
+            }
+        });
+
+        // 3. P6 Chart (紅色)
+        const ctxP6 = document.getElementById('chartP6').getContext('2d');
+        chartP6 = new Chart(ctxP6, {
             type: 'line',
             data: { 
                 labels: [], 
-                datasets: [
-                    // --- 上層: 期貨 (Index 0) ---
-                    { 
-                        label: '期貨現價', 
-                        data: [], 
-                        borderColor: '#ffd700', // 金色
-                        borderWidth: 2, 
-                        pointRadius: 0, 
-                        tension: 0.2, 
-                        yAxisID: 'y_price' 
-                    },
-                    // --- 中層: 籌碼 (Index 1) ---
-                    { 
-                        label: '籌碼', 
-                        data: [], 
-                        borderColor: '#30d158', 
-                        borderWidth: 2, 
-                        pointRadius: 0, 
-                        tension: 0.4, 
-                        yAxisID: 'y_chips' 
-                    },
-                    // --- 下層: P6 (Index 2) ---
-                    { 
-                        label: 'P6 動能', 
-                        data: [], 
-                        borderColor: '#ff453a', 
-                        backgroundColor: 'rgba(255, 69, 58, 0.1)', 
-                        borderWidth: 2, 
-                        tension: 0.4, 
-                        fill: true, 
-                        yAxisID: 'y_p6' 
-                    }
-                ]
+                datasets: [{ 
+                    label: 'P6 動能', data: [], 
+                    borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', 
+                    borderWidth: 2, tension: 0.4, fill: true 
+                }] 
             },
             options: {
-                responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { 
-                    legend: { labels: { color: '#aaa', font: {size: 11} } },
-                    tooltip: { callbacks: { 
-                        label: function(context) { 
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if(context.datasetIndex === 0) return label + context.parsed.y; // 價格
-                            return label + context.parsed.y + '%'; // 籌碼與P6
-                        } 
-                    } }
-                },
-                // ★★★ 堆疊式 Y 軸配置 (加入 weight 強制排序 + grace 緩衝) ★★★
+                ...commonOptions,
                 scales: {
-                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
-                    
-                    // 上層 (期貨) - Weight 3 (最上方) - ★★★ 修改: stackWeight 1.5, grace 25% ★★★
-                    y_price: { 
-                        type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1.5, 
-                        weight: 3,
-                        grace: '25%', 
-                        grid: { display: false }, 
-                        ticks: { color: '#ffd700', callback: function(val){ return val } },
-                        border: { color: '#666' } 
-                    },
-                    
-                    // 中層 (籌碼) - Weight 2 (中間) - ★★★ 修改: stackWeight 1, grace 25% ★★★
-                    y_chips: { 
-                        type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, 
-                        weight: 2,
-                        grace: '25%', 
-                        grid: { color: '#333' }, 
-                        ticks: { color: '#aaa', callback: function(val){ return val + '%' } }, 
-                        border: { color: '#666' } 
-                    },
-                    
-                    // 下層 (P6) - Weight 1 (最下方) - ★★★ 修改: stackWeight 1, grace 25% ★★★
-                    y_p6: { 
-                        type: 'linear', display: true, position: 'left', 
-                        stack: 'demo', stackWeight: 1, 
-                        weight: 1,
-                        grace: '25%', 
-                        grid: { color: '#222', drawOnChartArea: true }, 
-                        ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, 
-                        suggestedMin: -20, suggestedMax: 20 
+                    ...commonOptions.scales,
+                    y: { 
+                        display: true, position: 'left',
+                        grid: { color: '#222' }, 
+                        ticks: { color: '#ff453a', callback: function(val){ return val + '%' } },
+                        suggestedMin: -20, suggestedMax: 20
                     }
                 }
             }
         });
     }
 
-    // --- UI Update 邏輯 (Pro Max) ---
+    // --- UI Update 邏輯 ---
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
-      // 四捨五入取整數
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
