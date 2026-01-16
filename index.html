@@ -49,6 +49,11 @@
     .army-stats { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-top: 5px; padding: 0 10px; }
     .logic-text { text-align: center; font-size: 15px; font-weight: 700; color: #fff; margin-top: 5px; padding-top: 10px; border-top: 1px solid #333; }
 
+    /* P9 實單力道樣式 */
+    .p9-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 10px; }
+    .p9-label { font-size: 13px; color: #aaa; font-weight: 600; }
+    .p9-val { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+
     /* 戰場邊界 */
     .range-box { background: var(--card); border-radius: 18px; padding: 12px 16px; margin-bottom: 15px; display: grid; grid-template-rows: 1fr 1fr; gap: 10px; position: relative; overflow: hidden; }
     .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
@@ -139,6 +144,12 @@
             <div>🔴 Call淨: <span id="bull-force" style="color:var(--red)">--</span></div>
             <div>🟢 Put淨: <span id="bear-force" style="color:var(--green)">--</span></div>
         </div>
+        
+        <div class="p9-container">
+            <div class="p9-label">🔥 實單力道 (P9):</div>
+            <div id="p9-val" class="p9-val">--</div>
+        </div>
+
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
@@ -597,6 +608,12 @@
       forceEl.innerText = (force > 0 ? "+" : "") + force + " 口";
       forceEl.className = "force-display " + (force > 0 ? "c-red" : (force < 0 ? "c-green" : ""));
 
+      // ★★★ [更新] P9 實單力道數值 ★★★
+      let valP9 = parseFloat(data.p9 || 0);
+      let p9El = document.getElementById('p9-val');
+      p9El.innerText = (valP9 > 0 ? "+" : "") + valP9;
+      p9El.className = "p9-val " + (valP9 > 0 ? "c-red" : (valP9 < 0 ? "c-green" : ""));
+
       let logicText = data.logic || "分析中...";
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
@@ -643,4 +660,3 @@
   </script>
 </body>
 </html>
-
