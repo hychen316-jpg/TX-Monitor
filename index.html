@@ -168,10 +168,10 @@
 
     <div class="label" style="margin-bottom:8px">📊 籌碼分佈</div>
     <div class="chip-grid">
-      <div class="chip-card" id="c1-card"><span class="label">近 全日 (E5)</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c2-card"><span class="label">近 日盤 (E6)</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c3-card"><span class="label">次 全日</span><span id="c3-val" class="big-val" style="font-size:20px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c4-card"><span class="label">次 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c1-card"><span class="label">近月 夜盤 (E5)</span><span id="c1-val" class="big-val" style="font-size:20px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c2-card"><span class="label">近月 日盤 (E6)</span><span id="c2-val" class="big-val" style="font-size:20px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c3-card"><span class="label">次月 夜盤</span><span id="c3-val" class="big-val" style="font-size:20px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c4-card"><span class="label">次月 日盤</span><span id="c4-val" class="big-val" style="font-size:20px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
 
     <div class="section-title">📈 期貨現價 (Price)</div>
@@ -401,8 +401,8 @@
     function getChipValueForTime(d) {
         let hour = parseInt(d.t.split(':')[0]);
         let isDay = (hour >= 8 && hour < 14);
-        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近 日盤 E6)", color: '#ffd60a' }; 
-        else return { val: parseChipValue(d.c1), label: "籌碼 (近 全日 E5)", color: '#30d158' }; 
+        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月 日盤 E6)", color: '#ffd60a' }; 
+        else return { val: parseChipValue(d.c1), label: "籌碼 (近月 夜盤 E5)", color: '#30d158' }; 
     }
 
     // ★★★ 更新圖表 (同步更新三個圖) ★★★
@@ -622,7 +622,7 @@
       if (lss > 0 && lss !== ss) { sOldBox.style.display = "inline-flex"; document.getElementById('s-old').innerText = lss; } 
       else { sOldBox.style.display = "none"; }
 
-      const chipLabels = { 'c1': '近 全日 (E5)', 'c2': '近 日盤 (E6)', 'c3': '次 全日', 'c4': '次 日盤' };
+      const chipLabels = { 'c1': '近月 夜盤 (E5)', 'c2': '近月 日盤 (E6)', 'c3': '次月 夜盤', 'c4': '次月 日盤' };
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|');
@@ -643,3 +643,4 @@
   </script>
 </body>
 </html>
+
