@@ -195,7 +195,7 @@
         <canvas id="chartChip"></canvas>
     </div>
 
-    <div class="section-title">🚀 P6 動能 (Power)</div>
+    <div class="section-title">🚀 P6動能(左) vs P9實單(右)</div>
     <div class="split-chart-box">
         <canvas id="chartP6"></canvas>
     </div>
@@ -422,6 +422,7 @@
         
         let timeLabel = d.t.substring(0,5);
         let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
+        let p9Raw = parseFloat(d.p9 || 0);
         let priceRaw = parseFloat(d.price || 0);
         let chipInfo = getChipValueForTime(d);
 
@@ -435,15 +436,20 @@
         chartChip.data.datasets[0].label = chipInfo.label;
         chartChip.data.datasets[0].borderColor = chipInfo.color;
 
-        // 3. 更新 P6 圖
+        // 3. 更新 P6/P9 圖
         chartP6.data.labels.push(timeLabel);
-        chartP6.data.datasets[0].data.push(p6Raw);
+        chartP6.data.datasets[0].data.push(p6Raw); // P6 (左軸)
+        chartP6.data.datasets[1].data.push(p9Raw); // P9 (右軸)
 
         // 滾動刪除 (保持 120 筆)
         if (chartPrice.data.labels.length > 120) {
             chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
             chartChip.data.labels.shift();  chartChip.data.datasets[0].data.shift();
-            chartP6.data.labels.shift();    chartP6.data.datasets[0].data.shift();
+            
+            // P6/P9 雙數據移除
+            chartP6.data.labels.shift();    
+            chartP6.data.datasets[0].data.shift();
+            chartP6.data.datasets[1].data.shift();
         }
 
         chartPrice.update('none');
@@ -455,7 +461,7 @@
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
         
-        let labels = [], dataP = [], dataC = [], dataP6 = [];
+        let labels = [], dataP = [], dataC = [], dataP6 = [], dataP9 = [];
         let lastChipInfo = { label: "籌碼", color: '#30d158' };
 
         dataArray.forEach(d => {
@@ -464,6 +470,7 @@
             let info = getChipValueForTime(d);
             dataC.push(info.val);
             dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
+            dataP9.push(parseFloat(d.p9 || 0));
             lastChipInfo = info;
         });
 
@@ -477,9 +484,10 @@
         chartChip.data.datasets[0].label = lastChipInfo.label;
         chartChip.data.datasets[0].borderColor = lastChipInfo.color;
 
-        // P6
+        // P6 + P9 (雙軸)
         chartP6.data.labels = labels;
         chartP6.data.datasets[0].data = dataP6;
+        chartP6.data.datasets[1].data = dataP9;
 
         chartPrice.update();
         chartChip.update();
@@ -492,7 +500,7 @@
         return parseFloat(valStr);
     }
 
-    // ★★★ 初始化三個獨立的圖表 ★★★
+    // ★★★ 初始化三個獨立的圖表 (含 P6/P9 雙軸設定) ★★★
     function initCharts() {
         const commonOptions = {
             responsive: true,
@@ -540,27 +548,56 @@
             }
         });
 
-        // 3. P6 Chart (紅色)
+        // 3. P6 + P9 Dual Axis Chart (紅/藍雙軸)
         const ctxP6 = document.getElementById('chartP6').getContext('2d');
         chartP6 = new Chart(ctxP6, {
             type: 'line',
             data: { 
                 labels: [], 
-                datasets: [{ 
-                    label: 'P6 動能', data: [], 
-                    borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', 
-                    borderWidth: 2, tension: 0.4, fill: true 
-                }] 
+                datasets: [
+                    { 
+                        label: 'P6 動能 (%)', 
+                        data: [], 
+                        borderColor: '#ff453a', // 紅色
+                        backgroundColor: 'rgba(255, 69, 58, 0.1)', 
+                        borderWidth: 2, 
+                        tension: 0.4, 
+                        fill: true,
+                        yAxisID: 'y'  // 綁定左軸
+                    },
+                    {
+                        label: 'P9 實單 (口)',
+                        data: [],
+                        borderColor: '#0a84ff', // 藍色
+                        borderWidth: 2,
+                        tension: 0.4,
+                        borderDash: [5, 5], // 虛線顯示以區隔
+                        pointRadius: 0,
+                        fill: false,
+                        yAxisID: 'y1' // 綁定右軸
+                    }
+                ] 
             },
             options: {
                 ...commonOptions,
                 scales: {
-                    ...commonOptions.scales,
+                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
+                    // 左軸 (P6)
                     y: { 
-                        display: true, position: 'left',
+                        type: 'linear',
+                        display: true, 
+                        position: 'left',
                         grid: { color: '#222' }, 
                         ticks: { color: '#ff453a', callback: function(val){ return val + '%' } },
                         suggestedMin: -20, suggestedMax: 20
+                    },
+                    // 右軸 (P9)
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false }, // 不畫格線，避免混亂
+                        ticks: { color: '#0a84ff' }
                     }
                 }
             }
@@ -608,10 +645,11 @@
       forceEl.innerText = (force > 0 ? "+" : "") + force + " 口";
       forceEl.className = "force-display " + (force > 0 ? "c-red" : (force < 0 ? "c-green" : ""));
 
-      // ★★★ [更新] P9 實單力道數值 ★★★
+      // ★★★ [更新] P9 實單力道數值 (加入千分位) ★★★
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
-      p9El.innerText = (valP9 > 0 ? "+" : "") + valP9;
+      let formattedP9 = valP9.toLocaleString('en-US'); 
+      p9El.innerText = (valP9 > 0 ? "+" : "") + formattedP9;
       p9El.className = "p9-val " + (valP9 > 0 ? "c-red" : (valP9 < 0 ? "c-green" : ""));
 
       let logicText = data.logic || "分析中...";
