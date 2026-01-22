@@ -85,6 +85,19 @@
 
     /* 登出按鈕 */
     #logout-btn { position: fixed; top: 15px; right: 15px; z-index: 1000; display: none; padding: 6px 12px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 12px; cursor: pointer; backdrop-filter: blur(5px); }
+
+    /* === 新增：戰力分級樣式 (S/A/B) === */
+    .rank-s { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); animation: pulse-gold 1.5s infinite; border: 1px solid #d4af37 !important; }
+    .rank-a-bull { color: var(--red) !important; border: 1px solid var(--red) !important; }
+    .rank-a-bear { color: var(--green) !important; border: 1px solid var(--green) !important; }
+    .rank-b { color: var(--yellow) !important; border: 1px solid var(--yellow) !important; }
+    .rank-n { color: #888 !important; border: 1px solid #444 !important; }
+
+    @keyframes pulse-gold {
+      0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
   </style>
 </head>
 <body>
@@ -604,7 +617,65 @@
         });
     }
 
-    // --- UI Update 邏輯 ---
+    // --- [核心] S/A/B 級戰略分析邏輯 (v5.0 Web版) ---
+    function analyzeStrategy(data) {
+        // 1. 提取數據
+        let p9 = parseFloat(data.p9 || 0);
+        let r7 = parseFloat(data.bull_r || 50); // Bull Ratio
+        let p6 = parseFloat(data.pwr_v || 0);
+        
+        // E6 判讀 (從 c2 字串中抓取 "多" 或 "空")
+        let e6_str = data.c2 || "";
+        let isE6Bull = e6_str.includes("多");
+        let isE6Bear = e6_str.includes("空");
+
+        let result = { text: "分析中...", class: "rank-n" };
+
+        // 2. 判斷邏輯 (依照 v5.0 表格)
+        
+        // === 🔴 多頭判斷 ===
+        if (p9 > 3000) {
+            // S級: 海嘯多頭 (P9超大 + R7多 + E6多 + P6強)
+            if (p9 > 10000 && r7 > 53 && isE6Bull && p6 > 10) {
+                return { text: "🔥 [S級] 海嘯多頭 (信心99%)", class: "rank-s" };
+            }
+            // A級: 順勢進攻 (P9紅 + R7紅)
+            if (r7 >= 50) {
+                return { text: "💪 [A級] 順勢進攻 (信心85%)", class: "rank-a-bull" };
+            }
+            // B級: 誘空反轉 (P9紅 但 R7綠 -> 背離)
+            if (r7 < 50) {
+                return { text: "⚡ [B級] 誘空反轉 (背離70%)", class: "rank-b" };
+            }
+        }
+
+        // === 🟢 空頭判斷 ===
+        else if (p9 < -3000) {
+            // S級: 毀滅空頭 (P9超大 + R7空 + E6空 + P6弱)
+            if (p9 < -10000 && r7 < 47 && isE6Bear && p6 < -10) {
+                return { text: "☠️ [S級] 毀滅空頭 (信心99%)", class: "rank-s" };
+            }
+            // A級: 順勢壓制 (P9綠 + R7綠)
+            if (r7 <= 50) {
+                return { text: "📉 [A級] 順勢壓制 (信心85%)", class: "rank-a-bear" };
+            }
+            // B級: 誘多殺盤 (P9綠 但 R7紅 -> 背離)
+            if (r7 > 50) {
+                return { text: "🪤 [B級] 誘多殺盤 (背離70%)", class: "rank-b" };
+            }
+        }
+
+        // === ⚪ 盤整/觀望 ===
+        else {
+            if (r7 >= 53) return { text: "☕ 盤整偏多 (量縮)", class: "rank-n" };
+            if (r7 <= 47) return { text: "☕ 盤整偏空 (量縮)", class: "rank-n" };
+            return { text: "😴 [N級] 垃圾時間 (觀望)", class: "rank-n" };
+        }
+
+        return result;
+    }
+
+    // --- UI Update 邏輯 (已修改以支援 S/A/B 顯示) ---
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
@@ -645,21 +716,31 @@
       forceEl.innerText = (force > 0 ? "+" : "") + force + " 口";
       forceEl.className = "force-display " + (force > 0 ? "c-red" : (force < 0 ? "c-green" : ""));
 
-      // ★★★ [更新] P9 實單力道數值 (加入千分位) ★★★
+      // P9 實單力道數值 (加入千分位)
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
       let formattedP9 = valP9.toLocaleString('en-US'); 
       p9El.innerText = (valP9 > 0 ? "+" : "") + formattedP9;
       p9El.className = "p9-val " + (valP9 > 0 ? "c-red" : (valP9 < 0 ? "c-green" : ""));
 
-      let logicText = data.logic || "分析中...";
+      // ★★★ [修改核心] 使用 JS 本地運算取代 Excel 的 logicText ★★★
+      let strategy = analyzeStrategy(data); // 呼叫新的分析函數
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
-      logicEl.innerText = logicText;
-      battleCard.className = "battle-box"; 
-      if (force >= 1500) { logicEl.style.color = "var(--red)"; battleCard.classList.add("alert-red"); }
-      else if (force <= -1500) { logicEl.style.color = "var(--green)"; battleCard.classList.add("alert-green"); }
-      else { logicEl.style.color = "#aaa"; }
+      
+      logicEl.innerText = strategy.text; // 顯示 S/A/B 文字
+      
+      // 清除舊樣式並套用新分級樣式
+      battleCard.className = "battle-box"; // 重置
+      battleCard.classList.add(strategy.class); // 加入 .rank-s, .rank-a 等
+      
+      // 如果是 S 級，文字顏色要特別亮
+      if (strategy.class === 'rank-s') logicEl.style.color = "#d4af37";
+      else if (strategy.class.includes('bull')) logicEl.style.color = "var(--red)";
+      else if (strategy.class.includes('bear')) logicEl.style.color = "var(--green)";
+      else if (strategy.class === 'rank-b') logicEl.style.color = "var(--yellow)";
+      else logicEl.style.color = "#aaa";
+
 
       let ps = parseInt(data.now_p_s || 0); let pv = parseInt(data.now_p_v || 0);
       let ss = parseInt(data.now_s_s || 0); let sv = parseInt(data.now_s_v || 0);
