@@ -39,7 +39,7 @@
     .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 15px rgba(48, 209, 88, 0.2); }
 
     /* 多空對戰條 */
-    .battle-box { background: var(--card); border-radius: 18px; padding: 16px; margin-bottom: 15px; border: 1px solid #333; display: flex; flex-direction: column; gap: 10px; }
+    .battle-box { background: var(--card); border-radius: 18px; padding: 16px; margin-bottom: 5px; border: 1px solid #333; display: flex; flex-direction: column; gap: 10px; }
     .tug-container { height: 24px; background: #111; border-radius: 12px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 5px; }
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
     .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
@@ -47,13 +47,23 @@
     .force-display { text-align: center; font-size: 28px; font-weight: 800; margin: 5px 0; letter-spacing: -0.5px; }
     .force-label { text-align: center; font-size: 12px; color: var(--gray); margin-top: -5px; }
     .army-stats { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-top: 5px; padding: 0 10px; }
-    .logic-text { text-align: center; font-size: 15px; font-weight: 700; color: #fff; margin-top: 5px; padding-top: 10px; border-top: 1px solid #333; }
+    .logic-text { text-align: center; font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; letter-spacing: 0.5px; }
 
     /* P9 實單力道樣式 */
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 10px; }
     .p9-label { font-size: 13px; color: #aaa; font-weight: 600; }
     .p9-val { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
 
+    /* === 新增：AI 戰略指揮官區塊 === */
+    .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 12px; margin-bottom: 15px; border: 1px solid #444; font-size: 13px; position: relative; overflow: hidden; }
+    .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+    .phase-badge { background: #0a84ff; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .strategy-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+    .strategy-item { display: flex; flex-direction: column; }
+    .s-label { color: #888; font-size: 11px; margin-bottom: 2px; }
+    .s-val { color: #fff; font-weight: 600; font-size: 13px; }
+    .s-advice { grid-column: 1 / -1; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; color: #ddd; line-height: 1.4; margin-top: 5px; border-left: 3px solid #888; }
+    
     /* 戰場邊界 */
     .range-box { background: var(--card); border-radius: 18px; padding: 12px 16px; margin-bottom: 15px; display: grid; grid-template-rows: 1fr 1fr; gap: 10px; position: relative; overflow: hidden; }
     .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
@@ -152,7 +162,6 @@
             <div id="ratio-text" class="percent-text">50% vs 50%</div>
         </div>
         <div id="net-force-val" class="force-display">-- 口</div>
-        <div class="force-label">OP 總淨口數 (Call淨 - Put淨)</div>
         <div class="army-stats">
             <div>🔴 Call淨: <span id="bull-force" style="color:var(--red)">--</span></div>
             <div>🟢 Put淨: <span id="bear-force" style="color:var(--green)">--</span></div>
@@ -164,6 +173,26 @@
         </div>
 
         <div id="logic-text" class="logic-text">分析中...</div>
+    </div>
+
+    <div id="strategy-box" class="strategy-card">
+        <div class="strategy-header">
+            <div style="color:#ccc; font-weight:600;">🤖 AI 戰略指揮</div>
+            <div id="st-phase" class="phase-badge">等待數據</div>
+        </div>
+        <div class="strategy-content">
+            <div class="strategy-item">
+                <div class="s-label">🎯 關注焦點</div>
+                <div id="st-focus" class="s-val">--</div>
+            </div>
+            <div class="strategy-item">
+                <div class="s-label">⚖️ 權重配置</div>
+                <div id="st-weight" class="s-val">--</div>
+            </div>
+            <div id="st-advice" class="s-advice">
+                分析中...
+            </div>
+        </div>
     </div>
 
     <div class="label" style="margin-bottom:8px">🚧 戰場邊界 (壓力 / 支撐)</div>
@@ -216,7 +245,7 @@
   </div>
 
   <script>
-    // ★★★ 1. 您的 Firebase Config (已保留) ★★★
+    // ★★★ 1. 您的 Firebase Config ★★★
     const firebaseConfig = {
       apiKey: "AIzaSyCPkFmEOfCRBBR6TQbji8G5kNZk7XBi_JQ",
       authDomain: "tx-monitor-93eb2.firebaseapp.com",
@@ -227,25 +256,18 @@
       appId: "1:351988516076:web:1127a8cc9144db8f3951c9"
     };
 
-    // 初始化 Firebase
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     
-    // 定義資料節點
     const NODE_REALTIME = 'monitor_realtime';
     const NODE_HISTORY  = 'monitor_history';
 
-    // ★★★ 宣告三個獨立的 Chart 變數 ★★★
-    let chartPrice = null;
-    let chartChip = null;
-    let chartP6 = null;
+    let chartPrice = null; let chartChip = null; let chartP6 = null;
 
     // ==========================================================
-    // 2. Auth 邏輯 (登入 / 註冊 / 驗證 / 審核)
+    // 2. Auth 邏輯 (登入/註冊)
     // ==========================================================
-    
-    // 監聽登入狀態 (核心開關)
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
       const dashboard = document.getElementById('dashboard');
@@ -253,7 +275,6 @@
       const loginMsg = document.getElementById('login-msg');
 
       if (user) {
-        // A. 檢查 Email 是否驗證
         if (!user.emailVerified) {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('register-form').style.display = 'none';
@@ -261,503 +282,253 @@
             auth.signOut();
             return;
         }
-
-        // B. 檢查資料庫的審核狀態 (Approved Check)
         const userRef = db.ref('users/' + user.uid);
-        
         userRef.once('value').then((snapshot) => {
             const userData = snapshot.val();
-
             if (!userData) {
-                // 情境 1: 新用戶 (資料庫沒資料) -> 自動建立「待審核 (false)」名片
-                userRef.set({
-                    email: user.email,
-                    approved: false,
-                    reg_time: new Date().toISOString()
-                }).then(() => {
-                    showPendingScreen(); // 顯示等待畫面
-                });
+                userRef.set({ email: user.email, approved: false, reg_time: new Date().toISOString() }).then(() => { showPendingScreen(); });
             } else if (userData.approved === true) {
-                // 情境 2: 已通過 -> 解鎖畫面
                 overlay.style.display = 'none';
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
-                
                 dashboard.classList.add('unlocked');
                 logoutBtn.style.display = 'block';
-                
-                // 啟動數據監聽 (避免重複綁定)
-                if(!chartPrice) {
-                   initCharts(); // ★★★ 改為初始化三個圖表
-                   startDataSync();
-                }
+                if(!chartPrice) { initCharts(); startDataSync(); }
             } else {
-                // 情境 3: 未通過 -> 顯示等待畫面
                 showPendingScreen();
             }
         });
-
       } else {
-        // --- 未登入 ---
         overlay.style.display = 'flex';
         document.getElementById('login-form').style.display = 'block';
         if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
-        
         dashboard.classList.remove('unlocked');
         logoutBtn.style.display = 'none';
       }
     });
 
-    // 顯示「等待審核」的畫面
     function showPendingScreen() {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-form').style.display = 'none';
-        
         let pendingBox = document.getElementById('pending-msg-box');
         if (!pendingBox) {
             pendingBox = document.createElement('div');
             pendingBox.id = 'pending-msg-box';
             pendingBox.className = 'auth-box';
-            pendingBox.innerHTML = `
-                <div class="auth-title">⏳ 審核中</div>
-                <div style="color:#ccc; font-size:14px; line-height:1.6; margin-bottom:20px;">
-                    您的帳號已建立，但需要管理員核准才能進入。<br><br>
-                    請通知管理員開通您的權限。
-                </div>
-                <button onclick="location.reload()" class="auth-btn">我已開通，重新整理</button>
-                <button onclick="doLogout()" class="auth-btn secondary">登出</button>
-            `;
+            pendingBox.innerHTML = `<div class="auth-title">⏳ 審核中</div><div style="color:#ccc; font-size:14px; line-height:1.6; margin-bottom:20px;">您的帳號已建立，但需要管理員核准才能進入。<br>請通知管理員開通您的權限。</div><button onclick="location.reload()" class="auth-btn">我已開通，重新整理</button><button onclick="doLogout()" class="auth-btn secondary">登出</button>`;
             document.getElementById('auth-overlay').appendChild(pendingBox);
         }
         pendingBox.style.display = 'block';
     }
 
-    // 登入函數
     function doLogin() {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-pass').value;
       const msgBox = document.getElementById('login-msg');
-      
       msgBox.innerText = "驗證中...";
-      auth.signInWithEmailAndPassword(email, pass)
-        .catch((error) => {
-          let text = error.message;
-          if (error.code === 'auth/wrong-password') text = "❌ 密碼錯誤";
-          if (error.code === 'auth/user-not-found') text = "❌ 找不到此帳號";
-          if (error.code === 'auth/invalid-email') text = "❌ Email 格式錯誤";
-          if (error.code === 'auth/too-many-requests') text = "❌ 嘗試次數過多，請稍後再試";
-          msgBox.innerText = text;
-        });
+      auth.signInWithEmailAndPassword(email, pass).catch((error) => { msgBox.innerText = "❌ 登入失敗: " + error.code; });
     }
 
-    // 註冊函數
     function doRegister() {
       const email = document.getElementById('reg-email').value;
       const pass = document.getElementById('reg-pass').value;
       const msgBox = document.getElementById('reg-msg');
-
-      if (pass.length < 6) { msgBox.innerText = "⚠️ 密碼至少需 6 個字元"; return; }
-
+      if (pass.length < 6) { msgBox.innerText = "⚠️ 密碼太短"; return; }
       msgBox.innerText = "建立帳號中...";
-      
-      auth.createUserWithEmailAndPassword(email, pass)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          user.sendEmailVerification().then(() => {
-             msgBox.innerHTML = "✅ <b>驗證信已發送！</b><br>請前往信箱點擊連結，然後返回登入。<br>驗證後將進入審核流程。";
+      auth.createUserWithEmailAndPassword(email, pass).then((cred) => {
+          cred.user.sendEmailVerification().then(() => {
+             msgBox.innerHTML = "✅ 驗證信已發送！請去信箱確認。";
              setTimeout(() => { showLogin(); auth.signOut(); }, 5000);
           });
-        })
-        .catch((error) => {
-          let text = error.message;
-          if (error.code === 'auth/email-already-in-use') text = "⚠️ 此 Email 已被註冊";
-          if (error.code === 'auth/invalid-email') text = "⚠️ Email 格式錯誤";
-          if (error.code === 'auth/weak-password') text = "⚠️ 密碼太弱";
-          msgBox.innerText = text;
-        });
+      }).catch((e) => { msgBox.innerText = e.message; });
     }
 
-    function doLogout() {
-      if(confirm("確定要登出嗎？")) {
-        auth.signOut();
-        location.reload(); 
-      }
-    }
-
-    function showRegister() {
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('register-form').style.display = 'block';
-      document.getElementById('login-msg').innerText = "";
-    }
-    function showLogin() {
-      document.getElementById('login-form').style.display = 'block';
-      document.getElementById('register-form').style.display = 'none';
-      document.getElementById('reg-msg').innerText = "";
-    }
+    function doLogout() { if(confirm("確定登出？")) { auth.signOut(); location.reload(); } }
+    function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
+    function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
     // ==========================================================
-    // 3. 資料串接與圖表 (Pro Max 核心邏輯 - 三圖獨立版)
+    // 3. 戰略核心與圖表
     // ==========================================================
     function startDataSync() {
-      // A. 即時監聽
-      db.ref(NODE_REALTIME).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) updateUI(data); 
-      }, (error) => {
-         console.log("讀取失敗:", error);
-      });
-      
-      // B. 歷史監聽 (新增點)
-      db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (snapshot) => {
-        const data = snapshot.val();
-        if (data) updateChartNewData(data); 
-      });
-      
-      // C. 初始載入
-      db.ref(NODE_HISTORY).limitToLast(120).once('value', (snapshot) => {
-        const fullData = snapshot.val();
-        if(fullData) {
-            const dataArray = Object.values(fullData);
-            loadChartHistory(dataArray);
-        }
-      });
+      db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
+      db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (s) => { if(s.val()) updateChartNewData(s.val()); });
+      db.ref(NODE_HISTORY).limitToLast(120).once('value', (s) => { if(s.val()) loadChartHistory(Object.values(s.val())); });
     }
 
-    function getChipValueForTime(d) {
-        let hour = parseInt(d.t.split(':')[0]);
-        let isDay = (hour >= 8 && hour < 14);
-        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月 日盤 E6)", color: '#ffd60a' }; 
-        else return { val: parseChipValue(d.c1), label: "籌碼 (近月 夜盤 E5)", color: '#30d158' }; 
-    }
-
-    // ★★★ 更新圖表 (同步更新三個圖) ★★★
-    function updateChartNewData(d) {
-        if (!chartPrice) return;
-        
-        let timeLabel = d.t.substring(0,5);
-        let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
-        let p9Raw = parseFloat(d.p9 || 0);
-        let priceRaw = parseFloat(d.price || 0);
-        let chipInfo = getChipValueForTime(d);
-
-        // 1. 更新 Price 圖
-        chartPrice.data.labels.push(timeLabel);
-        chartPrice.data.datasets[0].data.push(priceRaw);
-        
-        // 2. 更新 Chip 圖
-        chartChip.data.labels.push(timeLabel);
-        chartChip.data.datasets[0].data.push(chipInfo.val);
-        chartChip.data.datasets[0].label = chipInfo.label;
-        chartChip.data.datasets[0].borderColor = chipInfo.color;
-
-        // 3. 更新 P6/P9 圖
-        chartP6.data.labels.push(timeLabel);
-        chartP6.data.datasets[0].data.push(p6Raw); // P6 (左軸)
-        chartP6.data.datasets[1].data.push(p9Raw); // P9 (右軸)
-
-        // 滾動刪除 (保持 120 筆)
-        if (chartPrice.data.labels.length > 120) {
-            chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
-            chartChip.data.labels.shift();  chartChip.data.datasets[0].data.shift();
-            
-            // P6/P9 雙數據移除
-            chartP6.data.labels.shift();    
-            chartP6.data.datasets[0].data.shift();
-            chartP6.data.datasets[1].data.shift();
-        }
-
-        chartPrice.update('none');
-        chartChip.update('none');
-        chartP6.update('none');
-    }
-
-    // ★★★ 載入歷史 (同步載入三個圖) ★★★
-    function loadChartHistory(dataArray) {
-        if (!chartPrice) return;
-        
-        let labels = [], dataP = [], dataC = [], dataP6 = [], dataP9 = [];
-        let lastChipInfo = { label: "籌碼", color: '#30d158' };
-
-        dataArray.forEach(d => {
-            labels.push(d.t.substring(0,5));
-            dataP.push(parseFloat(d.price || 0));
-            let info = getChipValueForTime(d);
-            dataC.push(info.val);
-            dataP6.push(parseFloat((d.pwr_t || "0").replace("%", "").replace("+", "")));
-            dataP9.push(parseFloat(d.p9 || 0));
-            lastChipInfo = info;
-        });
-
-        // Price
-        chartPrice.data.labels = labels;
-        chartPrice.data.datasets[0].data = dataP;
-        
-        // Chip
-        chartChip.data.labels = labels;
-        chartChip.data.datasets[0].data = dataC;
-        chartChip.data.datasets[0].label = lastChipInfo.label;
-        chartChip.data.datasets[0].borderColor = lastChipInfo.color;
-
-        // P6 + P9 (雙軸)
-        chartP6.data.labels = labels;
-        chartP6.data.datasets[0].data = dataP6;
-        chartP6.data.datasets[1].data = dataP9;
-
-        chartPrice.update();
-        chartChip.update();
-        chartP6.update();
-    }
-
-    function parseChipValue(str) {
-        if (!str) return 0;
-        let valStr = str.split('|')[0].replace('%', '');
-        return parseFloat(valStr);
-    }
-
-    // ★★★ 初始化三個獨立的圖表 (含 P6/P9 雙軸設定) ★★★
-    function initCharts() {
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } },
-            scales: {
-                x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }
-            }
-        };
-
-        // 1. Price Chart (金色)
-        const ctxPrice = document.getElementById('chartPrice').getContext('2d');
-        chartPrice = new Chart(ctxPrice, {
-            type: 'line',
-            data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
-            options: {
-                ...commonOptions,
-                scales: {
-                    ...commonOptions.scales,
-                    y: { 
-                        display: true, position: 'right', // 價格軸在右側比較好讀
-                        grid: { color: '#333' }, 
-                        ticks: { color: '#ffd700' }
-                    }
-                }
-            }
-        });
-
-        // 2. Chip Chart (綠/黃色)
-        const ctxChip = document.getElementById('chartChip').getContext('2d');
-        chartChip = new Chart(ctxChip, {
-            type: 'line',
-            data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] },
-            options: {
-                ...commonOptions,
-                scales: {
-                    ...commonOptions.scales,
-                    y: { 
-                        display: true, position: 'left',
-                        grid: { color: '#333' }, 
-                        ticks: { color: '#aaa' }
-                    }
-                }
-            }
-        });
-
-        // 3. P6 + P9 Dual Axis Chart (紅/藍雙軸)
-        const ctxP6 = document.getElementById('chartP6').getContext('2d');
-        chartP6 = new Chart(ctxP6, {
-            type: 'line',
-            data: { 
-                labels: [], 
-                datasets: [
-                    { 
-                        label: 'P6 動能 (%)', 
-                        data: [], 
-                        borderColor: '#ff453a', // 紅色
-                        backgroundColor: 'rgba(255, 69, 58, 0.1)', 
-                        borderWidth: 2, 
-                        tension: 0.4, 
-                        fill: true,
-                        yAxisID: 'y'  // 綁定左軸
-                    },
-                    {
-                        label: 'P9 實單 (口)',
-                        data: [],
-                        borderColor: '#0a84ff', // 藍色
-                        borderWidth: 2,
-                        tension: 0.4,
-                        borderDash: [5, 5], // 虛線顯示以區隔
-                        pointRadius: 0,
-                        fill: false,
-                        yAxisID: 'y1' // 綁定右軸
-                    }
-                ] 
-            },
-            options: {
-                ...commonOptions,
-                scales: {
-                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
-                    // 左軸 (P6)
-                    y: { 
-                        type: 'linear',
-                        display: true, 
-                        position: 'left',
-                        grid: { color: '#222' }, 
-                        ticks: { color: '#ff453a', callback: function(val){ return val + '%' } },
-                        suggestedMin: -20, suggestedMax: 20
-                    },
-                    // 右軸 (P9)
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: { drawOnChartArea: false }, // 不畫格線，避免混亂
-                        ticks: { color: '#0a84ff' }
-                    }
-                }
-            }
-        });
-    }
-
-    // --- [核心] S/A/B 級戰略分析邏輯 (v5.0 Web版) ---
+    // ★★★ [核心] 三維戰力分析演算法 (P9 + P7 + E) ★★★
     function analyzeStrategy(data) {
-        // 1. 提取數據
         let p9 = parseFloat(data.p9 || 0);
-        let r7 = parseFloat(data.bull_r || 50); // Bull Ratio
-        let p6 = parseFloat(data.pwr_v || 0);
-        
-        // E6 判讀 (從 c2 字串中抓取 "多" 或 "空")
-        let e6_str = data.c2 || "";
-        let isE6Bull = e6_str.includes("多");
-        let isE6Bear = e6_str.includes("空");
+        let p7 = parseFloat(data.force || 0); 
+        let timeHour = parseInt((data.t || "00:00").split(':')[0]);
+        let isNight = (timeHour >= 15 || timeHour < 6);
+        let e_str = isNight ? (data.c1 || "") : (data.c2 || ""); 
+        let e_dir = 0;
+        if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
 
-        let result = { text: "分析中...", class: "rank-n" };
+        let result = { text: "☕ [N級] 觀望 (信心0%)", class: "rank-n" };
+        let confidence = 0;
 
-        // 2. 判斷邏輯 (依照 v5.0 表格)
-        
-        // === 🔴 多頭判斷 ===
-        if (p9 > 3000) {
-            // S級: 海嘯多頭 (P9超大 + R7多 + E6多 + P6強)
-            if (p9 > 10000 && r7 > 53 && isE6Bull && p6 > 10) {
-                return { text: "🔥 [S級] 海嘯多頭 (信心99%)", class: "rank-s" };
-            }
-            // A級: 順勢進攻 (P9紅 + R7紅)
-            if (r7 >= 50) {
-                return { text: "💪 [A級] 順勢進攻 (信心85%)", class: "rank-a-bull" };
-            }
-            // B級: 誘空反轉 (P9紅 但 R7綠 -> 背離)
-            if (r7 < 50) {
-                return { text: "⚡ [B級] 誘空反轉 (背離70%)", class: "rank-b" };
+        if (p9 > 2000) {
+            let isResonance = (p7 > 0); 
+            let isTrend = (e_dir === 1); 
+            confidence = 50;
+            if (p9 > 10000) confidence += 30; else if (p9 > 5000) confidence += 20; else confidence += 10;
+            if (isResonance) confidence += 10;
+            if (isTrend) confidence += 10;
+            if (p9 > 20000 && !isResonance) confidence = 90; 
+
+            if (p9 > 10000 && isResonance && isTrend) {
+                result = { text: `🔥 [S級] 海嘯多頭 (信心${confidence}%)`, class: "rank-s" };
+            } else if (p9 > 20000 && !isResonance) {
+                result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
+            } else if (isResonance) {
+                result = { text: `💪 [A級] 順勢進攻 (信心${confidence}%)`, class: "rank-a-bull" };
+            } else {
+                result = { text: `⚡ [B級] 誘空反轉 (信心${confidence}%)`, class: "rank-b" };
             }
         }
+        else if (p9 < -2000) {
+            let isResonance = (p7 < 0);
+            let isTrend = (e_dir === -1);
+            confidence = 50;
+            if (p9 < -10000) confidence += 30; else if (p9 < -5000) confidence += 20; else confidence += 10;
+            if (isResonance) confidence += 10;
+            if (isTrend) confidence += 10;
+            if (p9 < -20000 && !isResonance) confidence = 90;
 
-        // === 🟢 空頭判斷 ===
-        else if (p9 < -3000) {
-            // S級: 毀滅空頭 (P9超大 + R7空 + E6空 + P6弱)
-            if (p9 < -10000 && r7 < 47 && isE6Bear && p6 < -10) {
-                return { text: "☠️ [S級] 毀滅空頭 (信心99%)", class: "rank-s" };
-            }
-            // A級: 順勢壓制 (P9綠 + R7綠)
-            if (r7 <= 50) {
-                return { text: "📉 [A級] 順勢壓制 (信心85%)", class: "rank-a-bear" };
-            }
-            // B級: 誘多殺盤 (P9綠 但 R7紅 -> 背離)
-            if (r7 > 50) {
-                return { text: "🪤 [B級] 誘多殺盤 (背離70%)", class: "rank-b" };
+            if (p9 < -10000 && isResonance && isTrend) {
+                result = { text: `☠️ [S級] 毀滅空頭 (信心${confidence}%)`, class: "rank-s" };
+            } else if (p9 < -20000 && !isResonance) {
+                result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
+            } else if (isResonance) {
+                result = { text: `📉 [A級] 順勢壓制 (信心${confidence}%)`, class: "rank-a-bear" };
+            } else {
+                result = { text: `🪤 [B級] 誘多殺盤 (信心${confidence}%)`, class: "rank-b" };
             }
         }
-
-        // === ⚪ 盤整/觀望 ===
-        else {
-            if (r7 >= 53) return { text: "☕ 盤整偏多 (量縮)", class: "rank-n" };
-            if (r7 <= 47) return { text: "☕ 盤整偏空 (量縮)", class: "rank-n" };
-            return { text: "😴 [N級] 垃圾時間 (觀望)", class: "rank-n" };
-        }
-
         return result;
     }
 
-    // --- UI Update 邏輯 (已修改以支援 S/A/B 顯示) ---
+    // ★★★ [新增] 全時段戰略權重計算 (AI Commander) ★★★
+    function updateStrategyBox(data, strategyResult) {
+        let hour = parseInt((data.t || "00:00").split(':')[0]);
+        let min = parseInt((data.t || "00:00").split(':')[1]);
+        
+        let phaseName = "";
+        let focusText = "";
+        let weightText = "";
+        let adviceText = "";
+
+        // 時間段判斷邏輯
+        let isEarly = (hour === 8 && min >= 45) || (hour === 9);
+        let isMid = (hour >= 10 && hour < 13);
+        let isLate = (hour === 13);
+        let isNight = (hour >= 15 || hour < 5);
+
+        if (isEarly) {
+            phaseName = "🕒 早盤衝鋒期 (08:45-10:00)";
+            focusText = "🔥 P9 實單 (即時動能)";
+            weightText = "P9 (70%) > P7 (20%) > E6 (10%)";
+            adviceText = "趨勢未定，請無視 E6，緊盯 P9 方向。若 P9 > 5000 且 R7 同向，勇敢追價。快進快出，不戀戰。";
+        } else if (isMid) {
+            phaseName = "🕒 中盤趨勢期 (10:00-13:00)";
+            focusText = "⚖️ E6 趨勢 + P9 動能";
+            weightText = "E6 (40%) = P9 (40%) > VWAP (20%)";
+            adviceText = "大盤方向已出 (E6)。請順著 E6 方向做單。若 P9 與 E6 背離，請等待回測 VWAP 再進場。";
+        } else if (isLate) {
+            phaseName = "🕒 尾盤決策期 (13:00-13:45)";
+            focusText = "📦 留倉評估 (E6 + 尾盤量)";
+            weightText = "E6 (50%) > P9 (30%) > VWAP (20%)";
+            adviceText = "準備結算。若 E6 與 P9 同向且價格在 VWAP 之上，可考慮留多單。若方向不一，建議空手過夜。";
+        } else {
+            phaseName = "🌙 夜盤時段";
+            focusText = "🌎 美股連動 + P9 實單";
+            weightText = "P9 (60%) > E5 (30%) > P7 (10%)";
+            adviceText = "波動劇烈，P9 為王。請參考 E5 (日盤底倉) 作為支撐壓力，但短線進出請完全依照 P9 指示。";
+        }
+
+        // DOM 更新
+        document.getElementById('st-phase').innerText = phaseName;
+        document.getElementById('st-focus').innerText = focusText;
+        document.getElementById('st-weight').innerText = weightText;
+        
+        // 整合 S/A/B 級別與時間建議
+        let finalAdvice = `【${strategyResult.text}】<br>${adviceText}`;
+        document.getElementById('st-advice').innerHTML = finalAdvice;
+        
+        // 邊框顏色隨等級變化
+        let stCard = document.getElementById('strategy-box');
+        stCard.style.borderLeft = "5px solid #444";
+        if (strategyResult.class.includes('rank-s')) stCard.style.borderLeft = "5px solid #d4af37";
+        else if (strategyResult.class.includes('bull')) stCard.style.borderLeft = "5px solid var(--red)";
+        else if (strategyResult.class.includes('bear')) stCard.style.borderLeft = "5px solid var(--green)";
+        else if (strategyResult.class.includes('rank-b')) stCard.style.borderLeft = "5px solid var(--yellow)";
+    }
+
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       document.getElementById('update-time').innerText = "Update: " + data.t;
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
-      let pVal = 0; let pText = "--%";
-      if (data.pwr_v !== undefined) { pVal = parseFloat(data.pwr_v); pText = data.pwr_t; }
-      
+      let pVal = parseFloat(data.pwr_v || 0);
       let pEl = document.getElementById('pwr-val');
-      let pTag = document.getElementById('pwr-tag');
       let pBox = document.getElementById('pwr-box');
+      let pTag = document.getElementById('pwr-tag');
       
-      pEl.innerText = pText;
+      pEl.innerText = data.pwr_t || "0%";
       pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
       pBox.className = "box"; 
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       
-      pTag.className = "chip-tag"; pTag.style = "align-self: flex-end;";
-      if (pVal > 25) { pTag.className += " bg-red"; pTag.innerText = "極強多頭"; }
-      else if (pVal >= 10) { pTag.className += " bg-red"; pTag.innerText = "多方控盤"; }
-      else if (pVal <= -25) { pTag.className += " bg-green"; pTag.innerText = "極強空頭"; }
-      else if (pVal <= -10) { pTag.className += " bg-green"; pTag.innerText = "空方控盤"; }
-      else { pTag.innerText = "震盪整理"; }
+      pTag.className = "chip-tag"; pTag.style="align-self:flex-end";
+      if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";}
+      else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";}
+      else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";}
+      else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
+      else{pTag.innerText="整理";}
 
-      let bullF = parseFloat(data.bull_f || 0);
-      let bearF = parseFloat(data.bear_f || 0);
-      let force = parseFloat(data.force || 0); 
       let bullR = parseFloat(data.bull_r || 50);
       let bearR = 100 - bullR;
-
-      document.getElementById('bull-force').innerText = bullF;
-      document.getElementById('bear-force').innerText = bearF;
+      document.getElementById('bull-force').innerText = data.bull_f;
+      document.getElementById('bear-force').innerText = data.bear_f;
       document.getElementById('bull-bar').style.width = bullR + "%";
       document.getElementById('bear-bar').style.width = bearR + "%";
-      document.getElementById('ratio-text').innerText = Math.round(bullR) + "%  vs  " + Math.round(bearR) + "%";
-      let forceEl = document.getElementById('net-force-val');
-      forceEl.innerText = (force > 0 ? "+" : "") + force + " 口";
-      forceEl.className = "force-display " + (force > 0 ? "c-red" : (force < 0 ? "c-green" : ""));
+      document.getElementById('ratio-text').innerText = Math.round(bullR) + "% vs " + Math.round(bearR) + "%";
+      
+      let force = parseFloat(data.force || 0);
+      let fEl = document.getElementById('net-force-val');
+      fEl.innerText = (force>0?"+":"") + force + " 口";
+      fEl.className = "force-display " + (force>0?"c-red":"c-green");
 
-      // P9 實單力道數值 (加入千分位)
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
-      let formattedP9 = valP9.toLocaleString('en-US'); 
-      p9El.innerText = (valP9 > 0 ? "+" : "") + formattedP9;
-      p9El.className = "p9-val " + (valP9 > 0 ? "c-red" : (valP9 < 0 ? "c-green" : ""));
+      p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
+      p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
 
-      // ★★★ [修改核心] 使用 JS 本地運算取代 Excel 的 logicText ★★★
-      let strategy = analyzeStrategy(data); // 呼叫新的分析函數
+      let strategy = analyzeStrategy(data);
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
       
-      logicEl.innerText = strategy.text; // 顯示 S/A/B 文字
+      logicEl.innerText = strategy.text;
+      battleCard.className = "battle-box " + strategy.class;
       
-      // 清除舊樣式並套用新分級樣式
-      battleCard.className = "battle-box"; // 重置
-      battleCard.classList.add(strategy.class); // 加入 .rank-s, .rank-a 等
-      
-      // 如果是 S 級，文字顏色要特別亮
       if (strategy.class === 'rank-s') logicEl.style.color = "#d4af37";
       else if (strategy.class.includes('bull')) logicEl.style.color = "var(--red)";
       else if (strategy.class.includes('bear')) logicEl.style.color = "var(--green)";
       else if (strategy.class === 'rank-b') logicEl.style.color = "var(--yellow)";
       else logicEl.style.color = "#aaa";
 
+      // ★★★ 呼叫 AI 戰略指揮官 ★★★
+      updateStrategyBox(data, strategy);
 
-      let ps = parseInt(data.now_p_s || 0); let pv = parseInt(data.now_p_v || 0);
-      let ss = parseInt(data.now_s_s || 0); let sv = parseInt(data.now_s_v || 0);
-      let lps = parseInt(data.last_p_s || 0); let lss = parseInt(data.last_s_s || 0);
-
-      document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
-      document.getElementById('p-vol').innerText = ps > 0 ? "("+pv+")" : "";
-      document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
-      document.getElementById('s-vol').innerText = ss > 0 ? "("+sv+")" : "";
+      let ps=parseInt(data.now_p_s||0), pv=parseInt(data.now_p_v||0);
+      let ss=parseInt(data.now_s_s||0), sv=parseInt(data.now_s_v||0);
+      document.getElementById('p-strike').innerText=ps>0?ps:"--";
+      document.getElementById('p-vol').innerText=ps>0?"("+pv+")":"";
+      document.getElementById('s-strike').innerText=ss>0?ss:"--";
+      document.getElementById('s-vol').innerText=ss>0?"("+sv+")":"";
       
-      let pOldBox = document.getElementById('p-old-box');
-      if (lps > 0 && lps !== ps) { pOldBox.style.display = "inline-flex"; document.getElementById('p-old').innerText = lps; } 
-      else { pOldBox.style.display = "none"; }
-      let sOldBox = document.getElementById('s-old-box');
-      if (lss > 0 && lss !== ss) { sOldBox.style.display = "inline-flex"; document.getElementById('s-old').innerText = lss; } 
-      else { sOldBox.style.display = "none"; }
-
       const chipLabels = { 'c1': '近月 夜盤 (E5)', 'c2': '近月 日盤 (E6)', 'c3': '次月 夜盤', 'c4': '次月 日盤' };
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
@@ -775,6 +546,61 @@
         let labelSpan = card.querySelector('.label');
         if(labelSpan && chipLabels[id]) labelSpan.innerText = chipLabels[id];
       });
+    }
+
+    function getChipValueForTime(d) {
+        let hour = parseInt(d.t.split(':')[0]);
+        let isDay = (hour >= 8 && hour < 14);
+        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月 日盤 E6)", color: '#ffd60a' }; 
+        else return { val: parseChipValue(d.c1), label: "籌碼 (近月 夜盤 E5)", color: '#30d158' }; 
+    }
+    
+    function updateChartNewData(d) {
+        if (!chartPrice) return;
+        let timeLabel = d.t.substring(0,5);
+        let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
+        let p9Raw = parseFloat(d.p9 || 0);
+        let priceRaw = parseFloat(d.price || 0);
+        let chipInfo = getChipValueForTime(d);
+
+        chartPrice.data.labels.push(timeLabel); chartPrice.data.datasets[0].data.push(priceRaw);
+        chartChip.data.labels.push(timeLabel); chartChip.data.datasets[0].data.push(chipInfo.val);
+        chartChip.data.datasets[0].label = chipInfo.label; chartChip.data.datasets[0].borderColor = chipInfo.color;
+        chartP6.data.labels.push(timeLabel); chartP6.data.datasets[0].data.push(p6Raw); chartP6.data.datasets[1].data.push(p9Raw);
+
+        if (chartPrice.data.labels.length > 120) {
+            chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
+            chartChip.data.labels.shift(); chartChip.data.datasets[0].data.shift();
+            chartP6.data.labels.shift(); chartP6.data.datasets[0].data.shift(); chartP6.data.datasets[1].data.shift();
+        }
+        chartPrice.update('none'); chartChip.update('none'); chartP6.update('none');
+    }
+
+    function loadChartHistory(dataArray) {
+        if (!chartPrice) return;
+        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
+        let lastChipInfo={label:"籌碼",color:'#30d158'};
+        dataArray.forEach(d => {
+            labels.push(d.t.substring(0,5)); dataP.push(parseFloat(d.price||0));
+            let info = getChipValueForTime(d); dataC.push(info.val);
+            dataP6.push(parseFloat((d.pwr_t||"0").replace("%","").replace("+","")));
+            dataP9.push(parseFloat(d.p9||0)); lastChipInfo=info;
+        });
+        chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
+        chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC;
+        chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
+        chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
+        chartPrice.update(); chartChip.update(); chartP6.update();
+    }
+    
+    function parseChipValue(str) { if(!str)return 0; return parseFloat(str.split('|')[0].replace('%','')); }
+
+    function initCharts() {
+        const commonOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } } } };
+        
+        chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
+        chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6 動能 (%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9 實單 (口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
     }
   </script>
 </body>
