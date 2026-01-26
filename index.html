@@ -523,12 +523,38 @@
       // ★★★ 呼叫 AI 戰略指揮官 ★★★
       updateStrategyBox(data, strategy);
 
-      let ps=parseInt(data.now_p_s||0), pv=parseInt(data.now_p_v||0);
-      let ss=parseInt(data.now_s_s||0), sv=parseInt(data.now_s_v||0);
-      document.getElementById('p-strike').innerText=ps>0?ps:"--";
-      document.getElementById('p-vol').innerText=ps>0?"("+pv+")":"";
-      document.getElementById('s-strike').innerText=ss>0?ss:"--";
-      document.getElementById('s-vol').innerText=ss>0?"("+sv+")":"";
+      // ★★★ 修正開始：戰場邊界 (壓力 / 支撐) 含舊資料顯示 ★★★
+      let ps = parseInt(data.now_p_s || 0), pv = parseInt(data.now_p_v || 0);
+      let ss = parseInt(data.now_s_s || 0), sv = parseInt(data.now_s_v || 0);
+      
+      // 1. 更新目前壓力
+      document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
+      document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
+      
+      // 2. 處理「上一筆壓力」(Old Pressure)
+      let old_ps = parseInt(data.old_p_s || 0);
+      let pOldBox = document.getElementById('p-old-box');
+      if (old_ps > 0 && old_ps !== ps) {
+          document.getElementById('p-old').innerText = old_ps;
+          pOldBox.style.display = "inline-flex"; // 顯示舊資料
+      } else {
+          pOldBox.style.display = "none"; // 隱藏
+      }
+
+      // 3. 更新目前支撐
+      document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
+      document.getElementById('s-vol').innerText = ss > 0 ? "(" + sv + ")" : "";
+
+      // 4. 處理「上一筆支撐」(Old Support)
+      let old_ss = parseInt(data.old_s_s || 0);
+      let sOldBox = document.getElementById('s-old-box');
+      if (old_ss > 0 && old_ss !== ss) {
+          document.getElementById('s-old').innerText = old_ss;
+          sOldBox.style.display = "inline-flex"; // 顯示舊資料
+      } else {
+          sOldBox.style.display = "none"; // 隱藏
+      }
+      // ★★★ 修正結束 ★★★
       
       const chipLabels = { 'c1': '近月 夜盤 (E5)', 'c2': '近月 日盤 (E6)', 'c3': '次月 夜盤', 'c4': '次月 日盤' };
       ['c1','c2','c3','c4'].forEach(id => {
