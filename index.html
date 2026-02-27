@@ -454,7 +454,16 @@
         document.getElementById('st-weight').innerText = weightText;
         
         // 整合 S/A/B 級別與時間建議
-        let finalAdvice = `【${strategyResult.text}】<br>${adviceText}`;
+        let finalAdvice = `【${strategyResult.text}】<br>`;
+        
+        // ★★★ 依據要求，若 Firebase 有傳來 AI 建議，則優先顯示 ★★★
+        if (data.ai_advice && data.ai_advice !== "") {
+            finalAdvice += `<span style="color:#ffd60a; font-weight:600;">🤖 Gemini 實時解析：</span><br>${data.ai_advice}`;
+            document.getElementById('st-phase').innerText = "✨ AI 即時幕僚";
+        } else {
+            finalAdvice += adviceText;
+        }
+        
         document.getElementById('st-advice').innerHTML = finalAdvice;
         
         // 邊框顏色隨等級變化
