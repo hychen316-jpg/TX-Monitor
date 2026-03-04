@@ -13,134 +13,110 @@
   <style>
     /* === 核心樣式 === */
     :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; }
-    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:10px; margin:0; overflow-x:hidden; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:8px; margin:0; overflow-x:hidden; }
     
-    /* 儀表板預設模糊 (未登入狀態) */
-    .dashboard-container { filter: blur(15px); transition: filter 0.5s; pointer-events: none; opacity: 0.3; display: flex; flex-direction: column; gap: 8px; }
+    /* 儀表板預設模糊 */
+    .dashboard-container { filter: blur(15px); transition: filter 0.5s; pointer-events: none; opacity: 0.3; display: flex; flex-direction: column; gap: 6px; }
     .unlocked { filter: blur(0); pointer-events: auto; opacity: 1; }
 
-    /* === 儀表板排版 (Pro Max) === */
-    .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:8px; margin-bottom:5px; }
-    .box { background:var(--card); border-radius:16px; padding:12px; display:flex; flex-direction:column; justify-content:space-between; }
-    
-    .big-val { font-size:28px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
-    .power-val { font-size:32px; font-weight:700; text-align:right; } 
+    /* 共用小標題 (內化以節省空間) */
+    .box-header { font-size: 11px; color: var(--gray); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* === 第一排：頂部報價 === */
+    .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:6px; }
+    .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
+    .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
+    .power-val { font-size:30px; font-weight:700; text-align:right; } 
     .chip-tag { font-size:10px; padding:2px 6px; border-radius:4px; width:fit-content; background:#333; color:#ccc; }
-    
-    .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-    .chip-card { background:var(--card); padding:8px 10px; border-radius:12px; display:flex; flex-direction:column; }
-    .label { font-size:11px; color:var(--gray); font-weight:600; text-transform:uppercase; margin-bottom: 2px; }
     
     /* 顏色定義 */
     .c-red { color:var(--red); } .c-green { color:var(--green); }
     .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
     .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
-    .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 15px rgba(255, 69, 58, 0.2); }
-    .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 15px rgba(48, 209, 88, 0.2); }
+    .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 10px rgba(255, 69, 58, 0.2); }
+    .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 10px rgba(48, 209, 88, 0.2); }
 
-    /* 多空對戰條 */
-    .battle-box { 
-        background: var(--card); border-radius: 16px; padding: 10px 12px; 
-        margin-bottom: 5px; border: 1px solid #333; display: flex; flex-direction: column; gap: 4px; 
-    }
-    .tug-container { 
-        height: 18px; background: #111; border-radius: 9px; position: relative; 
-        overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 2px; 
-    }
-    .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
-    .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
-    .percent-text { 
-        position: absolute; width: 100%; text-align: center; top: 1px; 
-        font-size: 10px; font-weight: bold; color: rgba(255,255,255,0.9); 
-        text-shadow: 0 1px 2px #000; z-index: 5; letter-spacing: 0.5px; 
-    }
-    
-    .force-display { text-align: center; font-size: 20px; font-weight: 700; margin: 2px 0; letter-spacing: -0.5px; }
-    .force-label { text-align: center; font-size: 11px; color: var(--gray); margin-top: -2px; }
-    .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 2px; padding: 0 5px; }
-    .logic-text { text-align: center; font-size: 14px; font-weight: 700; color: #fff; margin-top: 2px; letter-spacing: 0.5px; }
-
-    /* P9 實單力道樣式 */
-    .p9-container { 
-        display: flex; justify-content: center; align-items: center; gap: 8px; 
-        margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; 
-    }
-    .p9-label { font-size: 14px; color: #ccc; font-weight: 700; }
-    .p9-val { font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
-
-    /* === AI 戰略指揮官區塊 === */
-    .strategy-card { 
-        background: #2c2c2e; border-radius: 14px; padding: 10px; margin-bottom: 5px; 
-        border: 1px solid #444; font-size: 12px; position: relative; overflow: hidden; 
-    }
-    .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 4px; }
-    .phase-badge { background: #0a84ff; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-    .strategy-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px; }
-    .strategy-item { display: flex; flex-direction: column; }
-    .s-label { color: #888; font-size: 10px; margin-bottom: 1px; }
-    .s-val { color: #fff; font-weight: 600; font-size: 12px; }
-    .s-advice { grid-column: 1 / -1; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; color: #ddd; line-height: 1.3; margin-top: 4px; border-left: 3px solid #888; font-size: 12px; }
-    
-    /* 戰場邊界 */
-    .range-box { 
-        background: var(--card); border-radius: 16px; padding: 10px 14px; margin-bottom: 5px; 
-        display: grid; grid-template-rows: 1fr 1fr; gap: 6px; position: relative; overflow: hidden; 
-    }
-    .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
-    .range-row { display: flex; justify-content: space-between; align-items: center; }
-    .range-title { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-    .range-val { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
-    .range-vol { font-size: 10px; color: #666; font-weight: normal; margin-left: 2px; }
-    .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
-    .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
-
-    /* 圖表區塊 */
-    .split-chart-box { 
-        background: var(--card); border-radius: 16px; padding: 8px; 
-        margin-top: 4px; margin-bottom: 10px; height: 220px; position: relative; 
-    }
-    .section-title { margin-top: 15px; margin-bottom: 4px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; font-weight: 600; }
-
-    /* === Alpha-TX v2.2 樣式 === */
-    .alpha-box { background: var(--card); border-radius: 16px; padding: 12px; margin-bottom: 5px; border: 1px solid #333; }
-    .alpha-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .heat-container { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+    /* === 第二排：Alpha-TX 高密度面板 === */
+    .alpha-box { background: var(--card); border-radius: 14px; padding: 10px; border: 1px solid #333; }
+    .alpha-top { display: flex; justify-content: space-between; align-items: center; }
+    .heat-container-sm { height: 6px; background: #222; border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); flex: 1; margin: 0 8px; }
     .heat-bar { height: 100%; transition: width 0.5s ease-in-out; }
     .heat-high { background: var(--red); box-shadow: 0 0 8px var(--red); }
     .heat-neutral { background: var(--yellow); }
     .heat-low { background: var(--green); }
-    
-    .prob-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+    .prob-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .prob-high { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); animation: pulse-red 1.5s infinite; }
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
     
-    .targets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
-    .target-card { background: #2c2c2e; border-radius: 8px; padding: 8px 6px; text-align: center; border-left: 3px solid #555; display: flex; flex-direction: column; justify-content: center; }
-    .target-name { font-size: 11px; color: #ccc; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .target-price { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-    .target-diff { font-size: 11px; font-weight: bold; margin-top: 2px; }
+    /* 核心標的 4 欄微型網格 */
+    .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+    .target-card-sm { background: #2c2c2e; border-radius: 6px; padding: 4px 2px; text-align: center; border-left: 2px solid #555; display: flex; flex-direction: column; justify-content: center; }
+    .target-name-sm { font-size: 10px; color: #ccc; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 1px; }
+    .target-price-sm { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.1; }
+    .target-diff-sm { font-size: 9px; font-weight: bold; margin-top: 1px; }
     
-    /* Alpha-TX 狀態邊框與背景 */
+    /* Alpha-TX 狀態邊框 */
     .st-STRONG { border-left-color: var(--red); background: rgba(255, 69, 58, 0.1); }
     .st-CRASH { border-left-color: var(--green); background: rgba(48, 209, 88, 0.1); }
     .st-DEFENSE { border-left-color: var(--blue); background: rgba(10, 132, 255, 0.1); }
     .st-WAIT { border-left-color: #555; }
 
-    /* === 登入/註冊/審核 遮罩樣式 === */
+    /* === 第三排：多空對戰條 === */
+    .battle-box { background: var(--card); border-radius: 14px; padding: 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 4px; }
+    .tug-container { height: 18px; background: #111; border-radius: 9px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 2px; }
+    .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
+    .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
+    .percent-text { position: absolute; width: 100%; text-align: center; top: 1px; font-size: 10px; font-weight: bold; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px #000; z-index: 5; }
+    .force-display { text-align: center; font-size: 20px; font-weight: 700; margin: 2px 0; letter-spacing: -0.5px; }
+    .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 2px; padding: 0 5px; }
+    .logic-text { text-align: center; font-size: 13px; font-weight: 700; color: #fff; margin-top: 2px; letter-spacing: 0.5px; }
+    
+    /* P9 實單力道 */
+    .p9-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+    .p9-label { font-size: 13px; color: #ccc; font-weight: 700; }
+    .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+
+    /* === 第四排：AI 戰略指揮官區塊 === */
+    .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; font-size: 12px; position: relative; overflow: hidden; }
+    .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 4px; }
+    .phase-badge { background: #0a84ff; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .strategy-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px; }
+    .strategy-item { display: flex; flex-direction: column; }
+    .s-label { color: #888; font-size: 10px; margin-bottom: 1px; }
+    .s-val { color: #fff; font-weight: 600; font-size: 11px; }
+    .s-advice { grid-column: 1 / -1; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; color: #ddd; line-height: 1.3; margin-top: 4px; border-left: 3px solid #888; font-size: 12px; }
+    
+    /* === 第五排：戰場邊界 === */
+    .range-box { background: var(--card); border-radius: 14px; padding: 10px 14px; border: 1px solid #333; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; position: relative; overflow: hidden; }
+    .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
+    .range-row { display: flex; justify-content: space-between; align-items: center; }
+    .range-title { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .range-val { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .range-vol { font-size: 10px; color: #666; font-weight: normal; margin-left: 2px; }
+    .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
+    .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
+
+    /* === 第六排：籌碼分佈 === */
+    .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .chip-card { background:var(--card); padding:8px 10px; border-radius:12px; border: 1px solid #333; display:flex; flex-direction:column; }
+    
+    /* 圖表區塊 */
+    .split-chart-box { background: var(--card); border-radius: 14px; padding: 8px; border: 1px solid #333; height: 200px; position: relative; }
+    .section-title { margin-top: 10px; margin-bottom: 2px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+    /* === 登入遮罩 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .auth-box { text-align: center; width: 85%; max-width: 320px; background: #1c1c1e; padding: 30px 20px; border-radius: 20px; border: 1px solid #333; }
     .auth-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
     .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: #2c2c2e; color: #fff; font-size: 16px; box-sizing: border-box; }
-    .auth-input:focus { border-color: var(--blue); outline: none; }
     .auth-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-    .auth-btn:active { opacity: 0.8; }
     .auth-btn.secondary { background: #3a3a3c; margin-top: 10px; }
-    .error-msg { color: var(--red); font-size: 13px; margin-top: 15px; min-height: 18px; line-height: 1.4; }
+    .error-msg { color: var(--red); font-size: 13px; margin-top: 15px; }
     .toggle-link { margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline; }
-    #logout-btn { position: fixed; top: 15px; right: 15px; z-index: 1000; display: none; padding: 6px 12px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 12px; cursor: pointer; backdrop-filter: blur(5px); }
+    #logout-btn { position: fixed; top: 10px; right: 10px; z-index: 1000; display: none; padding: 4px 10px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 11px; cursor: pointer; backdrop-filter: blur(5px); }
 
-    /* === 戰力分級樣式 (S/A/B) === */
+    /* 戰力分級樣式 */
     .rank-s { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); animation: pulse-gold 1.5s infinite; border: 1px solid #d4af37 !important; }
     .rank-a-bull { color: var(--red) !important; border: 1px solid var(--red) !important; }
     .rank-a-bear { color: var(--green) !important; border: 1px solid var(--green) !important; }
@@ -178,23 +154,43 @@
   <div class="dashboard-container" id="dashboard">
     <div class="top-section">
       <div class="box">
-        <div class="label">TX 台指期</div>
+        <div class="box-header" style="margin-bottom:0;">TX 台指期</div>
         <div id="price" class="big-val">---</div>
         <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa; font-weight:500;">
-            <div>🌞 日 <span id="vwap-day" style="color:#fff; font-weight:600; margin-left:2px;">--</span></div>
-            <div>🌙 夜 <span id="vwap-night" style="color:#fff; font-weight:600; margin-left:2px;">--</span></div>
+            <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
+            <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
         </div>
-        <div id="update-time" class="label" style="margin-top:6px; color:#666; font-size:10px; text-align:right;">--:--:--</div>
+        <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
       <div class="box" style="text-align:right" id="pwr-box">
-        <div class="label">🚀 P6 買方動能</div>
+        <div class="box-header" style="margin-bottom:0;">🚀 P6 買方動能</div>
         <div id="pwr-val" class="power-val">0%</div>
         <div id="pwr-tag" class="chip-tag" style="align-self: flex-end;">Wait</div>
       </div>
     </div>
 
-    <div class="label" style="margin-bottom:4px">⚔️ OP 多空力道 (內外盤差)</div>
+    <div class="alpha-box" id="alpha-card">
+        <div class="alpha-top">
+            <div class="box-header" style="margin-bottom:0; color:#fff;">⚡ Alpha-TX 台50熱度</div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:10px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
+                <div id="alpha-prob-badge" class="prob-badge">等待</div>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:4px; margin-bottom:2px;">
+            <span id="alpha-heat-val" style="font-size:15px; font-weight:800; color:#fff;">--%</span>
+            <div class="heat-container-sm">
+                <div id="alpha-heat-bar" class="heat-bar" style="width: 0%;"></div>
+            </div>
+            <span id="alpha-update-time" style="font-size:9px; color:#555;">--:--</span>
+        </div>
+        <div class="targets-grid-compact" id="alpha-targets">
+            <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 4px;">接收數據中...</div>
+        </div>
+    </div>
+
     <div class="battle-box" id="battle-card">
+        <div class="box-header">⚔️ OP 多空力道 (內外盤差)</div>
         <div class="tug-container">
             <div id="bull-bar" class="bull-bar" style="width: 50%;"></div>
             <div id="bear-bar" class="bear-bar" style="width: 50%;"></div>
@@ -216,7 +212,7 @@
 
     <div id="strategy-box" class="strategy-card">
         <div class="strategy-header">
-            <div style="color:#ccc; font-weight:600;">🤖 AI 戰略指揮</div>
+            <div style="color:#ccc; font-weight:600; font-size:11px;">🤖 AI 戰略指揮</div>
             <div id="st-phase" class="phase-badge">等待數據</div>
         </div>
         <div class="strategy-content">
@@ -228,21 +224,17 @@
                 <div class="s-label">⚖️ 權重配置</div>
                 <div id="st-weight" class="s-val">--</div>
             </div>
-            <div id="st-advice" class="s-advice">
-                分析中...
-            </div>
+            <div id="st-advice" class="s-advice">分析中...</div>
         </div>
     </div>
 
-    <div class="label" style="margin-bottom:4px">🚧 戰場邊界 (壓力 / 支撐)</div>
     <div class="range-box">
-        <div class="range-row">
+        <div class="box-header" style="position:absolute; top:8px; left:14px;">🚧 戰場邊界</div>
+        <div class="range-row" style="margin-top:14px;">
             <div class="range-title c-green">🟢 壓力牆</div>
             <div class="range-val c-green">
                 <span id="p-strike">--</span>
-                <span class="range-old" id="p-old-box" style="display:none;">
-                    <span class="arrow-icon">⬅</span> <span id="p-old">--</span>
-                </span>
+                <span class="range-old" id="p-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="p-old">--</span></span>
                 <span id="p-vol" class="range-vol">(--)</span>
             </div>
         </div>
@@ -250,61 +242,32 @@
             <div class="range-title c-red">🔴 支撐牆</div>
             <div class="range-val c-red">
                 <span id="s-strike">--</span>
-                <span class="range-old" id="s-old-box" style="display:none;">
-                    <span class="arrow-icon">⬅</span> <span id="s-old">--</span>
-                </span>
+                <span class="range-old" id="s-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="s-old">--</span></span>
                 <span id="s-vol" class="range-vol">(--)</span>
             </div>
         </div>
     </div>
 
-    <div class="label" style="margin-bottom:4px">📊 籌碼分佈</div>
     <div class="chip-grid">
-      <div class="chip-card" id="c1-card"><span class="label">近月 夜盤 (E5)</span><span id="c1-val" class="big-val" style="font-size:18px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c2-card"><span class="label">近月 日盤 (E6)</span><span id="c2-val" class="big-val" style="font-size:18px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c3-card"><span class="label">次月 夜盤</span><span id="c3-val" class="big-val" style="font-size:18px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c4-card"><span class="label">次月 日盤</span><span id="c4-val" class="big-val" style="font-size:18px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c1-card"><span class="box-header" style="margin-bottom:2px;">近月夜盤(E5)</span><span id="c1-val" class="big-val" style="font-size:18px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c2-card"><span class="box-header" style="margin-bottom:2px;">近月日盤(E6)</span><span id="c2-val" class="big-val" style="font-size:18px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px;">次月夜盤</span><span id="c3-val" class="big-val" style="font-size:18px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px;">次月日盤</span><span id="c4-val" class="big-val" style="font-size:18px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
     </div>
 
-    <div class="section-title" style="margin-top: 12px; margin-bottom: 2px;">⚡ Alpha-TX 資金熱度 & AI 共振</div>
-    <div class="alpha-box" id="alpha-card">
-        <div class="alpha-header">
-            <div>
-                <span style="font-size: 11px; color: #aaa;">台50資金熱度:</span>
-                <span id="alpha-heat-val" style="font-size: 16px; font-weight:800; color:#fff; margin-left:4px;">--%</span>
-            </div>
-            <div style="display:flex; gap: 8px; align-items: center;">
-                <span style="font-size: 11px; color:#aaa;">強共振: <span id="alpha-strong-count" style="color:#fff; font-weight:bold; font-size:14px;">-</span></span>
-                <div id="alpha-prob-badge" class="prob-badge">等待數據</div>
-            </div>
-        </div>
-        <div class="heat-container">
-            <div id="alpha-heat-bar" class="heat-bar" style="width: 0%;"></div>
-        </div>
-        <div class="targets-grid" id="alpha-targets">
-            <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 11px; padding: 10px;">接收數據中...</div>
-        </div>
-        <div style="text-align: right; font-size: 10px; color: #555; margin-top: 8px;">Alpha-TX Sync: <span id="alpha-update-time">--:--:--</span></div>
-    </div>
     <div class="section-title">📈 期貨現價 (Price)</div>
-    <div class="split-chart-box">
-        <canvas id="chartPrice"></canvas>
-    </div>
+    <div class="split-chart-box"><canvas id="chartPrice"></canvas></div>
 
     <div class="section-title">📊 籌碼力道 (R7)</div>
-    <div class="split-chart-box">
-        <canvas id="chartChip"></canvas>
-    </div>
+    <div class="split-chart-box"><canvas id="chartChip"></canvas></div>
 
     <div class="section-title">🚀 P6動能(左) vs P9實單(右)</div>
-    <div class="split-chart-box">
-        <canvas id="chartP6"></canvas>
-    </div>
+    <div class="split-chart-box"><canvas id="chartP6"></canvas></div>
 
   </div>
 
   <script>
-    // ★★★ 1. 您的 Firebase Config ★★★
+    // 1. Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCPkFmEOfCRBBR6TQbji8G5kNZk7XBi_JQ",
       authDomain: "tx-monitor-93eb2.firebaseapp.com",
@@ -321,32 +284,28 @@
     
     const NODE_REALTIME = 'monitor_realtime';
     const NODE_HISTORY  = 'monitor_history';
-    const NODE_ALPHA    = 'alpha_data'; // 新增 Alpha-TX 節點
+    const NODE_ALPHA    = 'alpha_data';
 
     let chartPrice = null; let chartChip = null; let chartP6 = null;
 
-    // ==========================================================
-    // 2. Auth 邏輯 (登入/註冊)
-    // ==========================================================
+    // 2. Auth
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
       const dashboard = document.getElementById('dashboard');
       const logoutBtn = document.getElementById('logout-btn');
-      const loginMsg = document.getElementById('login-msg');
-
+      
       if (user) {
         if (!user.emailVerified) {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('register-form').style.display = 'none';
-            loginMsg.innerHTML = `⚠️ Email 尚未驗證！<br>請去信箱確認，完成後請<a href="#" onclick="location.reload()" style="color:#fff">重新整理</a>`;
+            document.getElementById('login-msg').innerHTML = `⚠️ Email 尚未驗證！<br>請去信箱確認，完成後請<a href="#" onclick="location.reload()" style="color:#fff">重新整理</a>`;
             auth.signOut();
             return;
         }
-        const userRef = db.ref('users/' + user.uid);
-        userRef.once('value').then((snapshot) => {
+        db.ref('users/' + user.uid).once('value').then((snapshot) => {
             const userData = snapshot.val();
             if (!userData) {
-                userRef.set({ email: user.email, approved: false, reg_time: new Date().toISOString() }).then(() => { showPendingScreen(); });
+                db.ref('users/' + user.uid).set({ email: user.email, approved: false, reg_time: new Date().toISOString() }).then(() => { showPendingScreen(); });
             } else if (userData.approved === true) {
                 overlay.style.display = 'none';
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
@@ -406,49 +365,33 @@
     function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
     function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
-    // ==========================================================
-    // 3. 戰略核心與圖表
-    // ==========================================================
+    // 3. 戰略核心
     function startDataSync() {
       db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
       db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (s) => { if(s.val()) updateChartNewData(s.val()); });
       db.ref(NODE_HISTORY).limitToLast(120).once('value', (s) => { if(s.val()) loadChartHistory(Object.values(s.val())); });
-      
-      // ★★★ 綁定 Alpha-TX 資料節點 ★★★
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
-    // ★★★ [新增] Alpha-TX 渲染引擎 ★★★
+    // Alpha-TX 微型渲染引擎
     function updateAlphaUI(data) {
-        // 1. 更新資金熱度 (Heat)
         const heatVal = data.heat || 0;
         document.getElementById('alpha-heat-val').innerText = heatVal.toFixed(1) + '%';
-        
         const heatBar = document.getElementById('alpha-heat-bar');
         heatBar.style.width = heatVal + '%';
         heatBar.className = 'heat-bar ' + (heatVal > 60 ? 'heat-high' : (heatVal < 40 ? 'heat-low' : 'heat-neutral'));
 
-        // 2. 更新拉抬機率 (Lift Probability)
         const probBadge = document.getElementById('alpha-prob-badge');
         const prob = data.lift_prob || 'NEUTRAL';
-        if (prob === 'HIGH') {
-            probBadge.innerText = '🔥 易拉抬 (HIGH)';
-            probBadge.className = 'prob-badge prob-high';
-        } else if (prob === 'LOW') {
-            probBadge.innerText = '📉 易壓制 (LOW)';
-            probBadge.className = 'prob-badge prob-low';
-        } else {
-            probBadge.innerText = '⚖️ 震盪 (NEUTRAL)';
-            probBadge.className = 'prob-badge prob-neutral';
-        }
+        if (prob === 'HIGH') { probBadge.innerText = '🔥 易拉抬'; probBadge.className = 'prob-badge prob-high'; } 
+        else if (prob === 'LOW') { probBadge.innerText = '📉 易壓制'; probBadge.className = 'prob-badge prob-low'; } 
+        else { probBadge.innerText = '⚖️ 震盪'; probBadge.className = 'prob-badge prob-neutral'; }
 
-        // 3. 更新強共振數量與最後時間
         document.getElementById('alpha-strong-count').innerText = data.strong_count !== undefined ? data.strong_count : '-';
-        document.getElementById('alpha-update-time').innerText = data.last_update || '--:--:--';
+        document.getElementById('alpha-update-time').innerText = data.last_update ? data.last_update.substring(0,5) : '--:--';
 
-        // 4. 動態生成 12 檔核心標的網格
         const targetsContainer = document.getElementById('alpha-targets');
-        targetsContainer.innerHTML = ''; // 清空舊資料
+        targetsContainer.innerHTML = ''; 
         
         if (data.core_targets) {
             for (const [name, info] of Object.entries(data.core_targets)) {
@@ -458,18 +401,17 @@
                 const statusClass = 'st-' + (info.s || 'WAIT');
                 
                 const card = document.createElement('div');
-                card.className = `target-card ${statusClass}`;
+                card.className = `target-card-sm ${statusClass}`;
                 card.innerHTML = `
-                    <div class="target-name">${name}</div>
-                    <div class="target-price">${info.p}</div>
-                    <div class="target-diff ${diffColor}">${diffSign}${info.d}%</div>
+                    <div class="target-name-sm">${name}</div>
+                    <div class="target-price-sm">${info.p}</div>
+                    <div class="target-diff-sm ${diffColor}">${diffSign}${info.d}%</div>
                 `;
                 targetsContainer.appendChild(card);
             }
         }
     }
 
-    // ★★★ [核心] 三維戰力分析演算法 (P9 + P7 + E) ★★★
     function analyzeStrategy(data) {
         let p9 = parseFloat(data.p9 || 0);
         let p7 = parseFloat(data.force || 0); 
@@ -483,42 +425,26 @@
         let confidence = 0;
 
         if (p9 > 2000) {
-            let isResonance = (p7 > 0); 
-            let isTrend = (e_dir === 1); 
-            confidence = 50;
+            let isResonance = (p7 > 0); let isTrend = (e_dir === 1); confidence = 50;
             if (p9 > 10000) confidence += 30; else if (p9 > 5000) confidence += 20; else confidence += 10;
-            if (isResonance) confidence += 10;
-            if (isTrend) confidence += 10;
+            if (isResonance) confidence += 10; if (isTrend) confidence += 10;
             if (p9 > 20000 && !isResonance) confidence = 90; 
 
-            if (p9 > 10000 && isResonance && isTrend) {
-                result = { text: `🔥 [S級] 海嘯多頭 (信心${confidence}%)`, class: "rank-s" };
-            } else if (p9 > 20000 && !isResonance) {
-                result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
-            } else if (isResonance) {
-                result = { text: `💪 [A級] 順勢進攻 (信心${confidence}%)`, class: "rank-a-bull" };
-            } else {
-                result = { text: `⚡ [B級] 誘空反轉 (信心${confidence}%)`, class: "rank-b" };
-            }
+            if (p9 > 10000 && isResonance && isTrend) result = { text: `🔥 [S級] 海嘯多頭 (信心${confidence}%)`, class: "rank-s" };
+            else if (p9 > 20000 && !isResonance) result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
+            else if (isResonance) result = { text: `💪 [A級] 順勢進攻 (信心${confidence}%)`, class: "rank-a-bull" };
+            else result = { text: `⚡ [B級] 誘空反轉 (信心${confidence}%)`, class: "rank-b" };
         }
         else if (p9 < -2000) {
-            let isResonance = (p7 < 0);
-            let isTrend = (e_dir === -1);
-            confidence = 50;
+            let isResonance = (p7 < 0); let isTrend = (e_dir === -1); confidence = 50;
             if (p9 < -10000) confidence += 30; else if (p9 < -5000) confidence += 20; else confidence += 10;
-            if (isResonance) confidence += 10;
-            if (isTrend) confidence += 10;
+            if (isResonance) confidence += 10; if (isTrend) confidence += 10;
             if (p9 < -20000 && !isResonance) confidence = 90;
 
-            if (p9 < -10000 && isResonance && isTrend) {
-                result = { text: `☠️ [S級] 毀滅空頭 (信心${confidence}%)`, class: "rank-s" };
-            } else if (p9 < -20000 && !isResonance) {
-                result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
-            } else if (isResonance) {
-                result = { text: `📉 [A級] 順勢壓制 (信心${confidence}%)`, class: "rank-a-bear" };
-            } else {
-                result = { text: `🪤 [B級] 誘多殺盤 (信心${confidence}%)`, class: "rank-b" };
-            }
+            if (p9 < -10000 && isResonance && isTrend) result = { text: `☠️ [S級] 毀滅空頭 (信心${confidence}%)`, class: "rank-s" };
+            else if (p9 < -20000 && !isResonance) result = { text: `🚜 [B+級] 坦克碾壓 (信心${confidence}%)`, class: "rank-s" };
+            else if (isResonance) result = { text: `📉 [A級] 順勢壓制 (信心${confidence}%)`, class: "rank-a-bear" };
+            else result = { text: `🪤 [B級] 誘多殺盤 (信心${confidence}%)`, class: "rank-b" };
         }
         return result;
     }
@@ -527,36 +453,23 @@
         let hour = parseInt((data.t || "00:00").split(':')[0]);
         let min = parseInt((data.t || "00:00").split(':')[1]);
         
-        let phaseName = "";
-        let focusText = "";
-        let weightText = "";
-        let adviceText = "";
-
+        let phaseName = "", focusText = "", weightText = "", adviceText = "";
         let isEarly = (hour === 8 && min >= 45) || (hour === 9);
         let isMid = (hour >= 10 && hour < 13);
         let isLate = (hour === 13);
-        let isNight = (hour >= 15 || hour < 5);
 
         if (isEarly) {
-            phaseName = "🕒 早盤衝鋒期 (08:45-10:00)";
-            focusText = "🔥 P9 實單 (即時動能)";
-            weightText = "P9 (70%) > P7 (20%) > E6 (10%)";
-            adviceText = "趨勢未定，請無視 E6，緊盯 P9 方向。若 P9 > 5000 且 R7 同向，勇敢追價。快進快出，不戀戰。";
+            phaseName = "🕒 早盤衝鋒期"; focusText = "🔥 P9 實單"; weightText = "P9 > P7 > E6";
+            adviceText = "趨勢未定，無視 E6，緊盯 P9。P9>5000 且 R7 同向可追價，快進快出。";
         } else if (isMid) {
-            phaseName = "🕒 中盤趨勢期 (10:00-13:00)";
-            focusText = "⚖️ E6 趨勢 + P9 動能";
-            weightText = "E6 (40%) = P9 (40%) > VWAP (20%)";
-            adviceText = "大盤方向已出 (E6 為大戶掛單結構)。請順著 E6 方向做單。若 P9 與 E6 背離，請等待回測 VWAP 再進場。";
+            phaseName = "🕒 中盤趨勢期"; focusText = "⚖️ E6 + P9"; weightText = "E6 = P9 > VWAP";
+            adviceText = "大盤方向已出，順 E6 做單。若 P9 背離，等回測 VWAP 再進。";
         } else if (isLate) {
-            phaseName = "🕒 尾盤決策期 (13:00-13:45)";
-            focusText = "📦 留倉評估 (E6 + 尾盤量)";
-            weightText = "E6 (50%) > P9 (30%) > VWAP (20%)";
-            adviceText = "準備結算。若 E6 (大戶掛單結構) 與 P9 同向且價格在 VWAP 之上，可考慮留多單。若方向不一，建議空手過夜。";
+            phaseName = "🕒 尾盤決策期"; focusText = "📦 留倉評估"; weightText = "E6 > P9 > VWAP";
+            adviceText = "準備結算。E6 與 P9 同向且在 VWAP 之上可留多，否則建議空手。";
         } else {
-            phaseName = "🌙 夜盤時段";
-            focusText = "🌎 美股連動 + P9 實單";
-            weightText = "P9 (60%) > E5 (30%) > E6 (10%)";
-            adviceText = "波動劇烈，P9 為王。請參考 <b>E6 (日盤大戶掛單結構)</b> 作為支撐壓力，並觀察 <b>E5 (夜盤結構)</b> 是否同向。若 P9 出現巨量，請完全依照 P9 指示。";
+            phaseName = "🌙 夜盤時段"; focusText = "🌎 美股 + P9"; weightText = "P9 > E5 > E6";
+            adviceText = "波動劇烈 P9 為王。以 E6 作支撐壓力，觀 E5 方向。P9 巨量則依 P9。";
         }
 
         document.getElementById('st-phase').innerText = phaseName;
@@ -564,10 +477,9 @@
         document.getElementById('st-weight').innerText = weightText;
         
         let finalAdvice = `【${strategyResult.text}】<br>`;
-        
         if (data.ai_advice && data.ai_advice !== "") {
-            finalAdvice += `<span style="color:#ffd60a; font-weight:600;">🤖 Gemini 實時解析：</span><br>${data.ai_advice}`;
-            document.getElementById('st-phase').innerText = "✨ AI 即時幕僚";
+            finalAdvice += `<span style="color:#ffd60a; font-weight:600;">🤖 Gemini 解析：</span><br>${data.ai_advice}`;
+            document.getElementById('st-phase').innerText = "✨ AI 幕僚";
         } else {
             finalAdvice += adviceText;
         }
@@ -605,8 +517,7 @@
       else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
       else{pTag.innerText="整理";}
 
-      let bullR = parseFloat(data.bull_r || 50);
-      let bearR = 100 - bullR;
+      let bullR = parseFloat(data.bull_r || 50); let bearR = 100 - bullR;
       document.getElementById('bull-force').innerText = data.bull_f;
       document.getElementById('bear-force').innerText = data.bear_f;
       document.getElementById('bull-bar').style.width = bullR + "%";
@@ -646,40 +557,29 @@
       
       let old_ps = parseInt(data.old_p_s || 0);
       let pOldBox = document.getElementById('p-old-box');
-      if (old_ps > 0 && old_ps !== ps) {
-          document.getElementById('p-old').innerText = old_ps;
-          pOldBox.style.display = "inline-flex"; 
-      } else {
-          pOldBox.style.display = "none"; 
-      }
+      if (old_ps > 0 && old_ps !== ps) { document.getElementById('p-old').innerText = old_ps; pOldBox.style.display = "inline-flex"; } 
+      else { pOldBox.style.display = "none"; }
 
       document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
       document.getElementById('s-vol').innerText = ss > 0 ? "(" + sv + ")" : "";
 
       let old_ss = parseInt(data.old_s_s || 0);
       let sOldBox = document.getElementById('s-old-box');
-      if (old_ss > 0 && old_ss !== ss) {
-          document.getElementById('s-old').innerText = old_ss;
-          sOldBox.style.display = "inline-flex";
-      } else {
-          sOldBox.style.display = "none";
-      }
+      if (old_ss > 0 && old_ss !== ss) { document.getElementById('s-old').innerText = old_ss; sOldBox.style.display = "inline-flex"; } 
+      else { sOldBox.style.display = "none"; }
       
-      const chipLabels = { 'c1': '近月 夜盤 (E5)', 'c2': '近月 日盤 (E6)', 'c3': '次月 夜盤', 'c4': '次月 日盤' };
+      const chipLabels = { 'c1': '近月夜盤(E5)', 'c2': '近月日盤(E6)', 'c3': '次月夜盤', 'c4': '次月日盤' };
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
-        let parts = raw.split('|');
-        let v = parseFloat(parts[0].replace('%',''));
+        let parts = raw.split('|'); let v = parseFloat(parts[0].replace('%',''));
         let el = document.getElementById(id+'-val');
-        el.innerText = parts[0]; 
-        el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
+        el.innerText = parts[0]; el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
         let tag = document.getElementById(id+'-tag');
-        tag.innerText = parts[1]; 
-        tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
+        tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
         let card = document.getElementById(id+'-card');
         if(parts[1].includes("強")) card.style.border = v>0?"1px solid rgba(255,69,58,0.3)":"1px solid rgba(48,209,88,0.3)";
-        else card.style.border = "none";
-        let labelSpan = card.querySelector('.label');
+        else card.style.border = "1px solid #333";
+        let labelSpan = card.querySelector('.box-header');
         if(labelSpan && chipLabels[id]) labelSpan.innerText = chipLabels[id];
       });
     }
@@ -687,8 +587,8 @@
     function getChipValueForTime(d) {
         let hour = parseInt(d.t.split(':')[0]);
         let isDay = (hour >= 8 && hour < 14);
-        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月 日盤 E6)", color: '#ffd60a' }; 
-        else return { val: parseChipValue(d.c1), label: "籌碼 (近月 夜盤 E5)", color: '#30d158' }; 
+        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月日盤)", color: '#ffd60a' }; 
+        else return { val: parseChipValue(d.c1), label: "籌碼 (近月夜盤)", color: '#30d158' }; 
     }
     
     function updateChartNewData(d) {
@@ -736,7 +636,7 @@
         
         chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
-        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6 動能 (%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9 實單 (口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
     }
   </script>
 </body>
