@@ -56,10 +56,11 @@
     .target-price-sm { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.1; }
     .target-diff-sm { font-size: 9px; font-weight: bold; margin-top: 1px; }
     
-    /* Alpha-TX 狀態邊框 */
+    /* ★★★ Alpha-TX 狀態邊框 (新增 TRAP 誘多陷阱) ★★★ */
     .st-STRONG { border-left-color: var(--red); background: rgba(255, 69, 58, 0.1); }
     .st-CRASH { border-left-color: var(--green); background: rgba(48, 209, 88, 0.1); }
     .st-DEFENSE { border-left-color: var(--blue); background: rgba(10, 132, 255, 0.1); }
+    .st-TRAP { border-left-color: var(--yellow); background: rgba(255, 214, 10, 0.1); } /* 新增黃橘色警示 */
     .st-WAIT { border-left-color: #555; }
 
     /* === 第三排：多空對戰條 === */
@@ -171,7 +172,7 @@
 
     <div class="alpha-box" id="alpha-card">
         <div class="alpha-top">
-            <div class="box-header" style="margin-bottom:0; color:#fff;">⚡ Alpha-TX 台50熱度</div>
+            <div class="box-header" style="margin-bottom:0; color:#fff;">⚡ Alpha-TX 淨熱度</div>
             <div style="display:flex; align-items:center; gap:6px;">
                 <span style="font-size:10px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
                 <div id="alpha-prob-badge" class="prob-badge">等待</div>
@@ -398,6 +399,7 @@
                 const diffValue = parseFloat(info.d || 0);
                 const diffColor = diffValue > 0 ? 'c-red' : (diffValue < 0 ? 'c-green' : '');
                 const diffSign = diffValue > 0 ? '+' : '';
+                // ★ 新增：讀取 s (狀態) 並套用對應的邊框 class (含 TRAP)
                 const statusClass = 'st-' + (info.s || 'WAIT');
                 
                 const card = document.createElement('div');
