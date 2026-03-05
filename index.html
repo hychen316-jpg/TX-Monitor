@@ -283,9 +283,12 @@
     const auth = firebase.auth();
     const db = firebase.database();
     
+    // ==========================================
+    // ★ 修正重點：把 NODE_ALPHA 的路徑指對地方 ★
+    // ==========================================
     const NODE_REALTIME = 'monitor_realtime';
     const NODE_HISTORY  = 'monitor_history';
-    const NODE_ALPHA    = 'alpha_data';
+    const NODE_ALPHA    = 'monitor_realtime/alpha_data'; // 修正了原本只有 'alpha_data' 的錯誤
 
     let chartPrice = null; let chartChip = null; let chartP6 = null;
 
@@ -399,7 +402,7 @@
                 const diffValue = parseFloat(info.d || 0);
                 const diffColor = diffValue > 0 ? 'c-red' : (diffValue < 0 ? 'c-green' : '');
                 const diffSign = diffValue > 0 ? '+' : '';
-                // ★ 新增：讀取 s (狀態) 並套用對應的邊框 class (含 TRAP)
+                // 讀取 s (狀態) 並套用對應的邊框 class (含 TRAP)
                 const statusClass = 'st-' + (info.s || 'WAIT');
                 
                 const card = document.createElement('div');
