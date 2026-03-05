@@ -379,8 +379,9 @@
     }
 
     // Alpha-TX UI 渲染邏輯
+    // Alpha-TX UI 渲染邏輯
     function updateAlphaUI(data) {
-        const heatVal = data.heat || 0;
+        const heatVal = parseFloat(data.heat || 0);
         document.getElementById('alpha-heat-val').innerText = heatVal.toFixed(1) + '%';
         const heatBar = document.getElementById('alpha-heat-bar');
         heatBar.style.width = heatVal + '%';
@@ -392,9 +393,10 @@
         else if (prob === 'LOW') { probBadge.innerText = '📉 易壓制'; probBadge.className = 'prob-badge prob-low'; } 
         else { probBadge.innerText = '⚖️ 震盪'; probBadge.className = 'prob-badge prob-neutral'; }
 
-        document.getElementById('alpha-strong-count').innerText = data.strong_count !== undefined ? data.strong_count : '-';
+        // ★ 防呆優化：確保強共振數量一定是數字
+        const strongCount = isNaN(data.strong_count) ? '-' : data.strong_count;
+        document.getElementById('alpha-strong-count').innerText = strongCount;
         
-        // ★ 擷取完整時間字串中的 HH:MM:SS 部分
         let timeStr = data.last_update ? data.last_update.split(' ')[1] : '--:--:--';
         document.getElementById('alpha-update-time').innerText = timeStr;
 
@@ -653,3 +655,4 @@
   </script>
 </body>
 </html>
+
