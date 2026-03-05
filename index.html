@@ -49,15 +49,10 @@
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
     
-    /* ★ 修改：核心標的 4 欄微型網格，壓縮行距 */
+    /* 核心標的 4 欄微型網格 */
     .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-top: 4px; }
-    
-    /* ★ 修改：卡片內部 Padding 縮到最小 */
     .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 2px 2px; text-align: center; border-left: 2px solid #555; display: flex; flex-direction: column; justify-content: center; }
-    
     .target-name-sm { font-size: 9px; color: #aaa; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0px; }
-    
-    /* ★ 修改：讓價格和漲跌幅排在同一行，大幅縮減高度 */
     .target-data-row { display: flex; justify-content: center; align-items: baseline; gap: 2px; }
     .target-price-sm { font-size: 11px; font-weight: 700; color: #fff; line-height: 1; }
     .target-diff-sm { font-size: 8px; font-weight: bold; line-height: 1; }
@@ -178,7 +173,11 @@
 
     <div class="alpha-box" id="alpha-card">
         <div class="alpha-top">
-            <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 淨熱度</div>
+            <div style="display:flex; align-items:baseline; gap:8px;">
+                <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 淨熱度</div>
+                <span id="alpha-update-time" style="font-size:10px; color:#64d2ff; font-weight:bold;">--:--:--</span>
+            </div>
+            
             <div style="display:flex; align-items:center; gap:4px;">
                 <span style="font-size:9px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
                 <div id="alpha-prob-badge" class="prob-badge">等待</div>
@@ -189,7 +188,6 @@
             <div class="heat-container-sm">
                 <div id="alpha-heat-bar" class="heat-bar" style="width: 0%;"></div>
             </div>
-            <span id="alpha-update-time" style="font-size:8px; color:#555;">--:--</span>
         </div>
         <div class="targets-grid-compact" id="alpha-targets">
             <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 2px;">接收數據中...</div>
@@ -380,7 +378,7 @@
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
-    // ★ 修改：Alpha-TX UI 渲染邏輯，配合壓縮版面
+    // Alpha-TX UI 渲染邏輯
     function updateAlphaUI(data) {
         const heatVal = data.heat || 0;
         document.getElementById('alpha-heat-val').innerText = heatVal.toFixed(1) + '%';
@@ -396,9 +394,8 @@
 
         document.getElementById('alpha-strong-count').innerText = data.strong_count !== undefined ? data.strong_count : '-';
         
-        // 隱藏時間中秒的部分，節省空間
-        let timeStr = data.last_update ? data.last_update.split(' ')[1] : '--:--';
-        if(timeStr && timeStr.length > 5) timeStr = timeStr.substring(0, 5);
+        // ★ 擷取完整時間字串中的 HH:MM:SS 部分
+        let timeStr = data.last_update ? data.last_update.split(' ')[1] : '--:--:--';
         document.getElementById('alpha-update-time').innerText = timeStr;
 
         const targetsContainer = document.getElementById('alpha-targets');
@@ -413,7 +410,6 @@
                 
                 const card = document.createElement('div');
                 card.className = `target-card-sm ${statusClass}`;
-                // ★ 修改：將價格與百分比放在同一行
                 card.innerHTML = `
                     <div class="target-name-sm">${name}</div>
                     <div class="target-data-row">
