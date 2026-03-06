@@ -36,7 +36,7 @@
     .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 10px rgba(255, 69, 58, 0.2); }
     .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 10px rgba(48, 209, 88, 0.2); }
 
-    /* === 第二排：Alpha-TX 高密度面板 (已極致壓縮) === */
+    /* === 第二排：Alpha-TX 高密度面板 === */
     .alpha-box { background: var(--card); border-radius: 10px; padding: 6px 8px; border: 1px solid #333; }
     .alpha-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;}
     .heat-container-sm { height: 4px; background: #222; border-radius: 2px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); flex: 1; margin: 0 6px; }
@@ -49,7 +49,7 @@
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
     
-    /* 核心標的 4 欄微型網格 (高辨識度強化版) */
+    /* 核心標的 4 欄微型網格 */
     .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
     .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease; }
     .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
@@ -57,14 +57,13 @@
     .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     .target-diff-sm { font-size: 9px; font-weight: bold; line-height: 1; }
     
-    /* Alpha-TX 狀態邊框 (漸層發光視覺) */
+    /* Alpha-TX 狀態邊框 */
     .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(255, 69, 58, 0.25); }
     .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
     .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
     .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
     .st-WAIT { border-left-color: #555; background: #2c2c2e; }
 
-    /* ★ 新增：狀態說明 Legend 樣式 */
     .alpha-legend { display: flex; justify-content: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; flex-wrap: wrap; }
     .legend-item { display: flex; align-items: center; gap: 3px; font-size: 9px; color: #aaa; font-weight: 600; }
     .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
@@ -84,7 +83,6 @@
     .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 2px; padding: 0 5px; }
     .logic-text { text-align: center; font-size: 13px; font-weight: 700; color: #fff; margin-top: 2px; letter-spacing: 0.5px; }
     
-    /* P9 實單力道 */
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; }
     .p9-label { font-size: 13px; color: #ccc; font-weight: 700; }
     .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
@@ -187,7 +185,6 @@
                 <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 淨熱度</div>
                 <span id="alpha-update-time" style="font-size:10px; color:#64d2ff; font-weight:bold;">--:--:--</span>
             </div>
-            
             <div style="display:flex; align-items:center; gap:4px;">
                 <span style="font-size:9px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
                 <div id="alpha-prob-badge" class="prob-badge">等待</div>
@@ -202,7 +199,6 @@
         <div class="targets-grid-compact" id="alpha-targets">
             <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 2px;">接收數據中...</div>
         </div>
-        
         <div class="alpha-legend">
             <div class="legend-item"><div class="legend-dot dot-red"></div>共振噴出</div>
             <div class="legend-item"><div class="legend-dot dot-yellow"></div>誘空壓盤</div>
@@ -224,12 +220,10 @@
             <div>🔴 Call淨: <span id="bull-force" style="color:var(--red)">--</span></div>
             <div>🟢 Put淨: <span id="bear-force" style="color:var(--green)">--</span></div>
         </div>
-        
         <div class="p9-container">
             <div class="p9-label">🔥 實單力道 (P9):</div>
             <div id="p9-val" class="p9-val">--</div>
         </div>
-
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
@@ -287,13 +281,12 @@
     <div class="section-title">🚀 P6動能(左) vs P9實單(右)</div>
     <div class="split-chart-box"><canvas id="chartP6"></canvas></div>
 
-    <div class="section-title">🧱 莊家防線厚度 (壓力掛單 vs 支撐掛單)</div>
+    <div class="section-title">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
     <div class="split-chart-box"><canvas id="chartWall"></canvas></div>
 
   </div>
 
   <script>
-    // 1. Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCPkFmEOfCRBBR6TQbji8G5kNZk7XBi_JQ",
       authDomain: "tx-monitor-93eb2.firebaseapp.com",
@@ -315,7 +308,6 @@
     // ★ 新增 chartWall 變數
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
 
-    // 2. Auth
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
       const dashboard = document.getElementById('dashboard');
@@ -392,7 +384,6 @@
     function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
     function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
-    // 3. 戰略核心
     function startDataSync() {
       db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
       db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (s) => { if(s.val()) updateChartNewData(s.val()); });
@@ -400,7 +391,6 @@
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
-    // Alpha-TX UI 渲染邏輯
     function updateAlphaUI(data) {
         const heatVal = parseFloat(data.heat || 0);
         document.getElementById('alpha-heat-val').innerText = heatVal.toFixed(1) + '%';
@@ -625,7 +615,7 @@
         else return { val: parseChipValue(d.c1), label: "籌碼 (近月夜盤)", color: '#30d158' }; 
     }
     
-    // ★ 更新：解析防線掛單量並繪製到第四張圖表
+    // ★ 關鍵更新：把防線的 履約價(Strike) 與 掛單量(Volume) 餵給第四張圖表
     function updateChartNewData(d) {
         if (!chartPrice) return;
         let timeLabel = d.t.substring(0,5);
@@ -634,6 +624,9 @@
         let priceRaw = parseFloat(d.price || 0);
         let chipInfo = getChipValueForTime(d);
         
+        // 抓取防線數據 (若為 0 則轉為 null，避免圖表 Y 軸被強制拉低到 0)
+        let pWallStrike = parseInt(d.now_p_s || 0);
+        let sWallStrike = parseInt(d.now_s_s || 0);
         let pWallVol = parseInt(d.now_p_v || 0);
         let sWallVol = parseInt(d.now_s_v || 0);
 
@@ -642,23 +635,29 @@
         chartChip.data.datasets[0].label = chipInfo.label; chartChip.data.datasets[0].borderColor = chipInfo.color;
         chartP6.data.labels.push(timeLabel); chartP6.data.datasets[0].data.push(p6Raw); chartP6.data.datasets[1].data.push(p9Raw);
         
+        // 寫入防線圖表
         chartWall.data.labels.push(timeLabel); 
-        chartWall.data.datasets[0].data.push(pWallVol);
-        chartWall.data.datasets[1].data.push(sWallVol);
+        chartWall.data.datasets[0].data.push(pWallStrike > 0 ? pWallStrike : null); // 壓力履約價
+        chartWall.data.datasets[1].data.push(sWallStrike > 0 ? sWallStrike : null); // 支撐履約價
+        chartWall.data.datasets[2].data.push(pWallVol); // 壓力厚度
+        chartWall.data.datasets[3].data.push(sWallVol); // 支撐厚度
 
         if (chartPrice.data.labels.length > 120) {
             chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
             chartChip.data.labels.shift(); chartChip.data.datasets[0].data.shift();
             chartP6.data.labels.shift(); chartP6.data.datasets[0].data.shift(); chartP6.data.datasets[1].data.shift();
-            chartWall.data.labels.shift(); chartWall.data.datasets[0].data.shift(); chartWall.data.datasets[1].data.shift();
+            chartWall.data.labels.shift(); 
+            chartWall.data.datasets[0].data.shift(); chartWall.data.datasets[1].data.shift();
+            chartWall.data.datasets[2].data.shift(); chartWall.data.datasets[3].data.shift();
         }
         chartPrice.update('none'); chartChip.update('none'); chartP6.update('none'); chartWall.update('none');
     }
 
-    // ★ 更新：讀取歷史防線掛單量
+    // ★ 關鍵更新：載入歷史資料時，一併載入防線的履約價與掛單量
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
-        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[], dataWallP=[], dataWallS=[];
+        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
+        let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
         dataArray.forEach(d => {
@@ -667,8 +666,11 @@
             dataP6.push(parseFloat((d.pwr_t||"0").replace("%","").replace("+","")));
             dataP9.push(parseFloat(d.p9||0)); lastChipInfo=info;
             
-            dataWallP.push(parseInt(d.now_p_v || 0));
-            dataWallS.push(parseInt(d.now_s_v || 0));
+            // 處理防線數據
+            let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
+            let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
+            dataWallPV.push(parseInt(d.now_p_v || 0));
+            dataWallSV.push(parseInt(d.now_s_v || 0));
         });
         
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
@@ -676,14 +678,16 @@
         chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
         chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
         
-        chartWall.data.labels=labels; chartWall.data.datasets[0].data=dataWallP; chartWall.data.datasets[1].data=dataWallS;
+        chartWall.data.labels=labels; 
+        chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS;
+        chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
         
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
     }
     
     function parseChipValue(str) { if(!str)return 0; return parseFloat(str.split('|')[0].replace('%','')); }
 
-    // ★ 更新：初始化第四張圖表 chartWall
+    // ★ 關鍵更新：設定第四張圖表的雙 Y 軸與階梯線屬性
     function initCharts() {
         const commonOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } } } };
         
@@ -691,20 +695,24 @@
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
         chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         
+        // ★ 初始化第四張圖表：雙 Y 軸 (左邊履約價，右邊掛單量)
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { 
             type: 'line', 
             data: { 
                 labels: [], 
                 datasets: [ 
-                    { label: '壓力掛單量(空)', data: [], borderColor: '#30d158', backgroundColor: 'rgba(48, 209, 88, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 0, fill: true }, 
-                    { label: '支撐掛單量(多)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 0, fill: true } 
+                    { label: '壓力線(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, 
+                    { label: '支撐線(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' },
+                    { label: '壓力厚度(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.15)', borderColor: 'rgba(48, 209, 88, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' },
+                    { label: '支撐厚度(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.15)', borderColor: 'rgba(255, 69, 58, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }
                 ] 
             }, 
             options: { 
                 ...commonOptions, 
                 scales: { 
-                    ...commonOptions.scales, 
-                    y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#aaa' }, min: 0 } 
+                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, // 左軸：履約價 (不從0開始)
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } // 右軸：掛單量 (從0開始)
                 } 
             } 
         });
