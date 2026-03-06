@@ -49,20 +49,30 @@
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
     
-    /* 核心標的 4 欄微型網格 */
-    .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-top: 4px; }
-    .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 2px 2px; text-align: center; border-left: 2px solid #555; display: flex; flex-direction: column; justify-content: center; }
-    .target-name-sm { font-size: 9px; color: #aaa; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0px; }
-    .target-data-row { display: flex; justify-content: center; align-items: baseline; gap: 2px; }
-    .target-price-sm { font-size: 11px; font-weight: 700; color: #fff; line-height: 1; }
-    .target-diff-sm { font-size: 8px; font-weight: bold; line-height: 1; }
+    /* 核心標的 4 欄微型網格 (高辨識度強化版) */
+    .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+    .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease; }
+    .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .target-data-row { display: flex; justify-content: center; align-items: baseline; gap: 3px; }
+    .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .target-diff-sm { font-size: 9px; font-weight: bold; line-height: 1; }
     
-    /* Alpha-TX 狀態邊框 */
-    .st-STRONG { border-left-color: var(--red); background: rgba(255, 69, 58, 0.1); }
-    .st-CRASH { border-left-color: var(--green); background: rgba(48, 209, 88, 0.1); }
-    .st-DEFENSE { border-left-color: var(--blue); background: rgba(10, 132, 255, 0.1); }
-    .st-TRAP { border-left-color: var(--yellow); background: rgba(255, 214, 10, 0.1); }
-    .st-WAIT { border-left-color: #555; }
+    /* Alpha-TX 狀態邊框 (漸層發光視覺) */
+    .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(255, 69, 58, 0.25); }
+    .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
+    .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    .st-WAIT { border-left-color: #555; background: #2c2c2e; }
+
+    /* ★ 新增：狀態說明 Legend 樣式 */
+    .alpha-legend { display: flex; justify-content: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 3px; font-size: 9px; color: #aaa; font-weight: 600; }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-red { background: var(--red); box-shadow: 0 0 4px var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+    .dot-blue { background: var(--blue); }
+    .dot-gray { background: #555; }
 
     /* === 第三排：多空對戰條 === */
     .battle-box { background: var(--card); border-radius: 14px; padding: 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 4px; }
@@ -191,6 +201,14 @@
         </div>
         <div class="targets-grid-compact" id="alpha-targets">
             <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 2px;">接收數據中...</div>
+        </div>
+        
+        <div class="alpha-legend">
+            <div class="legend-item"><div class="legend-dot dot-red"></div>共振噴出</div>
+            <div class="legend-item"><div class="legend-dot dot-yellow"></div>誘空壓盤</div>
+            <div class="legend-item"><div class="legend-dot dot-gray"></div>震盪</div>
+            <div class="legend-item"><div class="legend-dot dot-blue"></div>資金護盤</div>
+            <div class="legend-item"><div class="legend-dot dot-green"></div>共振殺盤</div>
         </div>
     </div>
 
@@ -378,7 +396,6 @@
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
-    // Alpha-TX UI 渲染邏輯
     // Alpha-TX UI 渲染邏輯
     function updateAlphaUI(data) {
         const heatVal = parseFloat(data.heat || 0);
@@ -655,4 +672,3 @@
   </script>
 </body>
 </html>
-
