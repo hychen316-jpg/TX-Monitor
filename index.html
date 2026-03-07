@@ -484,21 +484,25 @@
         let finalAdvice = "";
         let stCard = document.getElementById('strategy-box');
         
-        // 1. 處理純 VBA 四票矩陣裁決 (優先顯示)
+        // ★ 1. 處理純 VBA 四票矩陣裁決 (加入第3段 60m 防線解析)
         if (data.four_pillars_advice) {
             let fpParts = data.four_pillars_advice.split('|');
             let fpMain = fpParts[0] ? fpParts[0].trim() : "";
             let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
+            let fpExtra = fpParts[2] ? fpParts[2].trim() : ""; // 捕捉夜盤 60m 防線
             
+            let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-left:6px; padding:2px 4px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
+
             finalAdvice += `<div style="margin-bottom:6px;">
                 <span style="color:#0a84ff; font-weight:700;">🏛️ 權重四票裁決 (即時)：</span><br>
                 <span style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:0.5px;">${fpMain}</span>
                 <span style="color:#ff9f0a; font-size:11px; margin-left:4px;">${fpTrigger}</span>
+                ${extraHtml}
             </div>`;
             
             if (fpMain.includes("多") || fpMain.includes("總攻") || fpMain.includes("噴發")) stCard.style.borderLeft = "5px solid var(--red)";
             else if (fpMain.includes("空") || fpMain.includes("跌") || fpMain.includes("殺")) stCard.style.borderLeft = "5px solid var(--green)";
-            else if (fpMain.includes("警告") || fpMain.includes("陷阱") || fpMain.includes("了結")) stCard.style.borderLeft = "5px solid var(--yellow)";
+            else if (fpMain.includes("警告") || fpMain.includes("陷阱") || fpMain.includes("了結") || fpMain.includes("套牢")) stCard.style.borderLeft = "5px solid var(--yellow)";
             else stCard.style.borderLeft = "5px solid #555";
             
         } else {
@@ -575,7 +579,7 @@
           logicEl.innerText = fpText;
           if (fpText.includes("多") || fpText.includes("總攻") || fpText.includes("噴發")) logicEl.style.color = "var(--red)";
           else if (fpText.includes("空") || fpText.includes("跌") || fpText.includes("殺")) logicEl.style.color = "var(--green)";
-          else if (fpText.includes("警告") || fpText.includes("陷阱") || fpText.includes("了結")) logicEl.style.color = "var(--yellow)";
+          else if (fpText.includes("警告") || fpText.includes("陷阱") || fpText.includes("了結") || fpText.includes("套牢")) logicEl.style.color = "var(--yellow)";
           else logicEl.style.color = "#aaa";
       } else {
           logicEl.innerText = strategy.text;
