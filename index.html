@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 雙軌AI制)</title>
+  <title>極速戰情室 (Pro Max - 日夜雙軌制)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -462,42 +462,37 @@
         let hour = parseInt((data.t || "00:00").split(':')[0]);
         let min = parseInt((data.t || "00:00").split(':')[1]);
         
-        let phaseName = "", adviceText = "";
-        let isEarly = (hour === 8 && min >= 45) || (hour === 9);
-        let isMid = (hour >= 10 && hour < 13);
-        let isLate = (hour === 13);
-
-        if (isEarly) {
-            phaseName = "🕒 早盤衝鋒期";
-            adviceText = "趨勢未定，無視 E6，緊盯 P9。P9>5000 且 R7 同向可追價，快進快出。";
-        } else if (isMid) {
-            phaseName = "🕒 中盤趨勢期";
-            adviceText = "大盤方向已出，順 E6 做單。若 P9 背離，等回測 VWAP 再進。";
-        } else if (isLate) {
-            phaseName = "🕒 尾盤決策期";
-            adviceText = "準備結算。E6 與 P9 同向且在 VWAP 之上可留多，否則建議空手。";
-        } else {
-            phaseName = "🌙 夜盤時段";
-            adviceText = "波動劇烈 P9 為王。以 E6 作支撐壓力，觀 E5 方向。P9 巨量則依 P9。";
-        }
+        let phaseName = "";
+        if ((hour === 8 && min >= 45) || (hour === 9)) phaseName = "🕒 早盤衝鋒期";
+        else if (hour >= 10 && hour < 13) phaseName = "🕒 中盤趨勢期";
+        else if (hour === 13) phaseName = "🕒 尾盤決策期";
+        else phaseName = "🌙 夜盤時段";
 
         let finalAdvice = "";
         let stCard = document.getElementById('strategy-box');
         
-        // ★ 1. 處理純 VBA 四票矩陣裁決 (加入第3段 60m 防線解析)
+        // ★ 0. 加入頂部固定的「日盤結算 DNA」區塊
+        let dayDNA = data.day_advice || "等待結算中...";
+        finalAdvice += `
+        <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;">
+            <span style="color:#ffd60a; font-weight:700; font-size:11px;">🌞 日盤結算 DNA (13:45)：</span><br>
+            <span style="color:#ccc; font-size:12px; font-weight:bold;">${dayDNA}</span>
+        </div>`;
+
+        // 1. 處理純 VBA 四票矩陣裁決 (加入第3段 60m 防線解析)
         if (data.four_pillars_advice) {
             let fpParts = data.four_pillars_advice.split('|');
             let fpMain = fpParts[0] ? fpParts[0].trim() : "";
             let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
             let fpExtra = fpParts[2] ? fpParts[2].trim() : ""; // 捕捉夜盤 60m 防線
             
-            let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-left:6px; padding:2px 4px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
+            let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-top:4px; display:inline-block; padding:2px 6px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
 
-            finalAdvice += `<div style="margin-bottom:6px;">
-                <span style="color:#0a84ff; font-weight:700;">🏛️ 權重四票裁決 (即時)：</span><br>
+            finalAdvice += `<div>
+                <span style="color:#0a84ff; font-weight:700;">🏛️ 即時四票裁決：</span><br>
                 <span style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:0.5px;">${fpMain}</span>
                 <span style="color:#ff9f0a; font-size:11px; margin-left:4px;">${fpTrigger}</span>
-                ${extraHtml}
+                <br>${extraHtml}
             </div>`;
             
             if (fpMain.includes("多") || fpMain.includes("總攻") || fpMain.includes("噴發")) stCard.style.borderLeft = "5px solid var(--red)";
@@ -506,13 +501,8 @@
             else stCard.style.borderLeft = "5px solid #555";
             
         } else {
-            // 如果還沒收到 VBA 數據，退回舊版顯示
-            finalAdvice += `【${strategyResult.text}】<br>${adviceText}<br><br>`;
-            if (strategyResult.class.includes('rank-s')) stCard.style.borderLeft = "5px solid #d4af37";
-            else if (strategyResult.class.includes('bull')) stCard.style.borderLeft = "5px solid var(--red)";
-            else if (strategyResult.class.includes('bear')) stCard.style.borderLeft = "5px solid var(--green)";
-            else if (strategyResult.class.includes('rank-b')) stCard.style.borderLeft = "5px solid var(--yellow)";
-            else stCard.style.borderLeft = "5px solid #444";
+            finalAdvice += `【${strategyResult.text}】<br><br>`;
+            stCard.style.borderLeft = "5px solid #444";
         }
 
         // 2. 處理 Gemini AI 語意解析 (附加在下方)
@@ -521,9 +511,9 @@
                 <span style="color:#ffd60a; font-weight:600;">🤖 Gemini 戰略解析 (5分更新)：</span><br>
                 <span style="color:#ddd; font-size:11px; line-height:1.4;">${data.ai_advice.replace(/<br>/g, '<br>')}</span>
             </div>`;
-            document.getElementById('st-phase').innerText = "✨ 雙軌 AI 制";
+            document.getElementById('st-phase').innerText = phaseName;
         } else {
-            document.getElementById('st-phase').innerText = "⚡ 矩陣運算中";
+            document.getElementById('st-phase').innerText = phaseName;
         }
         
         document.getElementById('st-advice').innerHTML = finalAdvice;
