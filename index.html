@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 審核制)</title>
+  <title>極速戰情室 (Pro Max - 雙軌AI制)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -305,7 +305,6 @@
     const NODE_HISTORY  = 'monitor_history';
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
 
-    // ★ 新增 chartWall 變數
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
 
     auth.onAuthStateChanged((user) => {
@@ -473,6 +472,7 @@
         return result;
     }
 
+    // ★ 關鍵更新：整合 VBA 矩陣裁決與 Gemini 語意解析
     function updateStrategyBox(data, strategyResult) {
         let hour = parseInt((data.t || "00:00").split(':')[0]);
         let min = parseInt((data.t || "00:00").split(':')[1]);
@@ -496,26 +496,52 @@
             adviceText = "波動劇烈 P9 為王。以 E6 作支撐壓力，觀 E5 方向。P9 巨量則依 P9。";
         }
 
-        document.getElementById('st-phase').innerText = phaseName;
         document.getElementById('st-focus').innerText = focusText;
         document.getElementById('st-weight').innerText = weightText;
         
-        let finalAdvice = `【${strategyResult.text}】<br>`;
-        if (data.ai_advice && data.ai_advice !== "") {
-            finalAdvice += `<span style="color:#ffd60a; font-weight:600;">🤖 Gemini 解析：</span><br>${data.ai_advice}`;
-            document.getElementById('st-phase').innerText = "✨ AI 幕僚";
+        let finalAdvice = "";
+        let stCard = document.getElementById('strategy-box');
+        
+        // 1. 處理純 VBA 四票矩陣裁決 (優先顯示)
+        if (data.four_pillars_advice) {
+            let fpParts = data.four_pillars_advice.split('|');
+            let fpMain = fpParts[0] ? fpParts[0].trim() : "";
+            let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
+            
+            finalAdvice += `<div style="margin-bottom:6px;">
+                <span style="color:#0a84ff; font-weight:700;">🏛️ 權重四票裁決 (即時)：</span><br>
+                <span style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:0.5px;">${fpMain}</span>
+                <span style="color:#ff9f0a; font-size:11px; margin-left:4px;">${fpTrigger}</span>
+            </div>`;
+            
+            // 依照 VBA 矩陣結果改變左側發光邊框
+            if (fpMain.includes("多") || fpMain.includes("總攻") || fpMain.includes("噴發")) stCard.style.borderLeft = "5px solid var(--red)";
+            else if (fpMain.includes("空") || fpMain.includes("跌") || fpMain.includes("殺")) stCard.style.borderLeft = "5px solid var(--green)";
+            else if (fpMain.includes("警告") || fpMain.includes("陷阱") || fpMain.includes("了結")) stCard.style.borderLeft = "5px solid var(--yellow)";
+            else stCard.style.borderLeft = "5px solid #555";
+            
         } else {
-            finalAdvice += adviceText;
+            // 如果還沒收到 VBA 數據，退回舊版顯示
+            finalAdvice += `【${strategyResult.text}】<br>${adviceText}<br><br>`;
+            if (strategyResult.class.includes('rank-s')) stCard.style.borderLeft = "5px solid #d4af37";
+            else if (strategyResult.class.includes('bull')) stCard.style.borderLeft = "5px solid var(--red)";
+            else if (strategyResult.class.includes('bear')) stCard.style.borderLeft = "5px solid var(--green)";
+            else if (strategyResult.class.includes('rank-b')) stCard.style.borderLeft = "5px solid var(--yellow)";
+            else stCard.style.borderLeft = "5px solid #444";
+        }
+
+        // 2. 處理 Gemini AI 語意解析 (附加在下方)
+        if (data.ai_advice && data.ai_advice !== "" && !data.ai_advice.includes("AI 指揮官連線中")) {
+            finalAdvice += `<div style="padding-top:8px; margin-top:6px; border-top:1px dashed #555;">
+                <span style="color:#ffd60a; font-weight:600;">🤖 Gemini 戰略解析 (5分更新)：</span><br>
+                <span style="color:#ddd; font-size:11px; line-height:1.4;">${data.ai_advice.replace(/<br>/g, '<br>')}</span>
+            </div>`;
+            document.getElementById('st-phase').innerText = "✨ 雙軌 AI 制";
+        } else {
+            document.getElementById('st-phase').innerText = "⚡ 矩陣運算中";
         }
         
         document.getElementById('st-advice').innerHTML = finalAdvice;
-        
-        let stCard = document.getElementById('strategy-box');
-        stCard.style.borderLeft = "5px solid #444";
-        if (strategyResult.class.includes('rank-s')) stCard.style.borderLeft = "5px solid #d4af37";
-        else if (strategyResult.class.includes('bull')) stCard.style.borderLeft = "5px solid var(--red)";
-        else if (strategyResult.class.includes('bear')) stCard.style.borderLeft = "5px solid var(--green)";
-        else if (strategyResult.class.includes('rank-b')) stCard.style.borderLeft = "5px solid var(--yellow)";
     }
 
     function updateUI(data) {
@@ -558,19 +584,30 @@
       p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
       p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
 
-      let strategy = analyzeStrategy(data);
+      let strategy = analyzeStrategy(data); // 仍保留用以判定 battle-box 顏色
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
       
-      logicEl.innerText = strategy.text;
+      // ★ 優先將四票決策結果顯示在 P9 下方的快速標語中
+      if (data.four_pillars_advice) {
+          let fpText = data.four_pillars_advice.split('|')[0].trim();
+          logicEl.innerText = fpText;
+          if (fpText.includes("多") || fpText.includes("總攻") || fpText.includes("噴發")) logicEl.style.color = "var(--red)";
+          else if (fpText.includes("空") || fpText.includes("跌") || fpText.includes("殺")) logicEl.style.color = "var(--green)";
+          else if (fpText.includes("警告") || fpText.includes("陷阱") || fpText.includes("了結")) logicEl.style.color = "var(--yellow)";
+          else logicEl.style.color = "#aaa";
+      } else {
+          logicEl.innerText = strategy.text;
+          if (strategy.class === 'rank-s') logicEl.style.color = "#d4af37";
+          else if (strategy.class.includes('bull')) logicEl.style.color = "var(--red)";
+          else if (strategy.class.includes('bear')) logicEl.style.color = "var(--green)";
+          else if (strategy.class === 'rank-b') logicEl.style.color = "var(--yellow)";
+          else logicEl.style.color = "#aaa";
+      }
+
       battleCard.className = "battle-box " + strategy.class;
       
-      if (strategy.class === 'rank-s') logicEl.style.color = "#d4af37";
-      else if (strategy.class.includes('bull')) logicEl.style.color = "var(--red)";
-      else if (strategy.class.includes('bear')) logicEl.style.color = "var(--green)";
-      else if (strategy.class === 'rank-b') logicEl.style.color = "var(--yellow)";
-      else logicEl.style.color = "#aaa";
-
+      // 更新雙引擎 AI 戰略面板
       updateStrategyBox(data, strategy);
 
       let ps = parseInt(data.now_p_s || 0), pv = parseInt(data.now_p_v || 0);
@@ -615,7 +652,6 @@
         else return { val: parseChipValue(d.c1), label: "籌碼 (近月夜盤)", color: '#30d158' }; 
     }
     
-    // ★ 關鍵更新：把防線的 履約價(Strike) 與 掛單量(Volume) 餵給第四張圖表
     function updateChartNewData(d) {
         if (!chartPrice) return;
         let timeLabel = d.t.substring(0,5);
@@ -624,7 +660,6 @@
         let priceRaw = parseFloat(d.price || 0);
         let chipInfo = getChipValueForTime(d);
         
-        // 抓取防線數據 (若為 0 則轉為 null，避免圖表 Y 軸被強制拉低到 0)
         let pWallStrike = parseInt(d.now_p_s || 0);
         let sWallStrike = parseInt(d.now_s_s || 0);
         let pWallVol = parseInt(d.now_p_v || 0);
@@ -635,12 +670,11 @@
         chartChip.data.datasets[0].label = chipInfo.label; chartChip.data.datasets[0].borderColor = chipInfo.color;
         chartP6.data.labels.push(timeLabel); chartP6.data.datasets[0].data.push(p6Raw); chartP6.data.datasets[1].data.push(p9Raw);
         
-        // 寫入防線圖表
         chartWall.data.labels.push(timeLabel); 
-        chartWall.data.datasets[0].data.push(pWallStrike > 0 ? pWallStrike : null); // 壓力履約價
-        chartWall.data.datasets[1].data.push(sWallStrike > 0 ? sWallStrike : null); // 支撐履約價
-        chartWall.data.datasets[2].data.push(pWallVol); // 壓力厚度
-        chartWall.data.datasets[3].data.push(sWallVol); // 支撐厚度
+        chartWall.data.datasets[0].data.push(pWallStrike > 0 ? pWallStrike : null); 
+        chartWall.data.datasets[1].data.push(sWallStrike > 0 ? sWallStrike : null); 
+        chartWall.data.datasets[2].data.push(pWallVol); 
+        chartWall.data.datasets[3].data.push(sWallVol); 
 
         if (chartPrice.data.labels.length > 120) {
             chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
@@ -653,7 +687,6 @@
         chartPrice.update('none'); chartChip.update('none'); chartP6.update('none'); chartWall.update('none');
     }
 
-    // ★ 關鍵更新：載入歷史資料時，一併載入防線的履約價與掛單量
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
         let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
@@ -666,7 +699,6 @@
             dataP6.push(parseFloat((d.pwr_t||"0").replace("%","").replace("+","")));
             dataP9.push(parseFloat(d.p9||0)); lastChipInfo=info;
             
-            // 處理防線數據
             let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
             let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
             dataWallPV.push(parseInt(d.now_p_v || 0));
@@ -687,7 +719,6 @@
     
     function parseChipValue(str) { if(!str)return 0; return parseFloat(str.split('|')[0].replace('%','')); }
 
-    // ★ 關鍵更新：設定第四張圖表的雙 Y 軸與階梯線屬性
     function initCharts() {
         const commonOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } } } };
         
@@ -695,7 +726,6 @@
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
         chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         
-        // ★ 初始化第四張圖表：雙 Y 軸 (左邊履約價，右邊掛單量)
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { 
             type: 'line', 
             data: { 
@@ -711,8 +741,8 @@
                 ...commonOptions, 
                 scales: { 
                     x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
-                    y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, // 左軸：履約價 (不從0開始)
-                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } // 右軸：掛單量 (從0開始)
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } 
                 } 
             } 
         });
