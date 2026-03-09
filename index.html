@@ -12,7 +12,8 @@
   
   <style>
     /* === 核心樣式 === */
-    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; }
+    /* ★ 新增 --purple 顏色變數 */
+    :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; --purple:#bf5af2; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:8px; margin:0; overflow-x:hidden; }
     
     /* 儀表板預設模糊 */
@@ -62,6 +63,8 @@
     .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
     .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
     .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    /* ★ 新增：RECOVER 狀態邊框 (紫羅蘭色) */
+    .st-RECOVER { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(191, 90, 242, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(191, 90, 242, 0.25); }
     .st-WAIT { border-left-color: #555; background: #2c2c2e; }
 
     .alpha-legend { display: flex; justify-content: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; flex-wrap: wrap; }
@@ -69,6 +72,8 @@
     .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
     .dot-red { background: var(--red); box-shadow: 0 0 4px var(--red); }
     .dot-yellow { background: var(--yellow); }
+    /* ★ 新增：紫色圖例點 */
+    .dot-purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
     .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
     .dot-blue { background: var(--blue); }
     .dot-gray { background: #555; }
@@ -195,12 +200,14 @@
         <div class="targets-grid-compact" id="alpha-targets">
             <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 2px;">接收數據中...</div>
         </div>
+        
         <div class="alpha-legend">
             <div class="legend-item"><div class="legend-dot dot-red"></div>共振噴出</div>
             <div class="legend-item"><div class="legend-dot dot-yellow"></div>誘空壓盤</div>
-            <div class="legend-item"><div class="legend-dot dot-gray"></div>震盪</div>
+            <div class="legend-item"><div class="legend-dot dot-purple"></div>跌勢收斂</div>
             <div class="legend-item"><div class="legend-dot dot-blue"></div>資金護盤</div>
             <div class="legend-item"><div class="legend-dot dot-green"></div>共振殺盤</div>
+            <div class="legend-item"><div class="legend-dot dot-gray"></div>震盪</div>
         </div>
     </div>
 
@@ -405,6 +412,14 @@
                 const diffSign = diffValue > 0 ? '+' : '';
                 const statusClass = 'st-' + (info.s || 'WAIT');
                 
+                // ★ 新增：解析 o_d 開盤對位數據並顯示
+                let odHtml = '';
+                if (info.o_d !== undefined) {
+                    let odColor = info.o_d > 0 ? 'color:#bf5af2;' : (info.o_d < 0 ? 'color:#30d158;' : 'color:#888;');
+                    let odSign = info.o_d > 0 ? '+' : '';
+                    odHtml = `<div style="font-size:8px; color:#aaa; margin-top:2px; line-height:1;">開 <span style="${odColor}">${odSign}${info.o_d}%</span></div>`;
+                }
+
                 const card = document.createElement('div');
                 card.className = `target-card-sm ${statusClass}`;
                 card.innerHTML = `
@@ -413,6 +428,7 @@
                         <span class="target-price-sm">${info.p === 0 ? '--' : info.p}</span>
                         <span class="target-diff-sm ${diffColor}">(${diffSign}${info.d}%)</span>
                     </div>
+                    ${odHtml}
                 `;
                 targetsContainer.appendChild(card);
             }
@@ -471,7 +487,6 @@
         let finalAdvice = "";
         let stCard = document.getElementById('strategy-box');
         
-        // ★ 0. 加入頂部固定的「日盤結算 DNA」區塊
         let dayDNA = data.day_advice || "等待結算中...";
         finalAdvice += `
         <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;">
@@ -479,12 +494,11 @@
             <span style="color:#ccc; font-size:12px; font-weight:bold;">${dayDNA}</span>
         </div>`;
 
-        // 1. 處理純 VBA 四票矩陣裁決 (加入第3段 60m 防線解析)
         if (data.four_pillars_advice) {
             let fpParts = data.four_pillars_advice.split('|');
             let fpMain = fpParts[0] ? fpParts[0].trim() : "";
             let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
-            let fpExtra = fpParts[2] ? fpParts[2].trim() : ""; // 捕捉夜盤 60m 防線
+            let fpExtra = fpParts[2] ? fpParts[2].trim() : "";
             
             let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-top:4px; display:inline-block; padding:2px 6px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
 
@@ -505,7 +519,6 @@
             stCard.style.borderLeft = "5px solid #444";
         }
 
-        // 2. 處理 Gemini AI 語意解析 (附加在下方)
         if (data.ai_advice && data.ai_advice !== "" && !data.ai_advice.includes("AI 指揮官連線中")) {
             finalAdvice += `<div style="padding-top:8px; margin-top:6px; border-top:1px dashed #555;">
                 <span style="color:#ffd60a; font-weight:600;">🤖 Gemini 戰略解析 (5分更新)：</span><br>
@@ -563,7 +576,6 @@
       let logicEl = document.getElementById('logic-text');
       let battleCard = document.getElementById('battle-card');
       
-      // ★ 優先將四票決策結果顯示在 P9 下方的快速標語中
       if (data.four_pillars_advice) {
           let fpText = data.four_pillars_advice.split('|')[0].trim();
           logicEl.innerText = fpText;
