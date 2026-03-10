@@ -12,7 +12,6 @@
   
   <style>
     /* === 核心樣式 === */
-    /* ★ 新增 --purple 顏色變數 */
     :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; --purple:#bf5af2; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:8px; margin:0; overflow-x:hidden; }
     
@@ -63,7 +62,6 @@
     .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
     .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
     .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
-    /* ★ 新增：RECOVER 狀態邊框 (紫羅蘭色) */
     .st-RECOVER { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(191, 90, 242, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(191, 90, 242, 0.25); }
     .st-WAIT { border-left-color: #555; background: #2c2c2e; }
 
@@ -72,7 +70,6 @@
     .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
     .dot-red { background: var(--red); box-shadow: 0 0 4px var(--red); }
     .dot-yellow { background: var(--yellow); }
-    /* ★ 新增：紫色圖例點 */
     .dot-purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
     .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
     .dot-blue { background: var(--blue); }
@@ -91,6 +88,8 @@
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; }
     .p9-label { font-size: 13px; color: #ccc; font-weight: 700; }
     .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+    /* ★ 新增：P9 Slope 動態標籤專屬樣式 */
+    .slope-label { font-size:11px; margin-left:4px; padding:3px 8px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
     /* === 第四排：AI 戰略指揮官區塊 === */
     .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
@@ -218,14 +217,16 @@
             <div id="bear-bar" class="bear-bar" style="width: 50%;"></div>
             <div id="ratio-text" class="percent-text">50% vs 50%</div>
         </div>
-        <div id="net-force-val" class="force-display">-- 口</div>
+        <div id="net-force-val" class="force-display">-- 能量</div>
         <div class="army-stats">
             <div>🔴 Call淨: <span id="bull-force" style="color:var(--red)">--</span></div>
             <div>🟢 Put淨: <span id="bear-force" style="color:var(--green)">--</span></div>
         </div>
+        
         <div class="p9-container">
-            <div class="p9-label">🔥 實單力道 (P9):</div>
+            <div class="p9-label">🔥 實單能量 (P9):</div>
             <div id="p9-val" class="p9-val">--</div>
+            <div id="p9-slope-label" class="slope-label">--</div>
         </div>
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
@@ -299,6 +300,9 @@
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
 
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
+    
+    // ★ 用於 P9 Slope 的 3 點移動平均平滑化陣列
+    let p9SlopeHistory = [];
 
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
@@ -412,7 +416,6 @@
                 const diffSign = diffValue > 0 ? '+' : '';
                 const statusClass = 'st-' + (info.s || 'WAIT');
                 
-                // ★ 新增：解析 o_d 開盤對位數據並顯示
                 let odHtml = '';
                 if (info.o_d !== undefined) {
                     let odColor = info.o_d > 0 ? 'color:#bf5af2;' : (info.o_d < 0 ? 'color:#30d158;' : 'color:#888;');
@@ -564,13 +567,63 @@
       
       let force = parseFloat(data.force || 0);
       let fEl = document.getElementById('net-force-val');
-      fEl.innerText = (force>0?"+":"") + force + " 口";
+      // ★ 變更：改為「能量」
+      fEl.innerText = (force>0?"+":"") + force + " 能量";
       fEl.className = "force-display " + (force>0?"c-red":"c-green");
 
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
       p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
       p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+
+      // =======================================================================
+      // ★ 新增：P9 Slope 動能斜率與背離解析 (SMA 3 平滑處理)
+      // =======================================================================
+      let rawSlope = parseFloat(data.p9_slope || 0);
+      p9SlopeHistory.push(rawSlope);
+      if (p9SlopeHistory.length > 3) p9SlopeHistory.shift();
+      let valP9Slope = Math.round(p9SlopeHistory.reduce((a, b) => a + b, 0) / p9SlopeHistory.length);
+
+      let p9SlopeEl = document.getElementById('p9-slope-label');
+      if (p9SlopeEl) {
+          let statusText = "";
+          let bgColor = "";
+          let textColor = "";
+
+          // 1. 判定竭盡背離 (最高優先級)
+          if (Math.abs(valP9) > 10000 && (valP9 * valP9Slope < 0) && Math.abs(valP9Slope) > 500) {
+              statusText = "⚠️ 竭盡背離";
+              bgColor = "#FFCC00";
+              textColor = "#000";
+          } 
+          // 2. 判定趨勢方向
+          else if (valP9 * valP9Slope > 0) {
+              statusText = "📈 加速";
+              bgColor = "#FF3B30";
+              textColor = "#FFF";
+          } 
+          else if (valP9 * valP9Slope < 0) {
+              statusText = "📉 減速";
+              bgColor = "#4CD964";
+              textColor = "#FFF";
+          }
+          else {
+              statusText = "⚖️ 平穩";
+              bgColor = "transparent";
+              textColor = "#888";
+          }
+
+          let sign = valP9Slope > 0 ? "+" : "";
+          if (bgColor !== "transparent") {
+              p9SlopeEl.innerText = statusText + " (Slope: " + sign + valP9Slope + ")";
+              p9SlopeEl.style.border = "1px solid " + bgColor;
+          } else {
+              p9SlopeEl.innerText = statusText;
+              p9SlopeEl.style.border = "1px solid #444";
+          }
+          p9SlopeEl.style.backgroundColor = bgColor;
+          p9SlopeEl.style.color = textColor;
+      }
 
       let strategy = analyzeStrategy(data); 
       let logicEl = document.getElementById('logic-text');
@@ -710,7 +763,9 @@
         
         chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
-        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(口)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
+        
+        // ★ 圖表標籤同步改為「能量」
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { 
             type: 'line', 
