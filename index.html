@@ -88,7 +88,6 @@
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; }
     .p9-label { font-size: 13px; color: #ccc; font-weight: 700; }
     .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
-    /* ★ 新增：P9 Slope 動態標籤專屬樣式 */
     .slope-label { font-size:11px; margin-left:4px; padding:3px 8px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
     /* === 第四排：AI 戰略指揮官區塊 === */
@@ -181,9 +180,10 @@
 
     <div class="alpha-box" id="alpha-card">
         <div class="alpha-top">
-            <div style="display:flex; align-items:baseline; gap:8px;">
+            <div style="display:flex; align-items:baseline; gap:6px;">
                 <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 淨熱度</div>
                 <span id="alpha-update-time" style="font-size:10px; color:#64d2ff; font-weight:bold;">--:--:--</span>
+                <div id="nsf-status-badge" style="font-size:9px; font-weight:bold; padding:1px 4px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 無</div>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
                 <span style="font-size:9px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
@@ -541,6 +541,33 @@
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
+      // ★ 新增：國安基金護盤指標解析
+      let nsfBadge = document.getElementById('nsf-status-badge');
+      if (nsfBadge && data.nsf_data) {
+          let nsfStatus = data.nsf_data.status || "NONE";
+          if (nsfStatus.includes("ACTIVE")) {
+              nsfBadge.innerText = "🔥 國安進場";
+              nsfBadge.style.color = "#000";
+              nsfBadge.style.backgroundColor = "var(--yellow)";
+              nsfBadge.style.borderColor = "var(--yellow)";
+          } else if (nsfStatus.includes("SUPPORT")) {
+              nsfBadge.innerText = "🏛️ 官股撐盤";
+              nsfBadge.style.color = "var(--red)";
+              nsfBadge.style.backgroundColor = "rgba(255, 69, 58, 0.15)";
+              nsfBadge.style.borderColor = "var(--red)";
+          } else if (nsfStatus.includes("OFFLINE")) {
+              nsfBadge.innerText = "🌙 護盤休市";
+              nsfBadge.style.color = "#888";
+              nsfBadge.style.backgroundColor = "transparent";
+              nsfBadge.style.borderColor = "#444";
+          } else {
+              nsfBadge.innerText = "🛡️ 護盤: 無";
+              nsfBadge.style.color = "#555";
+              nsfBadge.style.backgroundColor = "transparent";
+              nsfBadge.style.borderColor = "#333";
+          }
+      }
+
       let pVal = parseFloat(data.pwr_v || 0);
       let pEl = document.getElementById('pwr-val');
       let pBox = document.getElementById('pwr-box');
@@ -567,7 +594,6 @@
       
       let force = parseFloat(data.force || 0);
       let fEl = document.getElementById('net-force-val');
-      // ★ 變更：改為「能量」
       fEl.innerText = (force>0?"+":"") + force + " 能量";
       fEl.className = "force-display " + (force>0?"c-red":"c-green");
 
