@@ -545,14 +545,12 @@
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       
-      // ★ 新增：更新次月期指現價
       if(document.getElementById('price-next')) {
           document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--";
       }
 
-      // ★ 新增：計算期現價差與跨月價差
       if (document.getElementById('spread-spot')) {
-          if (data.p && data.spot) {
+          if (data.p && data.spot && parseFloat(data.spot) > 0) {
               let diffSpot = Math.round(parseFloat(data.p) - parseFloat(data.spot));
               let elSpot = document.getElementById('spread-spot');
               elSpot.innerText = (diffSpot > 0 ? "+" : "") + diffSpot;
@@ -560,7 +558,7 @@
           }
       }
       if (document.getElementById('spread-next')) {
-          if (data.p && data.p_next) {
+          if (data.p && data.p_next && parseFloat(data.p_next) > 0) {
               let diffNext = Math.round(parseFloat(data.p) - parseFloat(data.p_next));
               let elNext = document.getElementById('spread-next');
               elNext.innerText = (diffNext > 0 ? "+" : "") + diffNext;
@@ -572,7 +570,6 @@
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
-      // ★ 新增：國安基金護盤指標解析
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
           let nsfStatus = data.nsf_data.status || "NONE";
@@ -634,7 +631,7 @@
       p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
 
       // =======================================================================
-      // ★ 新增：P9 Slope 動能斜率與背離解析 (SMA 3 平滑處理)
+      // ★ 修正：P9 Slope 動能斜率與背離解析 (多空視覺分離)
       // =======================================================================
       let rawSlope = parseFloat(data.p9_slope || 0);
       p9SlopeHistory.push(rawSlope);
@@ -653,16 +650,26 @@
               bgColor = "#FFCC00";
               textColor = "#000";
           } 
-          // 2. 判定趨勢方向
-          else if (valP9 * valP9Slope > 0) {
-              statusText = "📈 加速";
-              bgColor = "#FF3B30";
+          // 2. 判定趨勢方向 (多空視覺分離)
+          else if (valP9 > 0 && valP9Slope > 0) {
+              statusText = "📈 多方加速";
+              bgColor = "#FF3B30"; // 台灣股市習慣：紅色多方
               textColor = "#FFF";
           } 
-          else if (valP9 * valP9Slope < 0) {
-              statusText = "📉 減速";
-              bgColor = "#4CD964";
+          else if (valP9 < 0 && valP9Slope < 0) {
+              statusText = "📉 空方加速";
+              bgColor = "#4CD964"; // 台灣股市習慣：綠色空方
               textColor = "#FFF";
+          }
+          else if (valP9 > 0 && valP9Slope < 0) {
+              statusText = "⚠️ 多方減速";
+              bgColor = "rgba(76, 217, 100, 0.2)"; // 淺綠
+              textColor = "#4CD964";
+          }
+          else if (valP9 < 0 && valP9Slope > 0) {
+              statusText = "⚠️ 空方減速";
+              bgColor = "rgba(255, 59, 48, 0.2)"; // 淺紅
+              textColor = "#FF3B30";
           }
           else {
               statusText = "⚖️ 平穩";
@@ -673,7 +680,7 @@
           let sign = valP9Slope > 0 ? "+" : "";
           if (bgColor !== "transparent") {
               p9SlopeEl.innerText = statusText + " (Slope: " + sign + valP9Slope + ")";
-              p9SlopeEl.style.border = "1px solid " + bgColor;
+              p9SlopeEl.style.border = "1px solid " + (bgColor.startsWith('rgba') ? textColor : bgColor);
           } else {
               p9SlopeEl.innerText = statusText;
               p9SlopeEl.style.border = "1px solid #444";
