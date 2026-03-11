@@ -163,7 +163,10 @@
   <div class="dashboard-container" id="dashboard">
     <div class="top-section">
       <div class="box">
-        <div class="box-header" style="margin-bottom:0;">TX 台指期</div>
+        <div class="box-header" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:flex-end;">
+            <span>TX 台指期</span>
+            <span style="font-size:10px; font-weight:normal; color:#888;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
+        </div>
         <div id="price" class="big-val">---</div>
         <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa; font-weight:500;">
             <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
@@ -537,6 +540,12 @@
 
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
+      
+      // ★ 新增：更新次月期指現價
+      if(document.getElementById('price-next')) {
+          document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--";
+      }
+      
       document.getElementById('update-time').innerText = "Update: " + data.t;
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
@@ -816,4 +825,4 @@
     }
   </script>
 </body>
-</html>
+</html>"
