@@ -172,6 +172,10 @@
             <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
             <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
         </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#aaa; font-weight:500;">
+            <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
+            <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
+        </div>
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
       <div class="box" style="text-align:right" id="pwr-box">
@@ -545,6 +549,24 @@
       if(document.getElementById('price-next')) {
           document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--";
       }
+
+      // ★ 新增：計算期現價差與跨月價差
+      if (document.getElementById('spread-spot')) {
+          if (data.p && data.spot) {
+              let diffSpot = Math.round(parseFloat(data.p) - parseFloat(data.spot));
+              let elSpot = document.getElementById('spread-spot');
+              elSpot.innerText = (diffSpot > 0 ? "+" : "") + diffSpot;
+              elSpot.style.color = diffSpot > 0 ? "var(--red)" : (diffSpot < 0 ? "var(--green)" : "#fff");
+          }
+      }
+      if (document.getElementById('spread-next')) {
+          if (data.p && data.p_next) {
+              let diffNext = Math.round(parseFloat(data.p) - parseFloat(data.p_next));
+              let elNext = document.getElementById('spread-next');
+              elNext.innerText = (diffNext > 0 ? "+" : "") + diffNext;
+              elNext.style.color = diffNext > 0 ? "var(--red)" : (diffNext < 0 ? "var(--green)" : "#fff");
+          }
+      }
       
       document.getElementById('update-time').innerText = "Update: " + data.t;
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
@@ -825,4 +847,4 @@
     }
   </script>
 </body>
-</html>"
+</html>
