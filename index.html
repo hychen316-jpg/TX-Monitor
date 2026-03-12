@@ -39,11 +39,6 @@
     /* === 第二排：Alpha-TX 高密度面板 === */
     .alpha-box { background: var(--card); border-radius: 10px; padding: 6px 8px; border: 1px solid #333; }
     .alpha-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;}
-    .heat-container-sm { height: 4px; background: #222; border-radius: 2px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); flex: 1; margin: 0 6px; }
-    .heat-bar { height: 100%; transition: width 0.5s ease-in-out; }
-    .heat-high { background: var(--red); box-shadow: 0 0 8px var(--red); }
-    .heat-neutral { background: var(--yellow); }
-    .heat-low { background: var(--green); }
     .prob-badge { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; }
     .prob-high { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); animation: pulse-red 1.5s infinite; }
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
@@ -178,31 +173,38 @@
         </div>
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
-      <div class="box" style="text-align:right" id="pwr-box">
-        <div class="box-header" style="margin-bottom:0;">🚀 P6 買方動能</div>
-        <div id="pwr-val" class="power-val">0%</div>
-        <div id="pwr-tag" class="chip-tag" style="align-self: flex-end;">Wait</div>
+      
+      <div class="box" style="display:flex; flex-direction:column; justify-content:space-between;" id="pwr-box">
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="box-header" style="margin-bottom:0;">🚀 P6 動能</div>
+                <div id="pwr-tag" class="chip-tag">Wait</div>
+            </div>
+            <div id="pwr-val" class="power-val" style="text-align:right;">0%</div>
+        </div>
+        
+        <div style="border-top:1px dashed #333; margin-top:6px; padding-top:6px; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+            <div id="nsf-status-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#555; white-space:nowrap; margin-bottom:2px;">🛡️ 護盤: 無</div>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+                <span style="font-size:11px; font-weight:700; color:#aaa;">Heat</span>
+                <span id="alpha-heat-val" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">--%</span>
+            </div>
+            <div id="alpha-heat-ex-box" style="font-size:11px; font-weight:bold; color:#aaa; display:none;">
+                (非神山: <span id="alpha-heat-ex-val">--%</span>)
+            </div>
+        </div>
       </div>
     </div>
 
     <div class="alpha-box" id="alpha-card">
         <div class="alpha-top">
             <div style="display:flex; align-items:baseline; gap:6px;">
-                <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 淨熱度</div>
+                <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 核心陣列</div>
                 <span id="alpha-update-time" style="font-size:10px; color:#64d2ff; font-weight:bold;">--:--:--</span>
-                <div id="nsf-status-badge" style="font-size:9px; font-weight:bold; padding:1px 4px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 無</div>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
                 <span style="font-size:9px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
                 <div id="alpha-prob-badge" class="prob-badge">等待</div>
-            </div>
-        </div>
-        
-        <div style="display:flex; align-items:center; gap:4px; margin-top:2px; margin-bottom:2px;">
-            <span id="alpha-heat-val" style="font-size:13px; font-weight:800; color:#fff;">--%</span>
-            <span id="alpha-heat-ex-box" style="font-size:9px; font-weight:bold; color:#aaa; display:none; white-space:nowrap;">(非神山: <span id="alpha-heat-ex-val">--%</span>)</span>
-            <div class="heat-container-sm">
-                <div id="alpha-heat-bar" class="heat-bar" style="width: 0%;"></div>
             </div>
         </div>
         
@@ -310,8 +312,6 @@
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
 
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
-    
-    // ★ 用於 P9 Slope 的 3 點移動平均平滑化陣列
     let p9SlopeHistory = [];
 
     auth.onAuthStateChanged((user) => {
@@ -399,21 +399,23 @@
 
     function updateAlphaUI(data) {
         const heatVal = parseFloat(data.heat || 0);
-        document.getElementById('alpha-heat-val').innerText = heatVal.toFixed(1) + '%';
-        const heatBar = document.getElementById('alpha-heat-bar');
-        heatBar.style.width = heatVal + '%';
-        heatBar.className = 'heat-bar ' + (heatVal > 60 ? 'heat-high' : (heatVal < 40 ? 'heat-low' : 'heat-neutral'));
+        let heatEl = document.getElementById('alpha-heat-val');
+        heatEl.innerText = heatVal.toFixed(1) + '%';
+        
+        // ★ Heat 自動變色邏輯 (大於60紅，小於40綠，其餘黃)
+        if (heatVal > 60) heatEl.style.color = 'var(--red)';
+        else if (heatVal < 40) heatEl.style.color = 'var(--green)';
+        else heatEl.style.color = 'var(--yellow)';
 
-        // ★ 新增：處理非神山熱度 (Heat_ex2330) 與「全天候震盪區間」背離警示
         if (data.heat_ex !== undefined) {
             const heatExVal = parseFloat(data.heat_ex);
             const exBox = document.getElementById('alpha-heat-ex-box');
             const exValEl = document.getElementById('alpha-heat-ex-val');
             exBox.style.display = 'inline';
             
-            // 判斷是否背離過大 (相差 15% 以上)
+            // ★ 全天候震盪區間背離判斷
             if (heatVal - heatExVal >= 15) {
-                exBox.style.color = '#ff9f0a'; // 黃色警告
+                exBox.style.color = '#ff9f0a'; 
                 if (heatVal < 40) {
                     exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護';
                 } else if (heatVal >= 40 && heatVal <= 60) {
@@ -422,7 +424,7 @@
                     exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨';
                 }
             } else if (heatExVal - heatVal >= 15) {
-                exBox.style.color = '#30d158'; // 綠色警告
+                exBox.style.color = '#30d158'; 
                 if (heatVal < 40) {
                     exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗';
                 } else if (heatVal >= 40 && heatVal <= 60) {
@@ -431,7 +433,7 @@
                     exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨';
                 }
             } else {
-                exBox.style.color = '#aaa'; // 正常狀態
+                exBox.style.color = '#aaa'; 
                 exValEl.innerText = heatExVal.toFixed(1) + '%';
             }
         }
@@ -580,12 +582,10 @@
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
       
-      // ★ 更新次月期指現價
       if(document.getElementById('price-next')) {
           document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--";
       }
 
-      // ★ 計算期現價差與跨月價差
       if (document.getElementById('spread-spot')) {
           if (data.p && data.spot && parseFloat(data.spot) > 0) {
               let diffSpot = Math.round(parseFloat(data.p) - parseFloat(data.spot));
@@ -607,7 +607,6 @@
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
 
-      // ★ 國安基金護盤指標解析
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
           let nsfStatus = data.nsf_data.status || "NONE";
@@ -670,9 +669,6 @@
       p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
       p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
 
-      // =======================================================================
-      // ★ 修正：P9 Slope 動能斜率與背離解析 (多空視覺分離)
-      // =======================================================================
       let rawSlope = parseFloat(data.p9_slope || 0);
       p9SlopeHistory.push(rawSlope);
       if (p9SlopeHistory.length > 3) p9SlopeHistory.shift();
@@ -684,13 +680,11 @@
           let bgColor = "";
           let textColor = "";
 
-          // 1. 判定竭盡背離 (最高優先級)
           if (Math.abs(valP9) > 10000 && (valP9 * valP9Slope < 0) && Math.abs(valP9Slope) > 500) {
               statusText = "⚠️ 竭盡背離";
               bgColor = "#FFCC00";
               textColor = "#000";
           } 
-          // 2. 判定趨勢方向 (多空視覺分離)
           else if (valP9 > 0 && valP9Slope > 0) {
               statusText = "📈 多方加速";
               bgColor = "#FF3B30"; 
@@ -772,7 +766,6 @@
       if (old_ss > 0 && old_ss !== ss) { document.getElementById('s-old').innerText = old_ss; sOldBox.style.display = "inline-flex"; } 
       else { sOldBox.style.display = "none"; }
       
-      // ★ 配合 4 欄精簡版面，統一改為短檔名
       const chipLabels = { 'c1': '近月夜', 'c2': '近月日', 'c3': '次月夜', 'c4': '次月日' };
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
