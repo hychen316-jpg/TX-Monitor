@@ -70,7 +70,7 @@
     .dot-blue { background: var(--blue); }
     .dot-gray { background: #555; }
 
-    /* === 第三排：多空對戰條 (高度壓縮版) === */
+    /* === 第三排：多空對戰條 === */
     .battle-box { background: var(--card); border-radius: 12px; padding: 6px 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 2px; }
     .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 0; }
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
@@ -101,7 +101,7 @@
     .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
 
-    /* === 第六排：籌碼分佈 (4欄單列版) === */
+    /* === 第六排：籌碼分佈 === */
     .chip-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
     .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     
@@ -184,7 +184,10 @@
         </div>
         
         <div style="border-top:1px dashed #333; margin-top:6px; padding-top:6px; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
-            <div id="nsf-status-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#555; white-space:nowrap; margin-bottom:2px;">🛡️ 護盤: 無</div>
+            <div style="display:flex; gap:4px; margin-bottom:2px;">
+                <div id="nsf-status-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 無</div>
+                <div id="event-radar-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#aaa; white-space:nowrap; display:none;">⚖️ 無事件</div>
+            </div>
             <div style="display:flex; align-items:baseline; gap:6px;">
                 <span style="font-size:11px; font-weight:700; color:#aaa;">Heat</span>
                 <span id="alpha-heat-val" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">--%</span>
@@ -402,7 +405,6 @@
         let heatEl = document.getElementById('alpha-heat-val');
         heatEl.innerText = heatVal.toFixed(1) + '%';
         
-        // ★ Heat 自動變色邏輯 (大於60紅，小於40綠，其餘黃)
         if (heatVal > 60) heatEl.style.color = 'var(--red)';
         else if (heatVal < 40) heatEl.style.color = 'var(--green)';
         else heatEl.style.color = 'var(--yellow)';
@@ -413,7 +415,6 @@
             const exValEl = document.getElementById('alpha-heat-ex-val');
             exBox.style.display = 'inline';
             
-            // ★ 全天候震盪區間背離判斷
             if (heatVal - heatExVal >= 15) {
                 exBox.style.color = '#ff9f0a'; 
                 if (heatVal < 40) {
@@ -613,12 +614,12 @@
           let avgDiff = data.nsf_data.avg_diff !== undefined ? (data.nsf_data.avg_diff > 0 ? "+" : "") + data.nsf_data.avg_diff + "%" : "";
           
           if (nsfStatus.includes("ACTIVE")) {
-              nsfBadge.innerText = "🔥 國安進場 (均: " + avgDiff + ")";
+              nsfBadge.innerText = "🔥 國安進場";
               nsfBadge.style.color = "#000";
               nsfBadge.style.backgroundColor = "var(--yellow)";
               nsfBadge.style.borderColor = "var(--yellow)";
           } else if (nsfStatus.includes("SUPPORT")) {
-              nsfBadge.innerText = "🏛️ 官股撐盤 (均: " + avgDiff + ")";
+              nsfBadge.innerText = "🏛️ 官股撐盤";
               nsfBadge.style.color = "var(--red)";
               nsfBadge.style.backgroundColor = "rgba(255, 69, 58, 0.15)";
               nsfBadge.style.borderColor = "var(--red)";
@@ -628,11 +629,42 @@
               nsfBadge.style.backgroundColor = "transparent";
               nsfBadge.style.borderColor = "#444";
           } else {
-              nsfBadge.innerText = "🛡️ 護盤: 無 (均: " + avgDiff + ")";
+              nsfBadge.innerText = "🛡️ 護盤: 無";
               nsfBadge.style.color = "#555";
               nsfBadge.style.backgroundColor = "transparent";
               nsfBadge.style.borderColor = "#333";
           }
+      }
+      
+      // ★ 突發事件雷達徽章解析
+      let eventBadge = document.getElementById('event-radar-badge');
+      if (eventBadge && data.event_radar && data.event_radar.name !== "無特殊事件") {
+          eventBadge.style.display = 'block';
+          let eName = data.event_radar.name;
+          let eVal = parseFloat(data.event_radar.val || 0);
+          
+          if (eVal >= 2.0) {
+              eventBadge.innerText = `🔥 ${eName}爆發 (+${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = '#fff';
+              eventBadge.style.backgroundColor = 'var(--red)';
+              eventBadge.style.borderColor = 'var(--red)';
+              eventBadge.style.animation = 'pulse-red 1.5s infinite';
+          } else if (eVal <= -1.5) {
+              eventBadge.innerText = `☘️ ${eName}緩解 (${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = 'var(--green)';
+              eventBadge.style.backgroundColor = 'rgba(48, 209, 88, 0.15)';
+              eventBadge.style.borderColor = 'var(--green)';
+              eventBadge.style.animation = 'none';
+          } else {
+              let sign = eVal > 0 ? '+' : '';
+              eventBadge.innerText = `⚖️ ${eName}觀望 (${sign}${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = '#aaa';
+              eventBadge.style.backgroundColor = 'transparent';
+              eventBadge.style.borderColor = '#444';
+              eventBadge.style.animation = 'none';
+          }
+      } else if (eventBadge) {
+          eventBadge.style.display = 'none';
       }
 
       let pVal = parseFloat(data.pwr_v || 0);
