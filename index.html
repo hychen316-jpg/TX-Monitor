@@ -70,7 +70,7 @@
     .dot-blue { background: var(--blue); }
     .dot-gray { background: #555; }
 
-    /* === 第三排：多空對戰條 === */
+    /* === 第三排：莊家防線兵力對戰條 === */
     .battle-box { background: var(--card); border-radius: 12px; padding: 6px 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 2px; }
     .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 0; }
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
@@ -226,16 +226,16 @@
     </div>
 
     <div class="battle-box" id="battle-card">
-        <div class="box-header">⚔️ OP 多空力道 (內外盤差)</div>
+        <div class="box-header">🧱 莊家防線兵力 (壓力 vs 支撐)</div>
         <div class="tug-container">
-            <div id="bull-bar" class="bull-bar" style="width: 50%;"></div>
-            <div id="bear-bar" class="bear-bar" style="width: 50%;"></div>
-            <div id="ratio-text" class="percent-text">50% vs 50%</div>
+            <div id="wall-bull-bar" class="bull-bar" style="width: 50%;"></div>
+            <div id="wall-bear-bar" class="bear-bar" style="width: 50%;"></div>
+            <div id="wall-ratio-text" class="percent-text">50% vs 50%</div>
         </div>
-        <div id="net-force-val" class="force-display">-- 能量</div>
+        <div id="wall-net-force-val" class="force-display">-- 淨力道</div>
         <div class="army-stats">
-            <div>🔴 Call淨: <span id="bull-force" style="color:var(--red)">--</span></div>
-            <div>🟢 Put淨: <span id="bear-force" style="color:var(--green)">--</span></div>
+            <div>🔴 支撐厚度: <span id="wall-support-vol" style="color:var(--red)">--</span></div>
+            <div>🟢 壓力厚度: <span id="wall-pressure-vol" style="color:var(--green)">--</span></div>
         </div>
         
         <div class="p9-container">
@@ -256,7 +256,7 @@
       <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月日</span><span id="c4-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c4-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
     </div>
 
-    <div id="strategy-box" class="strategy-card">
+    <div id="strategy-box" class="strategy-card" style="margin-top:4px;">
         <div class="strategy-header">
             <div style="color:#ccc; font-weight:600; font-size:11px;">🤖 AI 戰略指揮</div>
             <div id="st-phase" class="phase-badge">等待數據</div>
@@ -264,7 +264,7 @@
         <div id="st-advice" class="s-advice">分析中...</div>
     </div>
 
-    <div class="range-box">
+    <div class="range-box" style="margin-top:6px;">
         <div class="box-header" style="position:absolute; top:8px; left:14px;">🚧 戰場邊界</div>
         <div class="range-row" style="margin-top:14px;">
             <div class="range-title c-green">🟢 壓力牆</div>
@@ -683,17 +683,38 @@
       else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
       else{pTag.innerText="整理";}
 
-      let bullR = parseFloat(data.bull_r || 50); let bearR = 100 - bullR;
-      document.getElementById('bull-force').innerText = data.bull_f;
-      document.getElementById('bear-force').innerText = data.bear_f;
-      document.getElementById('bull-bar').style.width = bullR + "%";
-      document.getElementById('bear-bar').style.width = bearR + "%";
-      document.getElementById('ratio-text').innerText = Math.round(bullR) + "% vs " + Math.round(bearR) + "%";
-      
-      let force = parseFloat(data.force || 0);
-      let fEl = document.getElementById('net-force-val');
-      fEl.innerText = (force>0?"+":"") + force + " 能量";
-      fEl.className = "force-display " + (force>0?"c-red":"c-green");
+      // ★★★ 提取防線兵力並計算差值 ★★★
+      let ps = parseInt(data.now_p_s || 0);
+      let pv = parseInt(data.now_p_v || 0); // 壓力牆厚度
+      let ss = parseInt(data.now_s_s || 0);
+      let sv = parseInt(data.now_s_v || 0); // 支撐牆厚度
+
+      let totalWall = pv + sv;
+      let bullWallR = 50; let bearWallR = 50;
+      if (totalWall > 0) {
+          bullWallR = (sv / totalWall) * 100;
+          bearWallR = (pv / totalWall) * 100;
+      }
+
+      document.getElementById('wall-support-vol').innerText = sv;
+      document.getElementById('wall-pressure-vol').innerText = pv;
+      document.getElementById('wall-bull-bar').style.width = bullWallR + "%";
+      document.getElementById('wall-bear-bar').style.width = bearWallR + "%";
+      document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
+
+      let wallDiff = pv - sv;
+      let wEl = document.getElementById('wall-net-force-val');
+      if (wallDiff > 0) {
+          wEl.innerText = "📉 壓力牆厚 (+" + wallDiff + ")";
+          wEl.className = "force-display c-green";
+      } else if (wallDiff < 0) {
+          wEl.innerText = "📈 支撐牆厚 (+" + Math.abs(wallDiff) + ")";
+          wEl.className = "force-display c-red";
+      } else {
+          wEl.innerText = "⚖️ 勢均力敵 (0)";
+          wEl.className = "force-display";
+          wEl.style.color = "#aaa";
+      }
 
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
@@ -778,9 +799,6 @@
       
       updateStrategyBox(data, strategy);
 
-      let ps = parseInt(data.now_p_s || 0), pv = parseInt(data.now_p_v || 0);
-      let ss = parseInt(data.now_s_s || 0), sv = parseInt(data.now_s_v || 0);
-      
       document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
       
