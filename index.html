@@ -246,6 +246,9 @@
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
 
+    <div class="section-title" style="margin-top:6px;">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
+    <div class="split-chart-box" style="margin-bottom:6px;"><canvas id="chartWall"></canvas></div>
+
     <div id="strategy-box" class="strategy-card">
         <div class="strategy-header">
             <div style="color:#ccc; font-weight:600; font-size:11px;">🤖 AI 戰略指揮</div>
@@ -289,9 +292,6 @@
 
     <div class="section-title">🚀 P6動能(左) vs P9實單(右)</div>
     <div class="split-chart-box"><canvas id="chartP6"></canvas></div>
-
-    <div class="section-title">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
-    <div class="split-chart-box"><canvas id="chartWall"></canvas></div>
 
   </div>
 
@@ -636,7 +636,6 @@
           }
       }
       
-      // ★ 突發事件雷達徽章解析
       let eventBadge = document.getElementById('event-radar-badge');
       if (eventBadge && data.event_radar && data.event_radar.name !== "無特殊事件") {
           eventBadge.style.display = 'block';
