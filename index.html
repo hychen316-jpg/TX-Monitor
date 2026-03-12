@@ -234,8 +234,8 @@
         </div>
         <div id="wall-net-force-val" class="force-display">-- 淨力道</div>
         <div class="army-stats">
-            <div>🔴 支撐厚度: <span id="wall-support-vol" style="color:var(--red)">--</span></div>
-            <div>🟢 壓力厚度: <span id="wall-pressure-vol" style="color:var(--green)">--</span></div>
+            <div>🔴 支撐(<span id="wall-s-strike" style="color:#ccc;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
+            <div>🟢 壓力(<span id="wall-p-strike" style="color:#ccc;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
         </div>
         
         <div class="p9-container">
@@ -683,7 +683,7 @@
       else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
       else{pTag.innerText="整理";}
 
-      // ★★★ 提取防線兵力並計算差值 ★★★
+      // ★★★ 提取防線兵力並計算差值 (加入點位顯示) ★★★
       let ps = parseInt(data.now_p_s || 0);
       let pv = parseInt(data.now_p_v || 0); // 壓力牆厚度
       let ss = parseInt(data.now_s_s || 0);
@@ -696,8 +696,11 @@
           bearWallR = (pv / totalWall) * 100;
       }
 
+      document.getElementById('wall-s-strike').innerText = ss > 0 ? ss : "--";
+      document.getElementById('wall-p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('wall-support-vol').innerText = sv;
       document.getElementById('wall-pressure-vol').innerText = pv;
+      
       document.getElementById('wall-bull-bar').style.width = bullWallR + "%";
       document.getElementById('wall-bear-bar').style.width = bearWallR + "%";
       document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
