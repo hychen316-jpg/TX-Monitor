@@ -106,9 +106,9 @@
     .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
 
-    /* === 第六排：籌碼分佈 === */
-    .chip-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-    .chip-card { background:var(--card); padding:8px 10px; border-radius:12px; border: 1px solid #333; display:flex; flex-direction:column; }
+    /* === 第六排：籌碼分佈 (4欄單列版) === */
+    .chip-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
+    .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     
     /* 圖表區塊 */
     .split-chart-box { background: var(--card); border-radius: 14px; padding: 8px; border: 1px solid #333; height: 200px; position: relative; }
@@ -250,10 +250,10 @@
     </div>
 
     <div class="chip-grid">
-      <div class="chip-card" id="c1-card"><span class="box-header" style="margin-bottom:2px;">近月夜盤(E5)</span><span id="c1-val" class="big-val" style="font-size:18px">--</span><span id="c1-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px;">次月夜盤</span><span id="c3-val" class="big-val" style="font-size:18px">--</span><span id="c3-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c2-card"><span class="box-header" style="margin-bottom:2px;">近月日盤(E6)</span><span id="c2-val" class="big-val" style="font-size:18px">--</span><span id="c2-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px;">次月日盤</span><span id="c4-val" class="big-val" style="font-size:18px">--</span><span id="c4-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c1-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月夜</span><span id="c1-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c1-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月夜</span><span id="c3-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c3-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c2-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月日</span><span id="c2-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c2-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月日</span><span id="c4-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c4-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
     </div>
 
     <div class="range-box">
@@ -404,7 +404,7 @@
         heatBar.style.width = heatVal + '%';
         heatBar.className = 'heat-bar ' + (heatVal > 60 ? 'heat-high' : (heatVal < 40 ? 'heat-low' : 'heat-neutral'));
 
-        // ★ 新增：處理非神山熱度 (Heat_ex2330) 與背離警示
+        // ★ 新增：處理非神山熱度 (Heat_ex2330) 與「全天候震盪區間」背離警示
         if (data.heat_ex !== undefined) {
             const heatExVal = parseFloat(data.heat_ex);
             const exBox = document.getElementById('alpha-heat-ex-box');
@@ -414,10 +414,22 @@
             // 判斷是否背離過大 (相差 15% 以上)
             if (heatVal - heatExVal >= 15) {
                 exBox.style.color = '#ff9f0a'; // 黃色警告
-                exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積';
+                if (heatVal < 40) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護';
+                } else if (heatVal >= 40 && heatVal <= 60) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷出';
+                } else {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨';
+                }
             } else if (heatExVal - heatVal >= 15) {
                 exBox.style.color = '#30d158'; // 綠色警告
-                exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積';
+                if (heatVal < 40) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗';
+                } else if (heatVal >= 40 && heatVal <= 60) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷買';
+                } else {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨';
+                }
             } else {
                 exBox.style.color = '#aaa'; // 正常狀態
                 exValEl.innerText = heatExVal.toFixed(1) + '%';
@@ -681,22 +693,22 @@
           // 2. 判定趨勢方向 (多空視覺分離)
           else if (valP9 > 0 && valP9Slope > 0) {
               statusText = "📈 多方加速";
-              bgColor = "#FF3B30"; // 台灣股市習慣：紅色多方
+              bgColor = "#FF3B30"; 
               textColor = "#FFF";
           } 
           else if (valP9 < 0 && valP9Slope < 0) {
               statusText = "📉 空方加速";
-              bgColor = "#4CD964"; // 台灣股市習慣：綠色空方
+              bgColor = "#4CD964"; 
               textColor = "#FFF";
           }
           else if (valP9 > 0 && valP9Slope < 0) {
               statusText = "⚠️ 多方減速";
-              bgColor = "rgba(76, 217, 100, 0.2)"; // 淺綠
+              bgColor = "rgba(76, 217, 100, 0.2)"; 
               textColor = "#4CD964";
           }
           else if (valP9 < 0 && valP9Slope > 0) {
               statusText = "⚠️ 空方減速";
-              bgColor = "rgba(255, 59, 48, 0.2)"; // 淺紅
+              bgColor = "rgba(255, 59, 48, 0.2)"; 
               textColor = "#FF3B30";
           }
           else {
@@ -760,7 +772,8 @@
       if (old_ss > 0 && old_ss !== ss) { document.getElementById('s-old').innerText = old_ss; sOldBox.style.display = "inline-flex"; } 
       else { sOldBox.style.display = "none"; }
       
-      const chipLabels = { 'c1': '近月夜盤(E5)', 'c2': '近月日盤(E6)', 'c3': '次月夜盤', 'c4': '次月日盤' };
+      // ★ 配合 4 欄精簡版面，統一改為短檔名
+      const chipLabels = { 'c1': '近月夜', 'c2': '近月日', 'c3': '次月夜', 'c4': '次月日' };
       ['c1','c2','c3','c4'].forEach(id => {
         let raw = data[id]; if(!raw) return;
         let parts = raw.split('|'); let v = parseFloat(parts[0].replace('%',''));
@@ -881,5 +894,4 @@
     }
   </script>
 </body>
-</html>"
-因為你剛剛有提到如果把非神山熱度(扣除台積電)加入後, 兩者的相減(heat-heat_ex)可以觀察出四種現象(四大實戰象限), 剛剛你幫我設定是在heat>60或是heat<40的狀況, 可以幫我在中間震盪的狀況也加入提示嗎? 讓我在大盤震盪時可以更清楚資金流向,因為此時個股容易表現(目前在網頁端設定的背離警戒線是 15%,當兩者差距達到 15% 時，就會觸發),一樣只要幫我修改index.html就好,其餘禁止變動
+</html>
