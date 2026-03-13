@@ -317,30 +317,58 @@
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
     let p9SlopeHistory = [];
     
-    // ★★★ 新增：螢幕喚醒鎖定 (Wake Lock) 變數 ★★★
+    // ==========================================
+    // ★★★ 終極雙重防休眠機制 (No-Sleep Hack) ★★★
+    // ==========================================
     let wakeLock = null;
+    let isNoSleepEnabled = false;
 
-    // ★★★ 新增：請求螢幕喚醒的非同步函數 ★★★
-    async function requestWakeLock() {
-      try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          console.log('✅ 螢幕喚醒鎖定已啟動 (Wake Lock Active)');
-          wakeLock.addEventListener('release', () => {
-            console.log('⚠️ 螢幕喚醒鎖定已釋放');
-          });
+    // 1. 建立一個隱藏的靜音影片 (播放時作業系統不會休眠)
+    const noSleepVideo = document.createElement('video');
+    noSleepVideo.setAttribute('playsinline', '');
+    noSleepVideo.setAttribute('muted', '');
+    noSleepVideo.setAttribute('loop', '');
+    noSleepVideo.style.display = 'none';
+    // 這是一段極小的空白 mp4 影片 (Base64)
+    noSleepVideo.src = "data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAD5tb292AAAAbG12aGQAAAAA/8fBAP/HwQAAAAEAAACQAAACAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAACWlvZHMzAAAAEP/HwQAAAAEAAAAGbXRyYwAAAAxrcmhhAAAAAHBhc3MAAAAAaG1kaWEAAAAgbWRoZAAAAAD/x8EA/8fBAAAAAQAAAIAAAAAAAABoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAAmRtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAB8c3RibAAAACxzdHNkAAAAAAAAAAEAAAAcbXA0dgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAUc3R0cwAAAAAAAAABAAAACHN0c3oAAAAAAAAAAAAAAAEAAAAUc3RzYwAAAAAAAAABAAAAAQAAABRzdGNvAAAAAAAAAAEAAAABAAAAAQAAABRzdHNvAAAAAAAAAAEAAAAw";
+    document.body.appendChild(noSleepVideo);
+
+    async function enableNoSleep() {
+        if (isNoSleepEnabled) return;
+        
+        try {
+            // 嘗試播放隱形影片 (破解 iOS Safari 限制)
+            await noSleepVideo.play();
+            
+            // 嘗試原生 Wake Lock API (現代瀏覽器)
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+            
+            isNoSleepEnabled = true;
+            console.log('✅ 雙重防休眠機制已啟動 (Screen will not sleep)');
+            
+            // 啟動成功後移除監聽器
+            document.removeEventListener('touchstart', enableNoSleep);
+            document.removeEventListener('click', enableNoSleep);
+        } catch (err) {
+            console.error('防休眠啟動失敗:', err);
         }
-      } catch (err) {
-        console.error(`Wake Lock 錯誤: ${err.name}, ${err.message}`);
-      }
     }
 
-    // ★★★ 新增：當網頁從背景切換回前景時，重新請求喚醒 ★★★
-    document.addEventListener('visibilitychange', async () => {
-      if (wakeLock !== null && document.visibilityState === 'visible') {
-        await requestWakeLock();
-      }
+    // 必須由使用者的「點擊」或「觸摸滑動」來觸發，否則瀏覽器會阻擋！
+    document.addEventListener('touchstart', enableNoSleep, { once: true });
+    document.addEventListener('click', enableNoSleep, { once: true });
+
+    // 當網頁從背景切換回來時，重新嘗試喚醒
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            isNoSleepEnabled = false; 
+            enableNoSleep(); 
+        }
     });
+    // ==========================================
+
 
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
@@ -364,10 +392,6 @@
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
                 dashboard.classList.add('unlocked');
                 logoutBtn.style.display = 'block';
-                
-                // ★★★ 登入成功並解鎖畫面後，啟動螢幕防休眠 ★★★
-                requestWakeLock();
-
                 if(!chartPrice) { initCharts(); startDataSync(); }
             } else {
                 showPendingScreen();
