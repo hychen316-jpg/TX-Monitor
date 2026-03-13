@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 動態防線版)</title>
+  <title>極速戰情室 (Pro Max - 日線級動態自適應版)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -521,6 +521,7 @@
         }
     }
 
+    // ★★★ 數據自適應版：結合 Firebase 傳來的動態閾值 (Dynamic Thresholds) ★★★
     function analyzeStrategy(data) {
         let p9 = parseFloat(data.p9 || 0);
         let p7 = parseFloat(data.force || 0); 
@@ -529,34 +530,42 @@
         let e_str = isNight ? (data.c1 || "") : (data.c2 || ""); 
         let e_dir = 0;
         if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
+        
+        // 讀取動態閾值，若無則使用安全預設值
+        let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
+        let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
+        let th_at_p = parseFloat(data.p9_th_at_p || 50000);
+        let th_at_n = parseFloat(data.p9_th_at_n || -50000);
+        let th_push_p = th_ex_p * 0.5; // 動態裝甲推進線 (天量線的一半)
+        let th_push_n = th_ex_n * 0.5;
 
         let result = { text: "☕ [N級] 冰封觀望 (無明顯方向)", class: "rank-n" };
         let confidence = 0;
 
-        if (p9 > 50000) {
+        if (p9 > th_at_p) {
             let isResonance = (p7 > 0); let isTrend = (e_dir === 1); confidence = 50;
-            if (p9 > 300000) confidence = 95; 
-            else if (p9 > 150000) confidence += 30; 
+            if (p9 > th_ex_p) confidence = 95; 
+            else if (p9 > th_push_p) confidence += 30; 
             else confidence += 10; 
             
             if (isResonance) confidence += 10; if (isTrend) confidence += 10;
 
-            if (p9 > 300000) result = { text: `🔥 [S級] 多方天量 (準備反轉)`, class: "rank-s" };
-            else if (p9 > 150000 && isResonance) result = { text: `🚀 [A+級] 裝甲推進 (強力多頭)`, class: "rank-a-bull" };
-            else if (p9 > 50000 && !isResonance) result = { text: `🪤 [B級] 誘空壓盤 (逢低找買)`, class: "rank-b" };
+            if (p9 > th_ex_p) result = { text: `🔥 [S級] 多方天量 (準備反轉)`, class: "rank-s" };
+            else if (p9 > th_push_p && isResonance) result = { text: `🚀 [A+級] 裝甲推進 (強力多頭)`, class: "rank-a-bull" };
+            else if (p9 > th_at_p && !isResonance) result = { text: `🪤 [B級] 誘空壓盤 (逢低找買)`, class: "rank-b" };
             else result = { text: `💪 [B+級] 主力點火 (偏多震盪)`, class: "rank-a-bull" };
         }
-        else if (p9 < -50000) {
+        else if (p9 < th_at_n) {
             let isResonance = (p7 < 0); let isTrend = (e_dir === -1); confidence = 50;
-            if (p9 < -200000) confidence = 95; 
-            else if (p9 < -115000) confidence += 30; 
+            if (p9 < th_ex_n) confidence = 95; 
+            else if (p9 < th_push_n) confidence += 30; 
             else confidence += 10; 
             
             if (isResonance) confidence += 10; if (isTrend) confidence += 10;
 
-            if (p9 < -200000) result = { text: `☠️ [S級] 空方天量 (準備反轉)`, class: "rank-s" };
-            else if (p9 < -115000 && isResonance) result = { text: `📉 [A+級] 順勢殺盤 (強力空頭)`, class: "rank-a-bear" };
-            else if (p9 < -50000 && !isResonance) result = { text: `🪤 [B級] 誘多護盤 (逢高找空)`, class: "rank-b" };
+            if (p9 < th_ex_n) result = { text: `☠️ [S級] 空方天量 (準備反轉)`, class: "rank-s" };
+            else if (p9 < th_push_n && isResonance) result = { text: `📉 [A+級] 順勢殺盤 (強力空頭)`, class: "rank-a-bear" };
+            else if (p9 < th_at_n && !isResonance) result = { text: `🪤 [B級] 誘多護盤 (逢高找空)`, class: "rank-b" };
             else result = { text: `🪓 [B+級] 主力點火 (偏空震盪)`, class: "rank-a-bear" };
         }
         return result;
@@ -723,11 +732,18 @@
       else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
       else{pTag.innerText="整理";}
 
-      // ★★★ 1. 取得 P9 實單數據 ★★★
+      // ★★★ 1. 取得 P9 實單數據與動態閾值 ★★★
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
       p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
       p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+
+      let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
+      let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
+      let th_at_p = parseFloat(data.p9_th_at_p || 50000);
+      let th_at_n = parseFloat(data.p9_th_at_n || -50000);
+      let th_push_p = th_ex_p * 0.5; // 動態推進線
+      let th_push_n = th_ex_n * 0.5;
 
       // ★★★ 2. 提取防線兵力與點位 ★★★
       let ps = parseInt(data.now_p_s || 0);
@@ -768,28 +784,28 @@
           wEl.style.color = "#aaa";
       }
 
-      // ★★★ 3. 終極版：AI 意圖翻譯機 (加入動態防線位移優先判定) ★★★
+      // ★★★ 3. 終極版：AI 意圖翻譯機 (結合動態閾值與防線位移) ★★★
       let intentBadge = document.getElementById('wall-intent-badge');
       let isMoving = false;
 
       // 優先判定：防線是否發生位移
       if (old_ps > 0 && ps > 0 && ps !== old_ps) {
           isMoving = true;
-          if (ps > old_ps && valP9 > 50000) {
+          if (ps > old_ps && valP9 > th_at_p) { // 使用動態發車線
               intentBadge.innerText = "🏳️ 空軍退守 (軋空預備)";
               intentBadge.style.color = "#000"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
-          } else if (ps < old_ps && valP9 < -50000) {
+          } else if (ps < old_ps && valP9 < th_at_n) {
               intentBadge.innerText = "📉 泰山壓頂 (壓力下逼)";
               intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
           } else {
-              isMoving = false; // 假移動或雜訊，交給下方一般邏輯處理
+              isMoving = false; // 假移動或雜訊
           }
       } else if (old_ss > 0 && ss > 0 && ss !== old_ss) {
           isMoving = true;
-          if (ss > old_ss && valP9 > 50000) {
+          if (ss > old_ss && valP9 > th_at_p) {
               intentBadge.innerText = "🚜 多軍推土 (支撐上移)";
               intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
-          } else if (ss < old_ss && valP9 < -50000) {
+          } else if (ss < old_ss && valP9 < th_at_n) {
               intentBadge.innerText = "⚠️ 支撐棄守 (破底殺多)";
               intentBadge.style.color = "#000"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
           } else {
@@ -797,10 +813,10 @@
           }
       }
 
-      // 次級判定：如果防線沒有位移，則判斷厚度與實單狀態
+      // 次級判定：如果防線沒有位移，則判斷厚度與動態實單狀態
       if (!isMoving) {
           if (totalWall < 1500 && totalWall > 0) {
-              if (Math.abs(valP9) > 50000) {
+              if (valP9 > th_at_p || valP9 < th_at_n) {
                   intentBadge.innerText = "🔥 實單穿透 (無視防線)";
                   intentBadge.style.color = "#fff"; intentBadge.style.background = valP9 > 0 ? "var(--red)" : "var(--green)"; intentBadge.style.borderColor = valP9 > 0 ? "var(--red)" : "var(--green)";
               } else {
@@ -809,13 +825,13 @@
               }
           } 
           else if (pv > sv * 1.3) { // 偏空牆
-              if (valP9 > 150000) { 
+              if (valP9 > th_push_p) {  // 突破推進線
                   intentBadge.innerText = "⚠️ 倒莊警戒 (買盤強闖)";
                   intentBadge.style.color = "#000"; intentBadge.style.background = "var(--yellow)"; intentBadge.style.borderColor = "var(--yellow)";
-              } else if (valP9 > 50000) {
+              } else if (valP9 > th_at_p) { // 突破發車線
                   intentBadge.innerText = "🪤 誘空壓盤 (實單暗買)";
                   intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
-              } else if (valP9 < -115000) { 
+              } else if (valP9 < th_push_n) { 
                   intentBadge.innerText = "🚜 裝甲碾壓 (厚牆+實砸)";
                   intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
               } else {
@@ -824,13 +840,13 @@
               }
           } 
           else if (sv > pv * 1.3) { // 偏多牆
-              if (valP9 < -130000) { 
+              if (valP9 < th_push_n) { 
                   intentBadge.innerText = "⚠️ 倒莊警戒 (賣盤強殺)";
                   intentBadge.style.color = "#000"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
-              } else if (valP9 < -50000) {
+              } else if (valP9 < th_at_n) {
                   intentBadge.innerText = "🪤 誘多護盤 (實單暗賣)";
                   intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
-              } else if (valP9 > 130000) { 
+              } else if (valP9 > th_push_p) { 
                   intentBadge.innerText = "🚀 鋼鐵多頭 (厚牆+實買)";
                   intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
               } else {
@@ -839,10 +855,10 @@
               }
           } 
           else if (totalWall > 0) { // 區間盤整
-              if (valP9 > 100000) {
+              if (valP9 > (th_at_p * 1.5)) {
                   intentBadge.innerText = "📈 大單突襲 (偏多表態)";
                   intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
-              } else if (valP9 < -100000) {
+              } else if (valP9 < (th_at_n * 1.5)) {
                   intentBadge.innerText = "📉 大單突襲 (偏空表態)";
                   intentBadge.style.color = "var(--green)"; intentBadge.style.background = "rgba(48, 209, 88, 0.1)"; intentBadge.style.borderColor = "var(--green)";
               } else {
@@ -852,7 +868,7 @@
           }
       }
 
-      // ★★★ 4. 強制全時段顯示 P9 斜率數值 ★★★
+      // ★★★ 4. 強制全時段顯示 P9 斜率數值 (加入動態天量防護) ★★★
       let rawSlope = parseFloat(data.p9_slope || 0);
       p9SlopeHistory.push(rawSlope);
       if (p9SlopeHistory.length > 3) p9SlopeHistory.shift();
@@ -864,7 +880,8 @@
           let bgColor = "";
           let textColor = "";
 
-          if ((valP9 > 300000 && valP9Slope < -3000) || (valP9 < -200000 && valP9Slope > 3000)) {
+          // 動態天量竭盡：P9 突破每日動態天花板/地板
+          if ((valP9 > th_ex_p && valP9Slope < -3000) || (valP9 < th_ex_n && valP9Slope > 3000)) {
               statusText = "⚠️ 天量竭盡 (反轉警報)";
               bgColor = "#FFCC00"; textColor = "#000";
           } 
@@ -876,11 +893,11 @@
               statusText = "📉 空方加速";
               bgColor = "#4CD964"; textColor = "#FFF";
           }
-          else if (valP9 > 50000 && valP9Slope < -500) {
+          else if (valP9 > th_at_p && valP9Slope < -500) {
               statusText = "⚠️ 多方減速";
               bgColor = "rgba(76, 217, 100, 0.2)"; textColor = "#4CD964";
           }
-          else if (valP9 < -50000 && valP9Slope > 500) {
+          else if (valP9 < th_at_n && valP9Slope > 500) {
               statusText = "⚠️ 空方減速";
               bgColor = "rgba(255, 59, 48, 0.2)"; textColor = "#FF3B30";
           }
