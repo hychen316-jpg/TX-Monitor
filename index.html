@@ -316,6 +316,31 @@
 
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
     let p9SlopeHistory = [];
+    
+    // ★★★ 新增：螢幕喚醒鎖定 (Wake Lock) 變數 ★★★
+    let wakeLock = null;
+
+    // ★★★ 新增：請求螢幕喚醒的非同步函數 ★★★
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('✅ 螢幕喚醒鎖定已啟動 (Wake Lock Active)');
+          wakeLock.addEventListener('release', () => {
+            console.log('⚠️ 螢幕喚醒鎖定已釋放');
+          });
+        }
+      } catch (err) {
+        console.error(`Wake Lock 錯誤: ${err.name}, ${err.message}`);
+      }
+    }
+
+    // ★★★ 新增：當網頁從背景切換回前景時，重新請求喚醒 ★★★
+    document.addEventListener('visibilitychange', async () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        await requestWakeLock();
+      }
+    });
 
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
@@ -339,6 +364,10 @@
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
                 dashboard.classList.add('unlocked');
                 logoutBtn.style.display = 'block';
+                
+                // ★★★ 登入成功並解鎖畫面後，啟動螢幕防休眠 ★★★
+                requestWakeLock();
+
                 if(!chartPrice) { initCharts(); startDataSync(); }
             } else {
                 showPendingScreen();
