@@ -11,63 +11,100 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
+    /* === 核心樣式 === */
     :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; --purple:#bf5af2; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:8px; margin:0; overflow-x:hidden; }
+    
+    /* 儀表板預設模糊 */
     .dashboard-container { filter: blur(15px); transition: filter 0.5s; pointer-events: none; opacity: 0.3; display: flex; flex-direction: column; gap: 6px; }
     .unlocked { filter: blur(0); pointer-events: auto; opacity: 1; }
 
-    /* 權限隱藏邏輯 */
+    /* === 4級會員權限控制樣式 === */
+    /* 預設隱藏所有高等級區塊 */
     .req-level-2-flex, .req-level-2-block, .req-level-2-grid,
     .req-level-3-flex, .req-level-3-block, .req-level-3-grid,
     .req-level-4-flex, .req-level-4-block, .req-level-4-grid { display: none !important; }
     
-    .upgrade-prompt { background: rgba(28, 28, 30, 0.6); border: 1px dashed #444; border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #888; font-size: 11px; gap: 6px; padding: 10px; }
-    .upgrade-btn { background: #333; color: #aaa; border: 1px solid #555; padding: 2px 8px; border-radius: 4px; font-size: 9px; }
+    /* 鎖定狀態提示框 */
+    .upgrade-prompt {
+        background: rgba(28, 28, 30, 0.6);
+        border: 1px dashed #444;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #888;
+        font-size: 11px;
+        gap: 6px;
+        padding: 10px;
+    }
+    .upgrade-btn {
+        background: #333;
+        color: #aaa;
+        border: 1px solid #555;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 9px;
+    }
 
+    /* Level 2 解鎖: 壓力支撐 */
     .dashboard-container.lvl2 .req-level-2-flex { display: flex !important; }
     .dashboard-container.lvl2 .req-level-2-block { display: block !important; }
     .dashboard-container.lvl2 .req-level-2-grid { display: grid !important; }
     .dashboard-container.lvl2 .lock-lvl-2 { display: none !important; }
 
+    /* Level 3 解鎖: P6 & P9 */
     .dashboard-container.lvl3 .req-level-3-flex { display: flex !important; }
     .dashboard-container.lvl3 .req-level-3-block { display: block !important; }
     .dashboard-container.lvl3 .req-level-3-grid { display: grid !important; }
     .dashboard-container.lvl3 .lock-lvl-3 { display: none !important; }
 
+    /* Level 4 解鎖: Alpha-TX & AI */
     .dashboard-container.lvl4 .req-level-4-flex { display: flex !important; }
     .dashboard-container.lvl4 .req-level-4-block { display: block !important; }
     .dashboard-container.lvl4 .req-level-4-grid { display: grid !important; }
     .dashboard-container.lvl4 .lock-lvl-4 { display: none !important; }
 
+    /* 共用小標題 */
     .box-header { font-size: 11px; color: var(--gray); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* === 第一排：頂部報價 === */
     .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:6px; }
     .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
     .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
     .power-val { font-size:30px; font-weight:700; text-align:right; } 
     .chip-tag { font-size:10px; padding:2px 6px; border-radius:4px; width:fit-content; background:#333; color:#ccc; }
+    
+    /* 顏色定義 */
     .c-red { color:var(--red); } .c-green { color:var(--green); }
     .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
     .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
     .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 10px rgba(255, 69, 58, 0.2); }
     .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 10px rgba(48, 209, 88, 0.2); }
 
+    /* === 第二排：Alpha-TX 高密度面板 === */
     .alpha-box { background: var(--card); border-radius: 10px; padding: 6px 8px; border: 1px solid #333; }
     .alpha-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;}
     .prob-badge { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; }
     .prob-high { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); animation: pulse-red 1.5s infinite; }
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
+    
+    /* 核心標的 4 欄微型網格 */
     .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
-    .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; }
-    .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease; }
+    .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
     .target-data-row { display: flex; justify-content: center; align-items: baseline; gap: 3px; }
-    .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; }
+    .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     .target-diff-sm { font-size: 9px; font-weight: bold; line-height: 1; }
-    .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
-    .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    
+    /* Alpha-TX 狀態邊框 */
+    .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(255, 69, 58, 0.25); }
+    .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
     .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
     .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
-    .st-RECOVER { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(191, 90, 242, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    .st-RECOVER { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(191, 90, 242, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(191, 90, 242, 0.25); }
     .st-WAIT { border-left-color: #555; background: #2c2c2e; }
 
     .alpha-legend { display: flex; justify-content: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; flex-wrap: wrap; }
@@ -75,46 +112,69 @@
     .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
     .dot-red { background: var(--red); box-shadow: 0 0 4px var(--red); }
     .dot-yellow { background: var(--yellow); }
-    .dot-purple { background: var(--purple); }
-    .dot-green { background: var(--green); }
+    .dot-purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
+    .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
     .dot-blue { background: var(--blue); }
     .dot-gray { background: #555; }
 
+    /* === 第三排：莊家防線兵力對戰條 === */
     .battle-box { background: var(--card); border-radius: 12px; padding: 6px 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 2px; }
-    .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; margin-bottom: 0; }
+    .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 0; }
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
     .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
-    .percent-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 5; }
-    .force-display { text-align: center; font-size: 16px; font-weight: 700; margin: 0; }
-    .army-stats { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; padding: 0 5px; }
-    .logic-text { text-align: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .percent-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px #000; z-index: 5; }
+    .force-display { text-align: center; font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+    .army-stats { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-top: 0; padding: 0 5px; }
+    .logic-text { text-align: center; font-size: 12px; font-weight: 700; color: #fff; margin-top: 0; letter-spacing: 0.5px; }
     
-    .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #333; }
+    .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
     .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
     .p9-val { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
-    .slope-label { font-size:10px; padding:2px 6px; border-radius:6px; font-weight:800; }
+    .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
+    /* === 第四排：AI 戰略指揮官區塊 === */
     .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
     .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 6px; }
     .phase-badge { background: #0a84ff; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .s-advice { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; color: #ddd; line-height: 1.4; border-left: 3px solid #888; font-size: 12px; }
     
-    .range-box { background: var(--card); border-radius: 14px; padding: 10px 14px; border: 1px solid #333; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; position: relative; }
+    /* === 第五排：戰場邊界 === */
+    .range-box { background: var(--card); border-radius: 14px; padding: 10px 14px; border: 1px solid #333; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; position: relative; overflow: hidden; }
+    .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
     .range-row { display: flex; justify-content: space-between; align-items: center; }
-    .range-title { font-size: 11px; font-weight: 700; }
-    .range-val { font-size: 16px; font-weight: 700; }
+    .range-title { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .range-val { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .range-vol { font-size: 10px; color: #666; font-weight: normal; margin-left: 2px; }
+    .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
+    .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
 
+    /* === 第六排：籌碼分佈 === */
     .chip-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
-    .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; }
+    .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    
+    /* 圖表區塊 */
     .split-chart-box { background: var(--card); border-radius: 14px; padding: 8px; border: 1px solid #333; height: 200px; position: relative; }
-    .section-title { margin-top: 10px; margin-bottom: 2px; font-size: 12px; color: #888; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .section-title { margin-top: 10px; margin-bottom: 2px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; font-weight: 600; }
 
+    /* === 登入遮罩 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .auth-box { text-align: center; width: 85%; max-width: 320px; background: #1c1c1e; padding: 30px 20px; border-radius: 20px; border: 1px solid #333; }
+    .auth-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
     .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: #2c2c2e; color: #fff; font-size: 16px; box-sizing: border-box; }
-    .auth-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
-    #logout-btn { position: fixed; top: 10px; right: 10px; z-index: 1000; display: none; padding: 4px 10px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 11px; cursor: pointer; }
-    
+    .auth-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .auth-btn.secondary { background: #3a3a3c; margin-top: 10px; }
+    .error-msg { color: var(--red); font-size: 13px; margin-top: 15px; }
+    .toggle-link { margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline; }
+    #logout-btn { position: fixed; top: 10px; right: 10px; z-index: 1000; display: none; padding: 4px 10px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 11px; cursor: pointer; backdrop-filter: blur(5px); }
+
+    /* 戰力分級樣式 */
+    .rank-s { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); animation: pulse-gold 1.5s infinite; border: 1px solid #d4af37 !important; }
+    .rank-a-bull { color: var(--red) !important; border: 1px solid var(--red) !important; }
+    .rank-a-bear { color: var(--green) !important; border: 1px solid var(--green) !important; }
+    .rank-b { color: var(--yellow) !important; border: 1px solid var(--yellow) !important; }
+    .rank-n { color: #888 !important; border: 1px solid #444 !important; }
+
+    @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
     @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5); } 70% { box-shadow: 0 0 0 8px rgba(255, 69, 58, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0); } }
   </style>
 </head>
@@ -122,20 +182,21 @@
 
   <div id="auth-overlay">
     <div id="login-form" class="auth-box">
-      <div style="font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px;">🔐 會員登入</div>
+      <div class="auth-title">🔐 會員登入</div>
       <input type="email" id="login-email" class="auth-input" placeholder="Email 信箱">
       <input type="password" id="login-pass" class="auth-input" placeholder="密碼">
       <button onclick="doLogin()" class="auth-btn">進入戰情室</button>
-      <div id="login-msg" style="color: var(--red); font-size: 13px; margin-top: 15px;"></div>
-      <div style="margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline;" onclick="showRegister()">沒有帳號？點此註冊</div>
+      <div class="error-msg" id="login-msg"></div>
+      <div class="toggle-link" onclick="showRegister()">沒有帳號？點此註冊</div>
     </div>
     <div id="register-form" class="auth-box" style="display:none;">
-      <div style="font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px;">📝 註冊新帳號</div>
-      <input type="email" id="reg-email" class="auth-input" placeholder="Email">
-      <input type="password" id="reg-pass" class="auth-input" placeholder="密碼 (至少6位)">
-      <button onclick="doRegister()" class="auth-btn" style="background:#3a3a3c">註冊並發送驗證信</button>
-      <div id="reg-msg" style="color: var(--yellow); font-size: 13px; margin-top: 15px;"></div>
-      <div style="margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline;" onclick="showLogin()">已有帳號？返回登入</div>
+      <div class="auth-title">📝 註冊新帳號</div>
+      <div style="font-size:12px; color:#aaa; margin-bottom:15px;">註冊後請至信箱點擊驗證連結<br>並等待管理員審核</div>
+      <input type="email" id="reg-email" class="auth-input" placeholder="輸入您的 Email">
+      <input type="password" id="reg-pass" class="auth-input" placeholder="設定密碼 (至少6位)">
+      <button onclick="doRegister()" class="auth-btn secondary">註冊並發送驗證信</button>
+      <div class="error-msg" id="reg-msg" style="color:var(--yellow)"></div>
+      <div class="toggle-link" onclick="showLogin()">已有帳號？返回登入</div>
     </div>
   </div>
 
@@ -146,86 +207,176 @@
       <div class="box">
         <div class="box-header" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:flex-end;">
             <span>TX 台指期</span>
-            <span style="font-size:10px; font-weight:normal; color:#888;">次月: <span id="price-next">--</span></span>
+            <span style="font-size:10px; font-weight:normal; color:#888;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
         </div>
         <div id="price" class="big-val">---</div>
-        <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa;">
-            <div>🌞 <span id="vwap-day" style="color:#fff;">--</span></div>
-            <div>🌙 <span id="vwap-night" style="color:#fff;">--</span></div>
+        <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa; font-weight:500;">
+            <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
+            <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#aaa; font-weight:500;">
+            <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
+            <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
         </div>
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
       
-      <div class="box req-level-2-flex" id="pwr-box">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div class="box-header" style="margin-bottom:0;">🚀 P6 動能</div>
-            <div id="pwr-tag" class="chip-tag">Wait</div>
+      <div class="box req-level-3-flex" style="flex-direction:column; justify-content:space-between;" id="pwr-box">
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="box-header" style="margin-bottom:0;">🚀 P6 動能</div>
+                <div id="pwr-tag" class="chip-tag">Wait</div>
+            </div>
+            <div id="pwr-val" class="power-val" style="text-align:right;">0%</div>
         </div>
-        <div id="pwr-val" class="power-val">0%</div>
-        <div style="border-top:1px dashed #333; padding-top:6px; display:flex; flex-direction:column; align-items:flex-end;">
-            <div id="alpha-heat-val" style="font-size:22px; font-weight:800;">--%</div>
-            <div id="alpha-heat-ex-box" style="font-size:10px; color:#aaa; display:none;">(非神山: <span id="alpha-heat-ex-val">--%</span>)</div>
+        
+        <div style="border-top:1px dashed #333; margin-top:6px; padding-top:6px; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+            <div style="display:flex; gap:4px; margin-bottom:2px;">
+                <div id="nsf-status-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 無</div>
+                <div id="event-radar-badge" style="font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px; border:1px solid #333; color:#aaa; white-space:nowrap; display:none;">⚖️ 無事件</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+                <span style="font-size:11px; font-weight:700; color:#aaa;">Heat</span>
+                <span id="alpha-heat-val" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">--%</span>
+            </div>
+            <div id="alpha-heat-ex-box" style="font-size:11px; font-weight:bold; color:#aaa; display:none;">
+                (非神山: <span id="alpha-heat-ex-val">--%</span>)
+            </div>
         </div>
       </div>
-      <div class="box upgrade-prompt lock-lvl-2"><div style="font-size:16px;">🚀</div><div>P6 / P9 動能掃描</div><div class="upgrade-btn">解鎖 Level 2</div></div>
+      <div class="box upgrade-prompt lock-lvl-3" id="pwr-box-locked">
+          <div style="font-size:16px;">🚀</div>
+          <div>P6 / P9 動能掃描</div>
+          <div class="upgrade-btn">解鎖 Level 3</div>
+      </div>
     </div>
-
-    <div class="p9-container req-level-2-flex" id="p9-box">
-        <div class="p9-label">🔥 實單能量 (P9):</div>
-        <div id="p9-val" class="p9-val">--</div>
-        <div id="p9-slope-label" class="slope-label">--</div>
-    </div>
-    <div class="upgrade-prompt lock-lvl-2" style="height:40px; flex-direction:row;"><span style="font-size:16px;">🔥</span> <span>解鎖 Level 2 查看 P9 實單數據</span></div>
 
     <div class="alpha-box req-level-4-block" id="alpha-card">
         <div class="alpha-top">
-            <div class="box-header" style="color:#fff; font-size:10px;">⚡ Alpha-TX 核心陣列</div>
-            <div id="alpha-prob-badge" class="prob-badge">等待</div>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+                <div class="box-header" style="margin-bottom:0; color:#fff; font-size:10px;">⚡ Alpha-TX 核心陣列</div>
+                <span id="alpha-update-time" style="font-size:10px; color:#64d2ff; font-weight:bold;">--:--:--</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <span style="font-size:9px; color:#aaa;">強共振:<span id="alpha-strong-count" style="color:#fff;font-weight:bold;margin-left:2px;">-</span></span>
+                <div id="alpha-prob-badge" class="prob-badge">等待</div>
+            </div>
         </div>
-        <div class="targets-grid-compact" id="alpha-targets"></div>
+        
+        <div class="targets-grid-compact" id="alpha-targets">
+            <div style="grid-column: 1/-1; text-align: center; color: #555; font-size: 10px; padding: 2px;">接收數據中...</div>
+        </div>
+        
+        <div class="alpha-legend">
+            <div class="legend-item"><div class="legend-dot dot-red"></div>共振噴出</div>
+            <div class="legend-item"><div class="legend-dot dot-yellow"></div>誘空壓盤</div>
+            <div class="legend-item"><div class="legend-dot dot-purple"></div>跌勢收斂</div>
+            <div class="legend-item"><div class="legend-dot dot-blue"></div>資金護盤</div>
+            <div class="legend-item"><div class="legend-dot dot-green"></div>共振殺盤</div>
+            <div class="legend-item"><div class="legend-dot dot-gray"></div>震盪</div>
+        </div>
     </div>
-    <div class="alpha-box upgrade-prompt lock-lvl-4"><div>🔒 Alpha-TX 核心陣列</div><div class="upgrade-btn">需要 Level 4</div></div>
+    <div class="alpha-box upgrade-prompt lock-lvl-4" id="alpha-card-locked">
+        <div>🔒 Alpha-TX 核心陣列</div>
+        <div class="upgrade-btn">需要 Level 4 解鎖</div>
+    </div>
 
-    <div class="battle-box req-level-3-flex" id="battle-card">
-        <div class="box-header">🧱 莊家防線兵力</div>
+    <div class="battle-box req-level-2-flex" id="battle-card">
+        <div class="box-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <span>🧱 莊家防線兵力 (壓力 vs 支撐)</span>
+            <span id="wall-intent-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold; border:1px solid #444; color:#aaa; transition: all 0.3s ease;">意圖分析中...</span>
+        </div>
         <div class="tug-container">
             <div id="wall-bull-bar" class="bull-bar" style="width: 50%;"></div>
             <div id="wall-bear-bar" class="bear-bar" style="width: 50%;"></div>
             <div id="wall-ratio-text" class="percent-text">50% vs 50%</div>
         </div>
         <div id="wall-net-force-val" class="force-display">-- 淨力道</div>
+        <div class="army-stats">
+            <div>🔴 支撐(<span id="wall-s-strike" style="color:#ccc;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
+            <div>🟢 壓力(<span id="wall-p-strike" style="color:#ccc;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
+        </div>
+        
+        <div class="p9-container req-level-3-flex">
+            <div class="p9-label">🔥 實單能量 (P9):</div>
+            <div id="p9-val" class="p9-val">--</div>
+            <div id="p9-slope-label" class="slope-label">--</div>
+        </div>
+        <div class="upgrade-prompt lock-lvl-3" style="margin-top:2px; padding:4px; flex-direction:row;">
+            <span style="font-size:16px;">🔥</span> <span>解鎖 Level 3 查看 P9 實單衝擊</span>
+        </div>
+        
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
-    <div class="battle-box upgrade-prompt lock-lvl-3"><div style="font-size:16px;">🧱</div><div>莊家防線與兵力偵測</div><div class="upgrade-btn">解鎖 Level 3</div></div>
+    <div class="battle-box upgrade-prompt lock-lvl-2" id="battle-card-locked">
+        <div style="font-size:16px;">🧱</div>
+        <div>莊家防線與兵力偵測</div>
+        <div class="upgrade-btn">解鎖 Level 2</div>
+    </div>
 
-    <div class="section-title req-level-3-flex">🧱 莊家防線推移走勢</div>
-    <div class="split-chart-box req-level-3-block"><canvas id="chartWall"></canvas></div>
-    <div class="split-chart-box upgrade-prompt lock-lvl-3" style="height:80px;">🔒 防線推移圖表</div>
+    <div class="section-title req-level-2-flex" style="margin-top:6px;">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
+    <div class="split-chart-box req-level-2-block" style="margin-bottom:6px;"><canvas id="chartWall"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-2" style="margin-bottom:6px; height:80px;">
+        <div>🔒 防線推移圖表</div>
+        <div class="upgrade-btn">需要 Level 2</div>
+    </div>
 
     <div class="chip-grid">
-      <div class="chip-card" id="c1-card"><span class="box-header" style="font-size:9px;">近月夜</span><span id="c1-val" style="font-size:15px; font-weight:700;">--</span><span id="c1-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c2-card"><span class="box-header" style="font-size:9px;">近月日</span><span id="c2-val" style="font-size:15px; font-weight:700;">--</span><span id="c2-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c3-card"><span class="box-header" style="font-size:9px;">次月夜</span><span id="c3-val" style="font-size:15px; font-weight:700;">--</span><span id="c3-tag" class="chip-tag">--</span></div>
-      <div class="chip-card" id="c4-card"><span class="box-header" style="font-size:9px;">次月日</span><span id="c4-val" style="font-size:15px; font-weight:700;">--</span><span id="c4-tag" class="chip-tag">--</span></div>
+      <div class="chip-card" id="c1-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月夜</span><span id="c1-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c1-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月夜</span><span id="c3-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c3-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c2-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月日</span><span id="c2-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c2-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月日</span><span id="c4-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c4-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
     </div>
 
     <div id="strategy-box" class="strategy-card req-level-4-block" style="margin-top:4px;">
-        <div class="strategy-header"><div style="color:#ccc; font-size:11px;">🤖 AI 戰略指揮</div><div id="st-phase" class="phase-badge">數據接入中</div></div>
-        <div id="st-advice" class="s-advice">AI 解析中...</div>
+        <div class="strategy-header">
+            <div style="color:#ccc; font-weight:600; font-size:11px;">🤖 AI 戰略指揮</div>
+            <div id="st-phase" class="phase-badge">等待數據</div>
+        </div>
+        <div id="st-advice" class="s-advice">分析中...</div>
     </div>
-    <div class="strategy-card upgrade-prompt lock-lvl-4">🤖 AI 戰略指揮官 <div class="upgrade-btn">需要 Level 4</div></div>
+    <div class="strategy-card upgrade-prompt lock-lvl-4" id="strategy-box-locked" style="margin-top:4px;">
+        <div style="font-size:18px;">🤖</div>
+        <div>AI 戰略指揮官</div>
+        <div class="upgrade-btn">需要 Level 4 解鎖</div>
+    </div>
 
-    <div class="range-box req-level-3-grid" style="margin-top:6px;">
-        <div class="range-row"><span class="c-green">🟢 壓力牆</span><span id="p-strike" class="c-green">--</span></div>
-        <div class="range-row"><span class="c-red">🔴 支撐牆</span><span id="s-strike" class="c-red">--</span></div>
+    <div class="range-box req-level-2-grid" style="margin-top:6px;">
+        <div class="box-header" style="position:absolute; top:8px; left:14px;">🚧 戰場邊界</div>
+        <div class="range-row" style="margin-top:14px;">
+            <div class="range-title c-green">🟢 壓力牆</div>
+            <div class="range-val c-green">
+                <span id="p-strike">--</span>
+                <span class="range-old" id="p-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="p-old">--</span></span>
+                <span id="p-vol" class="range-vol">(--)</span>
+            </div>
+        </div>
+        <div class="range-row">
+            <div class="range-title c-red">🔴 支撐牆</div>
+            <div class="range-val c-red">
+                <span id="s-strike">--</span>
+                <span class="range-old" id="s-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="s-old">--</span></span>
+                <span id="s-vol" class="range-vol">(--)</span>
+            </div>
+        </div>
+    </div>
+    <div class="range-box upgrade-prompt lock-lvl-2" style="margin-top:6px; display:flex; height:60px;">
+        <div>🔒 戰場掛單邊界</div>
+        <div class="upgrade-btn">需要 Level 2</div>
     </div>
 
     <div class="section-title">📈 期貨現價 (Price)</div>
     <div class="split-chart-box"><canvas id="chartPrice"></canvas></div>
 
-    <div class="section-title req-level-2-flex">🚀 P6動能 vs P9實單交叉</div>
-    <div class="split-chart-box req-level-2-block"><canvas id="chartP6"></canvas></div>
-    <div class="split-chart-box upgrade-prompt lock-lvl-2" style="height:80px;">🔒 P6 / P9 能量交叉圖表</div>
+    <div class="section-title">📊 籌碼力道 (R7)</div>
+    <div class="split-chart-box"><canvas id="chartChip"></canvas></div>
+
+    <div class="section-title req-level-3-flex">🚀 P6動能(左) vs P9實單(右)</div>
+    <div class="split-chart-box req-level-3-block"><canvas id="chartP6"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-3" id="p6-chart-locked" style="margin-top:2px; height:80px;">
+        <div>🔒 P6 / P9 能量交叉圖表</div>
+        <div class="upgrade-btn">需要 Level 3</div>
+    </div>
 
   </div>
 
@@ -251,6 +402,39 @@
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
     let p9SlopeHistory = [];
     
+    // ==========================================
+    // ★★★ 終極雙重防休眠機制 (No-Sleep Hack) ★★★
+    // ==========================================
+    let wakeLock = null;
+    let isNoSleepEnabled = false;
+
+    const noSleepVideo = document.createElement('video');
+    noSleepVideo.setAttribute('playsinline', '');
+    noSleepVideo.setAttribute('muted', '');
+    noSleepVideo.setAttribute('loop', '');
+    noSleepVideo.style.display = 'none';
+    noSleepVideo.src = "data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAD5tb292AAAAbG12aGQAAAAA/8fBAP/HwQAAAAEAAACQAAACAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAACWlvZHMzAAAAEP/HwQAAAAEAAAAGbXRyYwAAAAxrcmhhAAAAAHBhc3MAAAAAaG1kaWEAAAAgbWRoZAAAAAD/x8EA/8fBAAAAAQAAAIAAAAAAAABoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAAmRtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAB8c3RibAAAACxzdHNkAAAAAAAAAAEAAAAcbXA0dgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAUc3R0cwAAAAAAAAABAAAACHN0c3oAAAAAAAAAAAAAAAEAAAAUc3RzYwAAAAAAAAABAAAAAQAAABRzdGNvAAAAAAAAAAEAAAABAAAAAQAAABRzdHNvAAAAAAAAAAEAAAAw";
+    document.body.appendChild(noSleepVideo);
+
+    async function enableNoSleep() {
+        if (isNoSleepEnabled) return;
+        try {
+            await noSleepVideo.play();
+            if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); }
+            isNoSleepEnabled = true;
+            document.removeEventListener('touchstart', enableNoSleep);
+            document.removeEventListener('click', enableNoSleep);
+        } catch (err) {}
+    }
+
+    document.addEventListener('touchstart', enableNoSleep, { once: true });
+    document.addEventListener('click', enableNoSleep, { once: true });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') { isNoSleepEnabled = false; enableNoSleep(); }
+    });
+    // ==========================================
+
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
       const dashboard = document.getElementById('dashboard');
@@ -258,31 +442,58 @@
       
       if (user) {
         if (!user.emailVerified) {
-            document.getElementById('login-msg').innerHTML = `⚠️ 請先驗證 Email`;
-            auth.signOut(); return;
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-msg').innerHTML = `⚠️ Email 尚未驗證！<br>請去信箱確認，完成後請<a href="#" onclick="location.reload()" style="color:#fff">重新整理</a>`;
+            auth.signOut();
+            return;
         }
+        
+        // ★ 核心修正：將 once 改為 on 進行全時即時權限監聽 ★
         db.ref('users/' + user.uid).on('value', (snapshot) => {
             const userData = snapshot.val();
+            
             if (!userData) {
+                // 新註冊寫入：預設 level = 1
                 db.ref('users/' + user.uid).set({ email: user.email, approved: false, level: 1, reg_time: new Date().toISOString() });
             } else if (userData.approved === true) {
                 overlay.style.display = 'none';
+                if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
                 dashboard.classList.add('unlocked');
                 logoutBtn.style.display = 'block';
+                
+                // 每次權限變更時，先清空舊的等級狀態
                 dashboard.classList.remove('lvl2', 'lvl3', 'lvl4');
+                
+                // ★★★ 會員權限即時解鎖邏輯 ★★★
                 const userLevel = userData.level || 1;
+                
+                // 向下相容解鎖：等級越高，解鎖的 Class 越多
                 if (userLevel >= 2) dashboard.classList.add('lvl2');
                 if (userLevel >= 3) dashboard.classList.add('lvl3');
                 if (userLevel >= 4) dashboard.classList.add('lvl4');
+
+                // 確保圖表只會初始化一次
                 if(!chartPrice) { initCharts(); startDataSync(); }
+                
             } else {
+                // ★ 瞬間強制登出機制 vs 審核中畫面 ★
                 if (dashboard.classList.contains('unlocked')) {
-                    auth.signOut().then(() => { alert("⚠️ 權限已移除"); location.reload(); });
-                } else { showPendingScreen(); }
+                    // 如果儀表板原本是解鎖狀態，代表是登入中途被拔除權限
+                    auth.signOut().then(() => {
+                        alert("⚠️ 您的帳號權限已被管理員移除，系統已將您強制登出！");
+                        location.reload(); // 重新整理網頁，徹底清除快取與殘留畫面
+                    });
+                } else {
+                    // 如果一開始登入就尚未開通，顯示「審核中」提示框
+                    showPendingScreen();
+                }
             }
         });
       } else {
         overlay.style.display = 'flex';
+        document.getElementById('login-form').style.display = 'block';
+        if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
         dashboard.classList.remove('unlocked', 'lvl2', 'lvl3', 'lvl4');
         logoutBtn.style.display = 'none';
       }
@@ -291,140 +502,690 @@
     function showPendingScreen() {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-form').style.display = 'none';
-        let pb = document.getElementById('pending-box') || document.createElement('div');
-        pb.id = 'pending-box'; pb.className = 'auth-box';
-        pb.innerHTML = `<div style="font-size:20px; color:#fff; margin-bottom:15px;">⏳ 審核中</div><div style="color:#aaa; font-size:14px; margin-bottom:20px;">帳號需要管理員核准。<br>請通知管理員開通。</div><button onclick="location.reload()" class="auth-btn">重新整理</button>`;
-        document.getElementById('auth-overlay').appendChild(pb);
+        let pendingBox = document.getElementById('pending-msg-box');
+        if (!pendingBox) {
+            pendingBox = document.createElement('div');
+            pendingBox.id = 'pending-msg-box';
+            pendingBox.className = 'auth-box';
+            pendingBox.innerHTML = `<div class="auth-title">⏳ 審核中</div><div style="color:#ccc; font-size:14px; line-height:1.6; margin-bottom:20px;">您的帳號已建立，但需要管理員核准才能進入。<br>請通知管理員開通您的權限。</div><button onclick="location.reload()" class="auth-btn">我已開通，重新整理</button><button onclick="doLogout()" class="auth-btn secondary">登出</button>`;
+            document.getElementById('auth-overlay').appendChild(pendingBox);
+        }
+        pendingBox.style.display = 'block';
     }
 
     function doLogin() {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-pass').value;
-      auth.signInWithEmailAndPassword(email, pass).catch(e => { document.getElementById('login-msg').innerText = "❌ 失敗: " + e.code; });
+      const msgBox = document.getElementById('login-msg');
+      msgBox.innerText = "驗證中...";
+      auth.signInWithEmailAndPassword(email, pass).catch((error) => { msgBox.innerText = "❌ 登入失敗: " + error.code; });
     }
 
     function doRegister() {
       const email = document.getElementById('reg-email').value;
       const pass = document.getElementById('reg-pass').value;
-      auth.createUserWithEmailAndPassword(email, pass).then(cred => {
+      const msgBox = document.getElementById('reg-msg');
+      if (pass.length < 6) { msgBox.innerText = "⚠️ 密碼太短"; return; }
+      msgBox.innerText = "建立帳號中...";
+      auth.createUserWithEmailAndPassword(email, pass).then((cred) => {
           cred.user.sendEmailVerification().then(() => {
-             document.getElementById('reg-msg').innerText = "✅ 驗證信已發送！";
-             setTimeout(() => { showLogin(); auth.signOut(); }, 3000);
+             msgBox.innerHTML = "✅ 驗證信已發送！請去信箱確認。";
+             setTimeout(() => { showLogin(); auth.signOut(); }, 5000);
           });
-      }).catch(e => { document.getElementById('reg-msg').innerText = e.message; });
+      }).catch((e) => { msgBox.innerText = e.message; });
     }
 
-    function doLogout() { auth.signOut(); location.reload(); }
+    function doLogout() { if(confirm("確定登出？")) { auth.signOut(); location.reload(); } }
     function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
     function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
     function startDataSync() {
-      db.ref(NODE_REALTIME).on('value', s => { if(s.val()) updateUI(s.val()); });
-      db.ref(NODE_HISTORY).limitToLast(1).on('child_added', s => { if(s.val()) updateChartNewData(s.val()); });
-      db.ref(NODE_HISTORY).limitToLast(60).once('value', s => { if(s.val()) loadChartHistory(Object.values(s.val())); });
-      db.ref(NODE_ALPHA).on('value', s => { if(s.val()) updateAlphaUI(s.val()); });
+      db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
+      db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (s) => { if(s.val()) updateChartNewData(s.val()); });
+      db.ref(NODE_HISTORY).limitToLast(120).once('value', (s) => { if(s.val()) loadChartHistory(Object.values(s.val())); });
+      db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
     function updateAlphaUI(data) {
         const heatVal = parseFloat(data.heat || 0);
         let heatEl = document.getElementById('alpha-heat-val');
         heatEl.innerText = heatVal.toFixed(1) + '%';
-        heatEl.style.color = heatVal > 60 ? 'var(--red)' : (heatVal < 40 ? 'var(--green)' : 'var(--yellow)');
+        
+        if (heatVal > 60) heatEl.style.color = 'var(--red)';
+        else if (heatVal < 40) heatEl.style.color = 'var(--green)';
+        else heatEl.style.color = 'var(--yellow)';
 
         if (data.heat_ex !== undefined) {
             const heatExVal = parseFloat(data.heat_ex);
             const exBox = document.getElementById('alpha-heat-ex-box');
-            exBox.style.display = 'block';
-            document.getElementById('alpha-heat-ex-val').innerText = heatExVal.toFixed(1) + '%';
-        }
-
-        const pb = document.getElementById('alpha-prob-badge');
-        const p = data.lift_prob || 'NEUTRAL';
-        pb.innerText = p === 'HIGH' ? '🔥 易拉抬' : (p === 'LOW' ? '📉 易壓制' : '⚖️ 震盪');
-        pb.className = 'prob-badge ' + (p === 'HIGH' ? 'prob-high' : (p === 'LOW' ? 'prob-low' : 'prob-neutral'));
-
-        const tc = document.getElementById('alpha-targets');
-        tc.innerHTML = '';
-        if (data.core_targets) {
-            for (const [n, i] of Object.entries(data.core_targets)) {
-                const card = document.createElement('div');
-                card.className = `target-card-sm st-${i.s || 'WAIT'}`;
-                card.innerHTML = `<div class="target-name-sm">${n}</div><div class="target-data-row"><span class="target-price-sm">${i.p}</span><span class="target-diff-sm ${i.d > 0 ? 'c-red' : 'c-green'}">(${i.d}%)</span></div>`;
-                tc.appendChild(card);
+            const exValEl = document.getElementById('alpha-heat-ex-val');
+            exBox.style.display = 'inline';
+            
+            if (heatVal - heatExVal >= 15) {
+                exBox.style.color = '#ff9f0a'; 
+                if (heatVal < 40) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護';
+                } else if (heatVal >= 40 && heatVal <= 60) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷出';
+                } else {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨';
+                }
+            } else if (heatExVal - heatVal >= 15) {
+                exBox.style.color = '#30d158'; 
+                if (heatVal < 40) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗';
+                } else if (heatVal >= 40 && heatVal <= 60) {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷買';
+                } else {
+                    exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨';
+                }
+            } else {
+                exBox.style.color = '#aaa'; 
+                exValEl.innerText = heatExVal.toFixed(1) + '%';
             }
         }
+
+        const probBadge = document.getElementById('alpha-prob-badge');
+        const prob = data.lift_prob || 'NEUTRAL';
+        if (prob === 'HIGH') { probBadge.innerText = '🔥 易拉抬'; probBadge.className = 'prob-badge prob-high'; } 
+        else if (prob === 'LOW') { probBadge.innerText = '📉 易壓制'; probBadge.className = 'prob-badge prob-low'; } 
+        else { probBadge.innerText = '⚖️ 震盪'; probBadge.className = 'prob-badge prob-neutral'; }
+
+        const strongCount = isNaN(data.strong_count) ? '-' : data.strong_count;
+        document.getElementById('alpha-strong-count').innerText = strongCount;
+        
+        let timeStr = data.last_update ? data.last_update.split(' ')[1] : '--:--:--';
+        document.getElementById('alpha-update-time').innerText = timeStr;
+
+        const targetsContainer = document.getElementById('alpha-targets');
+        targetsContainer.innerHTML = ''; 
+        
+        if (data.core_targets && Object.keys(data.core_targets).length > 0) {
+            for (const [name, info] of Object.entries(data.core_targets)) {
+                const diffValue = parseFloat(info.d || 0);
+                const diffColor = diffValue > 0 ? 'c-red' : (diffValue < 0 ? 'c-green' : '');
+                const diffSign = diffValue > 0 ? '+' : '';
+                const statusClass = 'st-' + (info.s || 'WAIT');
+                
+                let odHtml = '';
+                if (info.o_d !== undefined) {
+                    let odColor = info.o_d > 0 ? 'color:#bf5af2;' : (info.o_d < 0 ? 'color:#30d158;' : 'color:#888;');
+                    let odSign = info.o_d > 0 ? '+' : '';
+                    odHtml = `<div style="font-size:8px; color:#aaa; margin-top:2px; line-height:1;">開 <span style="${odColor}">${odSign}${info.o_d}%</span></div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `target-card-sm ${statusClass}`;
+                card.innerHTML = `
+                    <div class="target-name-sm">${name}</div>
+                    <div class="target-data-row">
+                        <span class="target-price-sm">${info.p === 0 ? '--' : info.p}</span>
+                        <span class="target-diff-sm ${diffColor}">(${diffSign}${info.d}%)</span>
+                    </div>
+                    ${odHtml}
+                `;
+                targetsContainer.appendChild(card);
+            }
+        } else {
+             targetsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; font-size: 11px; padding: 10px; border: 1px dashed #333; border-radius: 6px;">盤前時段，等待核心指標報價中... ⏳</div>';
+        }
+    }
+
+    // ★★★ 數據自適應版：結合 Firebase 傳來的動態閾值 (Dynamic Thresholds) ★★★
+    function analyzeStrategy(data) {
+        let p9 = parseFloat(data.p9 || 0);
+        let p7 = parseFloat(data.force || 0); 
+        let timeHour = parseInt((data.t || "00:00").split(':')[0]);
+        let isNight = (timeHour >= 15 || timeHour < 6);
+        let e_str = isNight ? (data.c1 || "") : (data.c2 || ""); 
+        let e_dir = 0;
+        if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
+        
+        // 讀取動態閾值，若無則使用安全預設值
+        let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
+        let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
+        let th_at_p = parseFloat(data.p9_th_at_p || 50000);
+        let th_at_n = parseFloat(data.p9_th_at_n || -50000);
+        let th_push_p = th_ex_p * 0.5; // 動態裝甲推進線 (天量線的一半)
+        let th_push_n = th_ex_n * 0.5;
+
+        let result = { text: "☕ [N級] 冰封觀望 (無明顯方向)", class: "rank-n" };
+        let confidence = 0;
+
+        if (p9 > th_at_p) {
+            let isResonance = (p7 > 0); let isTrend = (e_dir === 1); confidence = 50;
+            if (p9 > th_ex_p) confidence = 95; 
+            else if (p9 > th_push_p) confidence += 30; 
+            else confidence += 10; 
+            
+            if (isResonance) confidence += 10; if (isTrend) confidence += 10;
+
+            if (p9 > th_ex_p) result = { text: `🔥 [S級] 多方天量 (準備反轉)`, class: "rank-s" };
+            else if (p9 > th_push_p && isResonance) result = { text: `🚀 [A+級] 裝甲推進 (強力多頭)`, class: "rank-a-bull" };
+            else if (p9 > th_at_p && !isResonance) result = { text: `🪤 [B級] 誘空壓盤 (逢低找買)`, class: "rank-b" };
+            else result = { text: `💪 [B+級] 主力點火 (偏多震盪)`, class: "rank-a-bull" };
+        }
+        else if (p9 < th_at_n) {
+            let isResonance = (p7 < 0); let isTrend = (e_dir === -1); confidence = 50;
+            if (p9 < th_ex_n) confidence = 95; 
+            else if (p9 < th_push_n) confidence += 30; 
+            else confidence += 10; 
+            
+            if (isResonance) confidence += 10; if (isTrend) confidence += 10;
+
+            if (p9 < th_ex_n) result = { text: `☠️ [S級] 空方天量 (準備反轉)`, class: "rank-s" };
+            else if (p9 < th_push_n && isResonance) result = { text: `📉 [A+級] 順勢殺盤 (強力空頭)`, class: "rank-a-bear" };
+            else if (p9 < th_at_n && !isResonance) result = { text: `🪤 [B級] 誘多護盤 (逢高找空)`, class: "rank-b" };
+            else result = { text: `🪓 [B+級] 主力點火 (偏空震盪)`, class: "rank-a-bear" };
+        }
+        return result;
+    }
+
+    function updateStrategyBox(data, strategyResult) {
+        let hour = parseInt((data.t || "00:00").split(':')[0]);
+        let min = parseInt((data.t || "00:00").split(':')[1]);
+        
+        let phaseName = "";
+        if ((hour === 8 && min >= 45) || (hour === 9)) phaseName = "🕒 早盤衝鋒期";
+        else if (hour >= 10 && hour < 13) phaseName = "🕒 中盤趨勢期";
+        else if (hour === 13) phaseName = "🕒 尾盤決策期";
+        else phaseName = "🌙 夜盤時段";
+
+        let finalAdvice = "";
+        let stCard = document.getElementById('strategy-box');
+        
+        let dayDNA = data.day_advice || "等待結算中...";
+        finalAdvice += `
+        <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;">
+            <span style="color:#ffd60a; font-weight:700; font-size:11px;">🌞 日盤結算 DNA (13:45)：</span><br>
+            <span style="color:#ccc; font-size:12px; font-weight:bold;">${dayDNA}</span>
+        </div>`;
+
+        if (data.four_pillars_advice) {
+            let fpParts = data.four_pillars_advice.split('|');
+            let fpMain = fpParts[0] ? fpParts[0].trim() : "";
+            let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
+            let fpExtra = fpParts[2] ? fpParts[2].trim() : "";
+            
+            let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-top:4px; display:inline-block; padding:2px 6px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
+
+            finalAdvice += `<div>
+                <span style="color:#0a84ff; font-weight:700;">🏛️ 即時四票裁決：</span><br>
+                <span style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:0.5px;">${fpMain}</span>
+                <span style="color:#ff9f0a; font-size:11px; margin-left:4px;">${fpTrigger}</span>
+                <br>${extraHtml}
+            </div>`;
+            
+            if (fpMain.includes("多") || fpMain.includes("總攻") || fpMain.includes("噴發")) stCard.style.borderLeft = "5px solid var(--red)";
+            else if (fpMain.includes("空") || fpMain.includes("跌") || fpMain.includes("殺")) stCard.style.borderLeft = "5px solid var(--green)";
+            else if (fpMain.includes("警告") || fpMain.includes("陷阱") || fpMain.includes("了結") || fpMain.includes("套牢")) stCard.style.borderLeft = "5px solid var(--yellow)";
+            else stCard.style.borderLeft = "5px solid #555";
+            
+        } else {
+            finalAdvice += `【${strategyResult.text}】<br><br>`;
+            stCard.style.borderLeft = "5px solid #444";
+        }
+
+        if (data.ai_advice && data.ai_advice !== "" && !data.ai_advice.includes("AI 指揮官連線中")) {
+            finalAdvice += `<div style="padding-top:8px; margin-top:6px; border-top:1px dashed #555;">
+                <span style="color:#ffd60a; font-weight:600;">🤖 Gemini 戰略解析 (5分更新)：</span><br>
+                <span style="color:#ddd; font-size:11px; line-height:1.4;">${data.ai_advice.replace(/<br>/g, '<br>')}</span>
+            </div>`;
+            document.getElementById('st-phase').innerText = phaseName;
+        } else {
+            document.getElementById('st-phase').innerText = phaseName;
+        }
+        
+        document.getElementById('st-advice').innerHTML = finalAdvice;
     }
 
     function updateUI(data) {
       document.getElementById('price').innerText = data.p;
-      document.getElementById('price-next').innerText = data.p_next || "--";
-      document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(data.vwap_day) : "--";
-      document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(data.vwap_night) : "--";
+      
+      if(document.getElementById('price-next')) {
+          document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--";
+      }
+
+      if (document.getElementById('spread-spot')) {
+          if (data.p && data.spot && parseFloat(data.spot) > 0) {
+              let diffSpot = Math.round(parseFloat(data.p) - parseFloat(data.spot));
+              let elSpot = document.getElementById('spread-spot');
+              elSpot.innerText = (diffSpot > 0 ? "+" : "") + diffSpot;
+              elSpot.style.color = diffSpot > 0 ? "var(--red)" : (diffSpot < 0 ? "var(--green)" : "#fff");
+          }
+      }
+      if (document.getElementById('spread-next')) {
+          if (data.p && data.p_next && parseFloat(data.p_next) > 0) {
+              let diffNext = Math.round(parseFloat(data.p) - parseFloat(data.p_next));
+              let elNext = document.getElementById('spread-next');
+              elNext.innerText = (diffNext > 0 ? "+" : "") + diffNext;
+              elNext.style.color = diffNext > 0 ? "var(--red)" : (diffNext < 0 ? "var(--green)" : "#fff");
+          }
+      }
+      
       document.getElementById('update-time').innerText = "Update: " + data.t;
+      document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
+      document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
+
+      let nsfBadge = document.getElementById('nsf-status-badge');
+      if (nsfBadge && data.nsf_data) {
+          let nsfStatus = data.nsf_data.status || "NONE";
+          let avgDiff = data.nsf_data.avg_diff !== undefined ? (data.nsf_data.avg_diff > 0 ? "+" : "") + data.nsf_data.avg_diff + "%" : "";
+          
+          if (nsfStatus.includes("ACTIVE")) {
+              nsfBadge.innerText = "🔥 國安進場";
+              nsfBadge.style.color = "#000";
+              nsfBadge.style.backgroundColor = "var(--yellow)";
+              nsfBadge.style.borderColor = "var(--yellow)";
+          } else if (nsfStatus.includes("SUPPORT")) {
+              nsfBadge.innerText = "🏛️ 官股撐盤";
+              nsfBadge.style.color = "var(--red)";
+              nsfBadge.style.backgroundColor = "rgba(255, 69, 58, 0.15)";
+              nsfBadge.style.borderColor = "var(--red)";
+          } else if (nsfStatus.includes("OFFLINE")) {
+              nsfBadge.innerText = "🌙 護盤休市";
+              nsfBadge.style.color = "#888";
+              nsfBadge.style.backgroundColor = "transparent";
+              nsfBadge.style.borderColor = "#444";
+          } else {
+              nsfBadge.innerText = "🛡️ 護盤: 無";
+              nsfBadge.style.color = "#555";
+              nsfBadge.style.backgroundColor = "transparent";
+              nsfBadge.style.borderColor = "#333";
+          }
+      }
+      
+      let eventBadge = document.getElementById('event-radar-badge');
+      if (eventBadge && data.event_radar && data.event_radar.name !== "無特殊事件") {
+          eventBadge.style.display = 'block';
+          let eName = data.event_radar.name;
+          let eVal = parseFloat(data.event_radar.val || 0);
+          
+          if (eVal >= 2.0) {
+              eventBadge.innerText = `🔥 ${eName}爆發 (+${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = '#fff';
+              eventBadge.style.backgroundColor = 'var(--red)';
+              eventBadge.style.borderColor = 'var(--red)';
+              eventBadge.style.animation = 'pulse-red 1.5s infinite';
+          } else if (eVal <= -1.5) {
+              eventBadge.innerText = `☘️ ${eName}緩解 (${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = 'var(--green)';
+              eventBadge.style.backgroundColor = 'rgba(48, 209, 88, 0.15)';
+              eventBadge.style.borderColor = 'var(--green)';
+              eventBadge.style.animation = 'none';
+          } else {
+              let sign = eVal > 0 ? '+' : '';
+              eventBadge.innerText = `⚖️ ${eName}觀望 (${sign}${eVal.toFixed(2)}%)`;
+              eventBadge.style.color = '#aaa';
+              eventBadge.style.backgroundColor = 'transparent';
+              eventBadge.style.borderColor = '#444';
+              eventBadge.style.animation = 'none';
+          }
+      } else if (eventBadge) {
+          eventBadge.style.display = 'none';
+      }
 
       let pVal = parseFloat(data.pwr_v || 0);
-      document.getElementById('pwr-val').innerText = data.pwr_t || "0%";
-      document.getElementById('pwr-val').className = "power-val " + (pVal > 0 ? "c-red" : "c-green");
-      
+      let pEl = document.getElementById('pwr-val');
+      let pBox = document.getElementById('pwr-box');
       let pTag = document.getElementById('pwr-tag');
-      pTag.innerText = pVal > 10 ? "強多" : (pVal < -10 ? "強空" : "整理");
-      pTag.className = "chip-tag " + (pVal > 10 ? "bg-red" : (pVal < -10 ? "bg-green" : ""));
-
-      let vP9 = parseFloat(data.p9 || 0);
-      let p9El = document.getElementById('p9-val');
-      p9El.innerText = (vP9>0?"+":"") + vP9.toLocaleString();
-      p9El.className = "p9-val " + (vP9>0?"c-red":"c-green");
-
-      let s = parseFloat(data.p9_slope || 0);
-      let sl = document.getElementById('p9-slope-label');
-      sl.innerText = (s > 1000 ? "📈 加速" : (s < -1000 ? "📉 殺盤" : "⚖️ 穩定")) + " (" + Math.round(s) + ")";
-      sl.style.backgroundColor = s > 1000 ? "var(--red)" : (s < -1000 ? "var(--green)" : "#333");
-      sl.style.color = "#fff";
-
-      let ps = parseInt(data.now_p_s || 0); let ss = parseInt(data.now_s_s || 0);
-      let pv = parseInt(data.now_p_v || 0); let sv = parseInt(data.now_s_v || 0);
-      document.getElementById('wall-bull-bar').style.width = (sv/(pv+sv)*100) + "%";
-      document.getElementById('wall-bear-bar').style.width = (pv/(pv+sv)*100) + "%";
-      document.getElementById('wall-ratio-text').innerText = Math.round(sv/(pv+sv)*100) + "% vs " + Math.round(pv/(pv+sv)*100) + "%";
-      document.getElementById('wall-net-force-val').innerText = (pv > sv ? "📉 壓力牆厚" : "📈 支撐牆厚");
-      document.getElementById('p-strike').innerText = ps;
-      document.getElementById('s-strike').innerText = ss;
-
-      if (data.four_pillars_advice) document.getElementById('logic-text').innerText = data.four_pillars_advice.split('|')[0];
-      if (data.ai_advice) document.getElementById('st-advice').innerText = data.ai_advice;
       
+      pEl.innerText = data.pwr_t || "0%";
+      pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
+      pBox.className = "box req-level-3-flex"; 
+      if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
+      
+      pTag.className = "chip-tag"; pTag.style="align-self:flex-end";
+      if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";}
+      else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";}
+      else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";}
+      else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
+      else{pTag.innerText="整理";}
+
+      // ★★★ 1. 取得 P9 實單數據與動態閾值 ★★★
+      let valP9 = parseFloat(data.p9 || 0);
+      let p9El = document.getElementById('p9-val');
+      p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
+      p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+
+      let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
+      let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
+      let th_at_p = parseFloat(data.p9_th_at_p || 50000);
+      let th_at_n = parseFloat(data.p9_th_at_n || -50000);
+      let th_push_p = th_ex_p * 0.5; // 動態推進線
+      let th_push_n = th_ex_n * 0.5;
+
+      // ★★★ 2. 提取防線兵力與點位 ★★★
+      let ps = parseInt(data.now_p_s || 0);
+      let old_ps = parseInt(data.old_p_s || 0);
+      let pv = parseInt(data.now_p_v || 0);
+      
+      let ss = parseInt(data.now_s_s || 0);
+      let old_ss = parseInt(data.old_s_s || 0);
+      let sv = parseInt(data.now_s_v || 0);
+
+      let totalWall = pv + sv;
+      let bullWallR = 50; let bearWallR = 50;
+      if (totalWall > 0) {
+          bullWallR = (sv / totalWall) * 100;
+          bearWallR = (pv / totalWall) * 100;
+      }
+
+      document.getElementById('wall-s-strike').innerText = ss > 0 ? ss : "--";
+      document.getElementById('wall-p-strike').innerText = ps > 0 ? ps : "--";
+      document.getElementById('wall-support-vol').innerText = sv;
+      document.getElementById('wall-pressure-vol').innerText = pv;
+      
+      document.getElementById('wall-bull-bar').style.width = bullWallR + "%";
+      document.getElementById('wall-bear-bar').style.width = bearWallR + "%";
+      document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
+
+      let wallDiff = pv - sv;
+      let wEl = document.getElementById('wall-net-force-val');
+      if (wallDiff > 0) {
+          wEl.innerText = "📉 壓力牆厚 (+" + wallDiff + ")";
+          wEl.className = "force-display c-green";
+      } else if (wallDiff < 0) {
+          wEl.innerText = "📈 支撐牆厚 (+" + Math.abs(wallDiff) + ")";
+          wEl.className = "force-display c-red";
+      } else {
+          wEl.innerText = "⚖️ 勢均力敵 (0)";
+          wEl.className = "force-display";
+          wEl.style.color = "#aaa";
+      }
+
+      // ★★★ 3. 終極版：AI 意圖翻譯機 (結合動態閾值與防線位移) ★★★
+      let intentBadge = document.getElementById('wall-intent-badge');
+      let isMoving = false;
+
+      // 優先判定：防線是否發生位移
+      if (old_ps > 0 && ps > 0 && ps !== old_ps) {
+          isMoving = true;
+          if (ps > old_ps && valP9 > th_at_p) { // 使用動態發車線
+              intentBadge.innerText = "🏳️ 空軍退守 (軋空預備)";
+              intentBadge.style.color = "#000"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
+          } else if (ps < old_ps && valP9 < th_at_n) {
+              intentBadge.innerText = "📉 泰山壓頂 (壓力下逼)";
+              intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
+          } else {
+              isMoving = false; // 假移動或雜訊
+          }
+      } else if (old_ss > 0 && ss > 0 && ss !== old_ss) {
+          isMoving = true;
+          if (ss > old_ss && valP9 > th_at_p) {
+              intentBadge.innerText = "🚜 多軍推土 (支撐上移)";
+              intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
+          } else if (ss < old_ss && valP9 < th_at_n) {
+              intentBadge.innerText = "⚠️ 支撐棄守 (破底殺多)";
+              intentBadge.style.color = "#000"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
+          } else {
+              isMoving = false;
+          }
+      }
+
+      // 次級判定：如果防線沒有位移，則判斷厚度與動態實單狀態
+      if (!isMoving) {
+          if (totalWall < 1500 && totalWall > 0) {
+              if (valP9 > th_at_p || valP9 < th_at_n) {
+                  intentBadge.innerText = "🔥 實單穿透 (無視防線)";
+                  intentBadge.style.color = "#fff"; intentBadge.style.background = valP9 > 0 ? "var(--red)" : "var(--green)"; intentBadge.style.borderColor = valP9 > 0 ? "var(--red)" : "var(--green)";
+              } else {
+                  intentBadge.innerText = "🧱 防線極弱 (易遭穿透)";
+                  intentBadge.style.color = "#ccc"; intentBadge.style.background = "#222"; intentBadge.style.borderColor = "#444";
+              }
+          } 
+          else if (pv > sv * 1.3) { // 偏空牆
+              if (valP9 > th_push_p) {  // 突破推進線
+                  intentBadge.innerText = "⚠️ 倒莊警戒 (買盤強闖)";
+                  intentBadge.style.color = "#000"; intentBadge.style.background = "var(--yellow)"; intentBadge.style.borderColor = "var(--yellow)";
+              } else if (valP9 > th_at_p) { // 突破發車線
+                  intentBadge.innerText = "🪤 誘空壓盤 (實單暗買)";
+                  intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
+              } else if (valP9 < th_push_n) { 
+                  intentBadge.innerText = "🚜 裝甲碾壓 (厚牆+實砸)";
+                  intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
+              } else {
+                  intentBadge.innerText = "🐻 天花板重壓 (逢高偏空)";
+                  intentBadge.style.color = "var(--green)"; intentBadge.style.background = "rgba(48, 209, 88, 0.1)"; intentBadge.style.borderColor = "var(--green)";
+              }
+          } 
+          else if (sv > pv * 1.3) { // 偏多牆
+              if (valP9 < th_push_n) { 
+                  intentBadge.innerText = "⚠️ 倒莊警戒 (賣盤強殺)";
+                  intentBadge.style.color = "#000"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
+              } else if (valP9 < th_at_n) {
+                  intentBadge.innerText = "🪤 誘多護盤 (實單暗賣)";
+                  intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
+              } else if (valP9 > th_push_p) { 
+                  intentBadge.innerText = "🚀 鋼鐵多頭 (厚牆+實買)";
+                  intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
+              } else {
+                  intentBadge.innerText = "🐂 鐵板護城河 (逢低找買)";
+                  intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
+              }
+          } 
+          else if (totalWall > 0) { // 區間盤整
+              if (valP9 > (th_at_p * 1.5)) {
+                  intentBadge.innerText = "📈 大單突襲 (偏多表態)";
+                  intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
+              } else if (valP9 < (th_at_n * 1.5)) {
+                  intentBadge.innerText = "📉 大單突襲 (偏空表態)";
+                  intentBadge.style.color = "var(--green)"; intentBadge.style.background = "rgba(48, 209, 88, 0.1)"; intentBadge.style.borderColor = "var(--green)";
+              } else {
+                  intentBadge.innerText = "⚖️ 區間收租 (高出低進)";
+                  intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
+              }
+          }
+      }
+
+      // ★★★ 4. 強制全時段顯示 P9 斜率數值 (加入動態天量防護) ★★★
+      let rawSlope = parseFloat(data.p9_slope || 0);
+      p9SlopeHistory.push(rawSlope);
+      if (p9SlopeHistory.length > 3) p9SlopeHistory.shift();
+      let valP9Slope = Math.round(p9SlopeHistory.reduce((a, b) => a + b, 0) / p9SlopeHistory.length);
+
+      let p9SlopeEl = document.getElementById('p9-slope-label');
+      if (p9SlopeEl) {
+          let statusText = "";
+          let bgColor = "";
+          let textColor = "";
+
+          // 動態天量竭盡：P9 突破每日動態天花板/地板
+          if ((valP9 > th_ex_p && valP9Slope < -3000) || (valP9 < th_ex_n && valP9Slope > 3000)) {
+              statusText = "⚠️ 天量竭盡 (反轉警報)";
+              bgColor = "#FFCC00"; textColor = "#000";
+          } 
+          else if (valP9 > 0 && valP9Slope > 1000) {
+              statusText = "📈 多方加速";
+              bgColor = "#FF3B30"; textColor = "#FFF";
+          } 
+          else if (valP9 < 0 && valP9Slope < -1000) {
+              statusText = "📉 空方加速";
+              bgColor = "#4CD964"; textColor = "#FFF";
+          }
+          else if (valP9 > th_at_p && valP9Slope < -500) {
+              statusText = "⚠️ 多方減速";
+              bgColor = "rgba(76, 217, 100, 0.2)"; textColor = "#4CD964";
+          }
+          else if (valP9 < th_at_n && valP9Slope > 500) {
+              statusText = "⚠️ 空方減速";
+              bgColor = "rgba(255, 59, 48, 0.2)"; textColor = "#FF3B30";
+          }
+          else {
+              statusText = "⚖️ 穩定游離";
+              bgColor = "transparent"; textColor = "#888";
+          }
+
+          let sign = valP9Slope > 0 ? "+" : "";
+          // 🛑 強制顯示 Slope 具體數值
+          p9SlopeEl.innerText = statusText + " (Slope: " + sign + valP9Slope + ")";
+          
+          if (bgColor !== "transparent") {
+              p9SlopeEl.style.border = "1px solid " + (bgColor.startsWith('rgba') ? textColor : bgColor);
+          } else {
+              p9SlopeEl.style.border = "1px solid #444";
+          }
+          p9SlopeEl.style.backgroundColor = bgColor;
+          p9SlopeEl.style.color = textColor;
+      }
+
+      let strategy = analyzeStrategy(data); 
+      let logicEl = document.getElementById('logic-text');
+      let battleCard = document.getElementById('battle-card');
+      
+      if (data.four_pillars_advice) {
+          let fpText = data.four_pillars_advice.split('|')[0].trim();
+          logicEl.innerText = fpText;
+          if (fpText.includes("多") || fpText.includes("總攻") || fpText.includes("噴發")) logicEl.style.color = "var(--red)";
+          else if (fpText.includes("空") || fpText.includes("跌") || fpText.includes("殺")) logicEl.style.color = "var(--green)";
+          else if (fpText.includes("警告") || fpText.includes("陷阱") || fpText.includes("了結") || fpText.includes("套牢")) logicEl.style.color = "var(--yellow)";
+          else logicEl.style.color = "#aaa";
+      } else {
+          logicEl.innerText = strategy.text;
+          if (strategy.class === 'rank-s') logicEl.style.color = "#d4af37";
+          else if (strategy.class.includes('bull')) logicEl.style.color = "var(--red)";
+          else if (strategy.class.includes('bear')) logicEl.style.color = "var(--green)";
+          else if (strategy.class === 'rank-b') logicEl.style.color = "var(--yellow)";
+          else logicEl.style.color = "#aaa";
+      }
+
+      battleCard.className = "battle-box req-level-2-flex " + strategy.class;
+      
+      updateStrategyBox(data, strategy);
+
+      // 更新戰場邊界點位顯示
+      document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
+      document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
+      
+      let pOldBox = document.getElementById('p-old-box');
+      if (old_ps > 0 && old_ps !== ps) { document.getElementById('p-old').innerText = old_ps; pOldBox.style.display = "inline-flex"; } 
+      else { pOldBox.style.display = "none"; }
+
+      document.getElementById('s-strike').innerText = ss > 0 ? ss : "--";
+      document.getElementById('s-vol').innerText = ss > 0 ? "(" + sv + ")" : "";
+
+      let sOldBox = document.getElementById('s-old-box');
+      if (old_ss > 0 && old_ss !== ss) { document.getElementById('s-old').innerText = old_ss; sOldBox.style.display = "inline-flex"; } 
+      else { sOldBox.style.display = "none"; }
+      
+      const chipLabels = { 'c1': '近月夜', 'c2': '近月日', 'c3': '次月夜', 'c4': '次月日' };
       ['c1','c2','c3','c4'].forEach(id => {
-        if(data[id]) {
-            let p = data[id].split('|');
-            document.getElementById(id+'-val').innerText = p[0];
-            document.getElementById(id+'-val').className = parseFloat(p[0]) > 0 ? "c-red" : "c-green";
-            document.getElementById(id+'-tag').innerText = p[1];
-        }
+        let raw = data[id]; if(!raw) return;
+        let parts = raw.split('|'); let v = parseFloat(parts[0].replace('%',''));
+        let el = document.getElementById(id+'-val');
+        el.innerText = parts[0]; el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
+        let tag = document.getElementById(id+'-tag');
+        tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
+        let card = document.getElementById(id+'-card');
+        if(parts[1].includes("強")) card.style.border = v>0?"1px solid rgba(255,69,58,0.3)":"1px solid rgba(48,209,88,0.3)";
+        else card.style.border = "1px solid #333";
+        let labelSpan = card.querySelector('.box-header');
+        if(labelSpan && chipLabels[id]) labelSpan.innerText = chipLabels[id];
       });
     }
 
+    function getChipValueForTime(d) {
+        let hour = parseInt(d.t.split(':')[0]);
+        let isDay = (hour >= 8 && hour < 14);
+        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月日盤)", color: '#ffd60a' }; 
+        else return { val: parseChipValue(d.c1), label: "籌碼 (近月夜盤)", color: '#30d158' }; 
+    }
+    
     function updateChartNewData(d) {
         if (!chartPrice) return;
-        let t = d.t.substring(0,5);
-        chartPrice.data.labels.push(t); chartPrice.data.datasets[0].data.push(parseFloat(d.price));
-        chartP6.data.labels.push(t); chartP6.data.datasets[0].data.push(parseFloat(d.pwr_t)); chartP6.data.datasets[1].data.push(parseFloat(d.p9));
-        if (chartPrice.data.labels.length > 60) { chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift(); }
-        chartPrice.update('none'); chartP6.update('none');
+        let timeLabel = d.t.substring(0,5);
+        let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
+        let p9Raw = parseFloat(d.p9 || 0);
+        let priceRaw = parseFloat(d.price || 0);
+        let chipInfo = getChipValueForTime(d);
+        
+        let pWallStrike = parseInt(d.now_p_s || 0);
+        let sWallStrike = parseInt(d.now_s_s || 0);
+        let pWallVol = parseInt(d.now_p_v || 0);
+        let sWallVol = parseInt(d.now_s_v || 0);
+
+        chartPrice.data.labels.push(timeLabel); chartPrice.data.datasets[0].data.push(priceRaw);
+        chartChip.data.labels.push(timeLabel); chartChip.data.datasets[0].data.push(chipInfo.val);
+        chartChip.data.datasets[0].label = chipInfo.label; chartChip.data.datasets[0].borderColor = chipInfo.color;
+        chartP6.data.labels.push(timeLabel); chartP6.data.datasets[0].data.push(p6Raw); chartP6.data.datasets[1].data.push(p9Raw);
+        
+        chartWall.data.labels.push(timeLabel); 
+        chartWall.data.datasets[0].data.push(pWallStrike > 0 ? pWallStrike : null); 
+        chartWall.data.datasets[1].data.push(sWallStrike > 0 ? sWallStrike : null); 
+        chartWall.data.datasets[2].data.push(pWallVol); 
+        chartWall.data.datasets[3].data.push(sWallVol); 
+
+        if (chartPrice.data.labels.length > 120) {
+            chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
+            chartChip.data.labels.shift(); chartChip.data.datasets[0].data.shift();
+            chartP6.data.labels.shift(); chartP6.data.datasets[0].data.shift(); chartP6.data.datasets[1].data.shift();
+            chartWall.data.labels.shift(); 
+            chartWall.data.datasets[0].data.shift(); chartWall.data.datasets[1].data.shift();
+            chartWall.data.datasets[2].data.shift(); chartWall.data.datasets[3].data.shift();
+        }
+        chartPrice.update('none'); chartChip.update('none'); chartP6.update('none'); chartWall.update('none');
     }
 
-    function loadChartHistory(arr) {
+    function loadChartHistory(dataArray) {
         if (!chartPrice) return;
-        arr.forEach(d => {
-            let t = d.t.substring(0,5);
-            chartPrice.data.labels.push(t); chartPrice.data.datasets[0].data.push(parseFloat(d.price));
-            chartP6.data.labels.push(t); chartP6.data.datasets[0].data.push(parseFloat(d.pwr_t)); chartP6.data.datasets[1].data.push(parseFloat(d.p9));
+        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
+        let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
+        let lastChipInfo={label:"籌碼",color:'#30d158'};
+        
+        dataArray.forEach(d => {
+            labels.push(d.t.substring(0,5)); dataP.push(parseFloat(d.price||0));
+            let info = getChipValueForTime(d); dataC.push(info.val);
+            dataP6.push(parseFloat((d.pwr_t||"0").replace("%","").replace("+","")));
+            dataP9.push(parseFloat(d.p9||0)); lastChipInfo=info;
+            
+            let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
+            let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
+            dataWallPV.push(parseInt(d.now_p_v || 0));
+            dataWallSV.push(parseInt(d.now_s_v || 0));
         });
-        chartPrice.update(); chartP6.update();
+        
+        chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
+        chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC;
+        chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
+        chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
+        
+        chartWall.data.labels=labels; 
+        chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS;
+        chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
+        
+        chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
     }
+    
+    function parseChipValue(str) { if(!str)return 0; return parseFloat(str.split('|')[0].replace('%','')); }
 
     function initCharts() {
-        chartPrice = new Chart(document.getElementById('chartPrice'), { type: 'line', data: { labels: [], datasets: [{ label: 'Price', data: [], borderColor: '#ffd700', pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false } });
-        chartP6 = new Chart(document.getElementById('chartP6'), { type: 'line', data: { labels: [], datasets: [{ label: 'P6(%)', data: [], borderColor: '#ff453a', yAxisID: 'y' }, { label: 'P9', data: [], borderColor: '#0a84ff', yAxisID: 'y1' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { position: 'left' }, y1: { position: 'right' } } } });
+        const commonOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } } } };
+        
+        chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
+        chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
+        
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
+        
+        chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { 
+            type: 'line', 
+            data: { 
+                labels: [], 
+                datasets: [ 
+                    { label: '壓力線(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, 
+                    { label: '支撐線(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' },
+                    { label: '壓力厚度(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.15)', borderColor: 'rgba(48, 209, 88, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' },
+                    { label: '支撐厚度(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.15)', borderColor: 'rgba(255, 69, 58, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }
+                ] 
+            }, 
+            options: { 
+                ...commonOptions, 
+                scales: { 
+                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } },
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } 
+                } 
+            } 
+        });
     }
   </script>
 </body>
