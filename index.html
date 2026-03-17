@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 4級權限版)</title>
+  <title>極速戰情室 (Pro Max - 即時權限監聽版)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -448,18 +448,24 @@
             auth.signOut();
             return;
         }
-        db.ref('users/' + user.uid).once('value').then((snapshot) => {
+        
+        // ★ 核心修正：將 once 改為 on 進行全時即時權限監聽 ★
+        db.ref('users/' + user.uid).on('value', (snapshot) => {
             const userData = snapshot.val();
+            
             if (!userData) {
                 // 新註冊寫入：預設 level = 1
-                db.ref('users/' + user.uid).set({ email: user.email, approved: false, level: 1, reg_time: new Date().toISOString() }).then(() => { showPendingScreen(); });
+                db.ref('users/' + user.uid).set({ email: user.email, approved: false, level: 1, reg_time: new Date().toISOString() });
             } else if (userData.approved === true) {
                 overlay.style.display = 'none';
                 if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
                 dashboard.classList.add('unlocked');
                 logoutBtn.style.display = 'block';
                 
-                // ★★★ 會員權限解鎖邏輯 ★★★
+                // 每次權限變更時，先清空舊的等級狀態
+                dashboard.classList.remove('lvl2', 'lvl3', 'lvl4');
+                
+                // ★★★ 會員權限即時解鎖邏輯 ★★★
                 const userLevel = userData.level || 1;
                 
                 // 向下相容解鎖：等級越高，解鎖的 Class 越多
@@ -467,18 +473,21 @@
                 if (userLevel >= 3) dashboard.classList.add('lvl3');
                 if (userLevel >= 4) dashboard.classList.add('lvl4');
 
+                // 確保圖表只會初始化一次
                 if(!chartPrice) { initCharts(); startDataSync(); }
+                
             } else {
+                // ★ 強制鎖定機制：如果管理員把 approved 改為 false，瞬間踢回等待畫面
                 showPendingScreen();
+                dashboard.classList.remove('unlocked', 'lvl2', 'lvl3', 'lvl4');
+                logoutBtn.style.display = 'none';
             }
         });
       } else {
         overlay.style.display = 'flex';
         document.getElementById('login-form').style.display = 'block';
         if(document.getElementById('pending-msg-box')) document.getElementById('pending-msg-box').style.display = 'none';
-        dashboard.classList.remove('unlocked');
-        // 同時移除所有權限 class
-        dashboard.classList.remove('lvl2', 'lvl3', 'lvl4');
+        dashboard.classList.remove('unlocked', 'lvl2', 'lvl3', 'lvl4');
         logoutBtn.style.display = 'none';
       }
     });
