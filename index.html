@@ -48,13 +48,13 @@
         font-size: 9px;
     }
 
-    /* Level 2 解鎖: 壓力支撐 */
+    /* Level 2 解鎖: 動能實單 (原本是 L3) */
     .dashboard-container.lvl2 .req-level-2-flex { display: flex !important; }
     .dashboard-container.lvl2 .req-level-2-block { display: block !important; }
     .dashboard-container.lvl2 .req-level-2-grid { display: grid !important; }
     .dashboard-container.lvl2 .lock-lvl-2 { display: none !important; }
 
-    /* Level 3 解鎖: P6 & P9 */
+    /* Level 3 解鎖: 壓力支撐 (原本是 L2) */
     .dashboard-container.lvl3 .req-level-3-flex { display: flex !important; }
     .dashboard-container.lvl3 .req-level-3-block { display: block !important; }
     .dashboard-container.lvl3 .req-level-3-grid { display: grid !important; }
@@ -221,7 +221,7 @@
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
       
-      <div class="box req-level-3-flex" style="flex-direction:column; justify-content:space-between;" id="pwr-box">
+      <div class="box req-level-2-flex" style="flex-direction:column; justify-content:space-between;" id="pwr-box">
         <div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div class="box-header" style="margin-bottom:0;">🚀 P6 動能</div>
@@ -244,10 +244,10 @@
             </div>
         </div>
       </div>
-      <div class="box upgrade-prompt lock-lvl-3" id="pwr-box-locked">
+      <div class="box upgrade-prompt lock-lvl-2" id="pwr-box-locked">
           <div style="font-size:16px;">🚀</div>
           <div>P6 / P9 動能掃描</div>
-          <div class="upgrade-btn">解鎖 Level 3</div>
+          <div class="upgrade-btn">解鎖 Level 2</div>
       </div>
     </div>
 
@@ -281,7 +281,7 @@
         <div class="upgrade-btn">需要 Level 4 解鎖</div>
     </div>
 
-    <div class="battle-box req-level-2-flex" id="battle-card">
+    <div class="battle-box req-level-3-flex" id="battle-card">
         <div class="box-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
             <span>🧱 莊家防線兵力 (壓力 vs 支撐)</span>
             <span id="wall-intent-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold; border:1px solid #444; color:#aaa; transition: all 0.3s ease;">意圖分析中...</span>
@@ -297,28 +297,28 @@
             <div>🟢 壓力(<span id="wall-p-strike" style="color:#ccc;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
         </div>
         
-        <div class="p9-container req-level-3-flex">
+        <div class="p9-container req-level-2-flex">
             <div class="p9-label">🔥 實單能量 (P9):</div>
             <div id="p9-val" class="p9-val">--</div>
             <div id="p9-slope-label" class="slope-label">--</div>
         </div>
-        <div class="upgrade-prompt lock-lvl-3" style="margin-top:2px; padding:4px; flex-direction:row;">
-            <span style="font-size:16px;">🔥</span> <span>解鎖 Level 3 查看 P9 實單衝擊</span>
+        <div class="upgrade-prompt lock-lvl-2" style="margin-top:2px; padding:4px; flex-direction:row;">
+            <span style="font-size:16px;">🔥</span> <span>解鎖 Level 2 查看 P9 實單衝擊</span>
         </div>
         
         <div id="logic-text" class="logic-text">分析中...</div>
     </div>
-    <div class="battle-box upgrade-prompt lock-lvl-2" id="battle-card-locked">
+    <div class="battle-box upgrade-prompt lock-lvl-3" id="battle-card-locked">
         <div style="font-size:16px;">🧱</div>
         <div>莊家防線與兵力偵測</div>
-        <div class="upgrade-btn">解鎖 Level 2</div>
+        <div class="upgrade-btn">解鎖 Level 3</div>
     </div>
 
-    <div class="section-title req-level-2-flex" style="margin-top:6px;">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
-    <div class="split-chart-box req-level-2-block" style="margin-bottom:6px;"><canvas id="chartWall"></canvas></div>
-    <div class="split-chart-box upgrade-prompt lock-lvl-2" style="margin-bottom:6px; height:80px;">
+    <div class="section-title req-level-3-flex" style="margin-top:6px;">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
+    <div class="split-chart-box req-level-3-block" style="margin-bottom:6px;"><canvas id="chartWall"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-3" style="margin-bottom:6px; height:80px;">
         <div>🔒 防線推移圖表</div>
-        <div class="upgrade-btn">需要 Level 2</div>
+        <div class="upgrade-btn">需要 Level 3</div>
     </div>
 
     <div class="chip-grid">
@@ -341,7 +341,7 @@
         <div class="upgrade-btn">需要 Level 4 解鎖</div>
     </div>
 
-    <div class="range-box req-level-2-grid" style="margin-top:6px;">
+    <div class="range-box req-level-3-grid" style="margin-top:6px;">
         <div class="box-header" style="position:absolute; top:8px; left:14px;">🚧 戰場邊界</div>
         <div class="range-row" style="margin-top:14px;">
             <div class="range-title c-green">🟢 壓力牆</div>
@@ -360,9 +360,9 @@
             </div>
         </div>
     </div>
-    <div class="range-box upgrade-prompt lock-lvl-2" style="margin-top:6px; display:flex; height:60px;">
+    <div class="range-box upgrade-prompt lock-lvl-3" style="margin-top:6px; display:flex; height:60px;">
         <div>🔒 戰場掛單邊界</div>
-        <div class="upgrade-btn">需要 Level 2</div>
+        <div class="upgrade-btn">需要 Level 3</div>
     </div>
 
     <div class="section-title">📈 期貨現價 (Price)</div>
@@ -371,11 +371,11 @@
     <div class="section-title">📊 籌碼力道 (R7)</div>
     <div class="split-chart-box"><canvas id="chartChip"></canvas></div>
 
-    <div class="section-title req-level-3-flex">🚀 P6動能(左) vs P9實單(右)</div>
-    <div class="split-chart-box req-level-3-block"><canvas id="chartP6"></canvas></div>
-    <div class="split-chart-box upgrade-prompt lock-lvl-3" id="p6-chart-locked" style="margin-top:2px; height:80px;">
+    <div class="section-title req-level-2-flex">🚀 P6動能(左) vs P9實單(右)</div>
+    <div class="split-chart-box req-level-2-block"><canvas id="chartP6"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-2" id="p6-chart-locked" style="margin-top:2px; height:80px;">
         <div>🔒 P6 / P9 能量交叉圖表</div>
-        <div class="upgrade-btn">需要 Level 3</div>
+        <div class="upgrade-btn">需要 Level 2</div>
     </div>
 
   </div>
@@ -832,7 +832,7 @@
       
       pEl.innerText = data.pwr_t || "0%";
       pEl.className = "power-val " + (pVal > 0 ? "c-red" : (pVal < 0 ? "c-green" : ""));
-      pBox.className = "box req-level-3-flex"; 
+      pBox.className = "box req-level-2-flex"; 
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       
       pTag.className = "chip-tag"; pTag.style="align-self:flex-end";
@@ -945,7 +945,7 @@
                   intentBadge.innerText = "🚜 裝甲碾壓 (厚牆+實砸)";
                   intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
               } else {
-                  intentBadge.innerText = "🐻 天花板重壓 (逢高偏空)";
+                  intentBadge.innerText = "Bear 天花板重壓 (逢高偏空)";
                   intentBadge.style.color = "var(--green)"; intentBadge.style.background = "rgba(48, 209, 88, 0.1)"; intentBadge.style.borderColor = "var(--green)";
               }
           } 
@@ -960,7 +960,7 @@
                   intentBadge.innerText = "🚀 鋼鐵多頭 (厚牆+實買)";
                   intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
               } else {
-                  intentBadge.innerText = "🐂 鐵板護城河 (逢低找買)";
+                  intentBadge.innerText = "Bull 鐵板護城河 (逢低找買)";
                   intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
               }
           } 
@@ -990,7 +990,6 @@
           let bgColor = "";
           let textColor = "";
 
-          // 動態天量竭盡：P9 突破每日動態天花板/地板
           if ((valP9 > th_ex_p && valP9Slope < -3000) || (valP9 < th_ex_n && valP9Slope > 3000)) {
               statusText = "⚠️ 天量竭盡 (反轉警報)";
               bgColor = "#FFCC00"; textColor = "#000";
@@ -1017,7 +1016,6 @@
           }
 
           let sign = valP9Slope > 0 ? "+" : "";
-          // 🛑 強制顯示 Slope 具體數值
           p9SlopeEl.innerText = statusText + " (Slope: " + sign + valP9Slope + ")";
           
           if (bgColor !== "transparent") {
@@ -1049,11 +1047,10 @@
           else logicEl.style.color = "#aaa";
       }
 
-      battleCard.className = "battle-box req-level-2-flex " + strategy.class;
+      battleCard.className = "battle-box req-level-3-flex " + strategy.class;
       
       updateStrategyBox(data, strategy);
 
-      // 更新戰場邊界點位顯示
       document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
       
