@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>極速戰情室 (Pro Max - 即時權限監聽版)</title>
+  <title>極速戰情室 (Pro Max - 4級權限與強制登出版)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -477,10 +477,17 @@
                 if(!chartPrice) { initCharts(); startDataSync(); }
                 
             } else {
-                // ★ 強制鎖定機制：如果管理員把 approved 改為 false，瞬間踢回等待畫面
-                showPendingScreen();
-                dashboard.classList.remove('unlocked', 'lvl2', 'lvl3', 'lvl4');
-                logoutBtn.style.display = 'none';
+                // ★ 瞬間強制登出機制 vs 審核中畫面 ★
+                if (dashboard.classList.contains('unlocked')) {
+                    // 如果儀表板原本是解鎖狀態，代表是登入中途被拔除權限
+                    auth.signOut().then(() => {
+                        alert("⚠️ 您的帳號權限已被管理員移除，系統已將您強制登出！");
+                        location.reload(); // 重新整理網頁，徹底清除快取與殘留畫面
+                    });
+                } else {
+                    // 如果一開始登入就尚未開通，顯示「審核中」提示框
+                    showPendingScreen();
+                }
             }
         });
       } else {
