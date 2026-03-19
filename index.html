@@ -544,10 +544,20 @@
     function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
     function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
+    // ★★★ 1. 改用全陣列同步覆蓋模式 ★★★
     function startDataSync() {
       db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
-      db.ref(NODE_HISTORY).limitToLast(1).on('child_added', (s) => { if(s.val()) updateChartNewData(s.val()); });
-      db.ref(NODE_HISTORY).limitToLast(120).once('value', (s) => { if(s.val()) loadChartHistory(Object.values(s.val())); });
+      
+      // 歷史區塊：直接接收 120 筆完整陣列，自動重繪
+      db.ref(NODE_HISTORY).on('value', (s) => { 
+          if(s.val()) {
+              let dataArray = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+              // 過濾掉陣列中可能的 null 空洞
+              dataArray = dataArray.filter(d => d !== null && d !== undefined);
+              loadChartHistory(dataArray); 
+          }
+      });
+      
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
     }
 
@@ -641,7 +651,6 @@
         }
     }
 
-    // ★★★ 數據自適應版：結合 Firebase 傳來的動態閾值 (Dynamic Thresholds) ★★★
     function analyzeStrategy(data) {
         let p9 = parseFloat(data.p9 || 0);
         let p7 = parseFloat(data.force || 0); 
@@ -651,12 +660,11 @@
         let e_dir = 0;
         if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
         
-        // 讀取動態閾值，若無則使用安全預設值
         let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
         let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
         let th_at_p = parseFloat(data.p9_th_at_p || 50000);
         let th_at_n = parseFloat(data.p9_th_at_n || -50000);
-        let th_push_p = th_ex_p * 0.5; // 動態裝甲推進線 (天量線的一半)
+        let th_push_p = th_ex_p * 0.5;
         let th_push_n = th_ex_n * 0.5;
 
         let result = { text: "☕ [N級] 冰封觀望 (無明顯方向)", class: "rank-n" };
@@ -854,7 +862,6 @@
       else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";}
       else{pTag.innerText="整理";}
 
-      // ★★★ 1. 取得 P9 實單數據與動態閾值 ★★★
       let valP9 = parseFloat(data.p9 || 0);
       let p9El = document.getElementById('p9-val');
       p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US');
@@ -864,10 +871,9 @@
       let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
       let th_at_p = parseFloat(data.p9_th_at_p || 50000);
       let th_at_n = parseFloat(data.p9_th_at_n || -50000);
-      let th_push_p = th_ex_p * 0.5; // 動態推進線
+      let th_push_p = th_ex_p * 0.5;
       let th_push_n = th_ex_n * 0.5;
 
-      // ★★★ 2. 提取防線兵力與點位 ★★★
       let ps = parseInt(data.now_p_s || 0);
       let old_ps = parseInt(data.old_p_s || 0);
       let pv = parseInt(data.now_p_v || 0);
@@ -906,21 +912,19 @@
           wEl.style.color = "#aaa";
       }
 
-      // ★★★ 3. 終極版：AI 意圖翻譯機 (結合動態閾值與防線位移) ★★★
       let intentBadge = document.getElementById('wall-intent-badge');
       let isMoving = false;
 
-      // 優先判定：防線是否發生位移
       if (old_ps > 0 && ps > 0 && ps !== old_ps) {
           isMoving = true;
-          if (ps > old_ps && valP9 > th_at_p) { // 使用動態發車線
+          if (ps > old_ps && valP9 > th_at_p) {
               intentBadge.innerText = "🏳️ 空軍退守 (軋空預備)";
               intentBadge.style.color = "#000"; intentBadge.style.background = "var(--red)"; intentBadge.style.borderColor = "var(--red)";
           } else if (ps < old_ps && valP9 < th_at_n) {
               intentBadge.innerText = "📉 泰山壓頂 (壓力下逼)";
               intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
           } else {
-              isMoving = false; // 假移動或雜訊
+              isMoving = false;
           }
       } else if (old_ss > 0 && ss > 0 && ss !== old_ss) {
           isMoving = true;
@@ -935,7 +939,6 @@
           }
       }
 
-      // 次級判定：如果防線沒有位移，則判斷厚度與動態實單狀態
       if (!isMoving) {
           if (totalWall < 1500 && totalWall > 0) {
               if (valP9 > th_at_p || valP9 < th_at_n) {
@@ -946,11 +949,11 @@
                   intentBadge.style.color = "#ccc"; intentBadge.style.background = "#222"; intentBadge.style.borderColor = "#444";
               }
           } 
-          else if (pv > sv * 1.3) { // 偏空牆
-              if (valP9 > th_push_p) {  // 突破推進線
+          else if (pv > sv * 1.3) {
+              if (valP9 > th_push_p) { 
                   intentBadge.innerText = "⚠️ 倒莊警戒 (買盤強闖)";
                   intentBadge.style.color = "#000"; intentBadge.style.background = "var(--yellow)"; intentBadge.style.borderColor = "var(--yellow)";
-              } else if (valP9 > th_at_p) { // 突破發車線
+              } else if (valP9 > th_at_p) {
                   intentBadge.innerText = "🪤 誘空壓盤 (實單暗買)";
                   intentBadge.style.color = "var(--yellow)"; intentBadge.style.background = "rgba(255, 214, 10, 0.1)"; intentBadge.style.borderColor = "var(--yellow)";
               } else if (valP9 < th_push_n) { 
@@ -961,7 +964,7 @@
                   intentBadge.style.color = "var(--green)"; intentBadge.style.background = "rgba(48, 209, 88, 0.1)"; intentBadge.style.borderColor = "var(--green)";
               }
           } 
-          else if (sv > pv * 1.3) { // 偏多牆
+          else if (sv > pv * 1.3) {
               if (valP9 < th_push_n) { 
                   intentBadge.innerText = "⚠️ 倒莊警戒 (賣盤強殺)";
                   intentBadge.style.color = "#000"; intentBadge.style.background = "var(--green)"; intentBadge.style.borderColor = "var(--green)";
@@ -976,7 +979,7 @@
                   intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
               }
           } 
-          else if (totalWall > 0) { // 區間盤整
+          else if (totalWall > 0) {
               if (valP9 > (th_at_p * 1.5)) {
                   intentBadge.innerText = "📈 大單突襲 (偏多表態)";
                   intentBadge.style.color = "var(--red)"; intentBadge.style.background = "rgba(255, 69, 58, 0.1)"; intentBadge.style.borderColor = "var(--red)";
@@ -990,7 +993,6 @@
           }
       }
 
-      // ★★★ 4. 強制全時段顯示 P9 斜率數值 (加入動態天量防護) ★★★
       let rawSlope = parseFloat(data.p9_slope || 0);
       p9SlopeHistory.push(rawSlope);
       if (p9SlopeHistory.length > 3) p9SlopeHistory.shift();
@@ -1002,7 +1004,6 @@
           let bgColor = "";
           let textColor = "";
 
-          // 動態天量竭盡：P9 突破每日動態天花板/地板
           if ((valP9 > th_ex_p && valP9Slope < -3000) || (valP9 < th_ex_n && valP9Slope > 3000)) {
               statusText = "⚠️ 天量竭盡 (反轉警報)";
               bgColor = "#FFCC00"; textColor = "#000";
@@ -1029,7 +1030,6 @@
           }
 
           let sign = valP9Slope > 0 ? "+" : "";
-          // 🛑 強制顯示 Slope 具體數值
           p9SlopeEl.innerText = statusText + " (Slope: " + sign + valP9Slope + ")";
           
           if (bgColor !== "transparent") {
@@ -1065,7 +1065,6 @@
       
       updateStrategyBox(data, strategy);
 
-      // 更新戰場邊界點位顯示
       document.getElementById('p-strike').innerText = ps > 0 ? ps : "--";
       document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
       
@@ -1096,48 +1095,22 @@
       });
     }
 
-    function getChipValueForTime(d) {
-        let hour = parseInt(d.t.split(':')[0]);
+    // ★★★ 2. 負責相容新版 e5/e6 與舊版 c1/c2 的籌碼解析 ★★★
+    function getChipValueForArray(d) {
+        let timeStr = d.time || d.t || "00:00";
+        let hour = parseInt(timeStr.split(':')[0]);
         let isDay = (hour >= 8 && hour < 14);
-        if (isDay) return { val: parseChipValue(d.c2), label: "籌碼 (近月日盤)", color: '#ffd60a' }; 
-        else return { val: parseChipValue(d.c1), label: "籌碼 (近月夜盤)", color: '#30d158' }; 
-    }
-    
-    function updateChartNewData(d) {
-        if (!chartPrice) return;
-        let timeLabel = d.t.substring(0,5);
-        let p6Raw = parseFloat((d.pwr_t || "0").replace("%", "").replace("+", ""));
-        let p9Raw = parseFloat(d.p9 || 0);
-        let priceRaw = parseFloat(d.price || 0);
-        let chipInfo = getChipValueForTime(d);
         
-        let pWallStrike = parseInt(d.now_p_s || 0);
-        let sWallStrike = parseInt(d.now_s_s || 0);
-        let pWallVol = parseInt(d.now_p_v || 0);
-        let sWallVol = parseInt(d.now_s_v || 0);
-
-        chartPrice.data.labels.push(timeLabel); chartPrice.data.datasets[0].data.push(priceRaw);
-        chartChip.data.labels.push(timeLabel); chartChip.data.datasets[0].data.push(chipInfo.val);
-        chartChip.data.datasets[0].label = chipInfo.label; chartChip.data.datasets[0].borderColor = chipInfo.color;
-        chartP6.data.labels.push(timeLabel); chartP6.data.datasets[0].data.push(p6Raw); chartP6.data.datasets[1].data.push(p9Raw);
-        
-        chartWall.data.labels.push(timeLabel); 
-        chartWall.data.datasets[0].data.push(pWallStrike > 0 ? pWallStrike : null); 
-        chartWall.data.datasets[1].data.push(sWallStrike > 0 ? sWallStrike : null); 
-        chartWall.data.datasets[2].data.push(pWallVol); 
-        chartWall.data.datasets[3].data.push(sWallVol); 
-
-        if (chartPrice.data.labels.length > 120) {
-            chartPrice.data.labels.shift(); chartPrice.data.datasets[0].data.shift();
-            chartChip.data.labels.shift(); chartChip.data.datasets[0].data.shift();
-            chartP6.data.labels.shift(); chartP6.data.datasets[0].data.shift(); chartP6.data.datasets[1].data.shift();
-            chartWall.data.labels.shift(); 
-            chartWall.data.datasets[0].data.shift(); chartWall.data.datasets[1].data.shift();
-            chartWall.data.datasets[2].data.shift(); chartWall.data.datasets[3].data.shift();
+        if (isDay) {
+            let val = d.e6 !== undefined ? d.e6 * 100 : parseChipValue(d.c2);
+            return { val: val, label: "籌碼 (近月日盤)", color: '#ffd60a' }; 
+        } else {
+            let val = d.e5 !== undefined ? d.e5 * 100 : parseChipValue(d.c1);
+            return { val: val, label: "籌碼 (近月夜盤)", color: '#30d158' }; 
         }
-        chartPrice.update('none'); chartChip.update('none'); chartP6.update('none'); chartWall.update('none');
     }
 
+    // ★★★ 3. 瞬間重繪 120 筆圖表 ★★★
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
         let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
@@ -1145,17 +1118,30 @@
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
         dataArray.forEach(d => {
-            labels.push(d.t.substring(0,5)); dataP.push(parseFloat(d.price||0));
-            let info = getChipValueForTime(d); dataC.push(info.val);
-            dataP6.push(parseFloat((d.pwr_t||"0").replace("%","").replace("+","")));
-            dataP9.push(parseFloat(d.p9||0)); lastChipInfo=info;
+            if (!d) return;
+            let timeStr = d.time || (d.t ? d.t.substring(0,5) : "");
+            labels.push(timeStr); 
+            dataP.push(parseFloat(d.price||0));
+            
+            let info = getChipValueForArray(d); 
+            dataC.push(info.val);
+            
+            // 相容新舊欄位名
+            let p6Val = d.p6 !== undefined ? parseFloat(d.p6) : parseFloat((d.pwr_t||"0").replace("%","").replace("+",""));
+            dataP6.push(p6Val); 
+            dataP9.push(parseFloat(d.p9||0)); 
+            lastChipInfo=info;
             
             let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
             let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
-            dataWallPV.push(parseInt(d.now_p_v || 0));
-            dataWallSV.push(parseInt(d.now_s_v || 0));
+            
+            let pv = d.wall_p !== undefined ? parseInt(d.wall_p) : parseInt(d.now_p_v || 0);
+            let sv = d.wall_s !== undefined ? parseInt(d.wall_s) : parseInt(d.now_s_v || 0);
+            dataWallPV.push(pv);
+            dataWallSV.push(sv);
         });
         
+        // 批量更新畫布
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
         chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC;
         chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
