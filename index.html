@@ -544,7 +544,6 @@
     function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
     function showLogin() { document.getElementById('login-form').style.display='block'; document.getElementById('register-form').style.display='none'; }
 
-    // ★★★ 1. 改用全陣列同步覆蓋模式 ★★★
     function startDataSync() {
       db.ref(NODE_REALTIME).on('value', (s) => { if(s.val()) updateUI(s.val()); });
       
@@ -1095,7 +1094,6 @@
       });
     }
 
-    // ★★★ 2. 負責相容新版 e5/e6 與舊版 c1/c2 的籌碼解析 ★★★
     function getChipValueForArray(d) {
         let timeStr = d.time || d.t || "00:00";
         let hour = parseInt(timeStr.split(':')[0]);
@@ -1110,7 +1108,6 @@
         }
     }
 
-    // ★★★ 3. 瞬間重繪 120 筆圖表 ★★★
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
         let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
@@ -1126,7 +1123,6 @@
             let info = getChipValueForArray(d); 
             dataC.push(info.val);
             
-            // 相容新舊欄位名
             let p6Val = d.p6 !== undefined ? parseFloat(d.p6) : parseFloat((d.pwr_t||"0").replace("%","").replace("+",""));
             dataP6.push(p6Val); 
             dataP9.push(parseFloat(d.p9||0)); 
@@ -1141,7 +1137,6 @@
             dataWallSV.push(sv);
         });
         
-        // 批量更新畫布
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
         chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC;
         chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
@@ -1162,7 +1157,40 @@
         chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
         
-        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { 
+            type: 'line', 
+            data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, 
+            options: { 
+                ...commonOptions, 
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                // 判斷是否為 P6 數據集 (Index 0)，如果是則加上 %
+                                if (context.datasetIndex === 0) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                } else {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, 
+                    y: { 
+                        type: 'linear', display: true, position: 'left', grid: { color: '#222' }, 
+                        ticks: { 
+                            color: '#ff453a', 
+                            callback: function(val){ return val + '%' } // Y軸刻度加上 %
+                        }, 
+                        suggestMin: -20, suggestedMax: 20 
+                    }, 
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } 
+                } 
+            } 
+        });
         
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { 
             type: 'line', 
