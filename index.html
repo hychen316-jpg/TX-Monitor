@@ -15,74 +15,45 @@
     :root { --bg:#000; --card:#1c1c1e; --text:#fff; --red:#ff453a; --green:#30d158; --yellow:#ffd60a; --blue:#0a84ff; --gray:#8e8e93; --purple:#bf5af2; }
     body { background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; padding:8px; margin:0; overflow-x:hidden; }
     
-    /* 儀表板預設模糊 */
     .dashboard-container { filter: blur(15px); transition: filter 0.5s; pointer-events: none; opacity: 0.3; display: flex; flex-direction: column; gap: 6px; }
     .unlocked { filter: blur(0); pointer-events: auto; opacity: 1; }
 
-    /* === 4級會員權限控制樣式 (修正向下相容邏輯) === */
     .req-level-2-flex, .req-level-2-block, .req-level-2-grid,
     .req-level-3-flex, .req-level-3-block, .req-level-3-grid,
     .req-level-4-flex, .req-level-4-block, .req-level-4-grid { display: none !important; }
     
-    /* Level 2 解鎖內容 (L2, L3, L4 皆可見) */
     .dashboard-container.lvl2 .req-level-2-flex, .dashboard-container.lvl3 .req-level-2-flex, .dashboard-container.lvl4 .req-level-2-flex { display: flex !important; }
     .dashboard-container.lvl2 .req-level-2-block, .dashboard-container.lvl3 .req-level-2-block, .dashboard-container.lvl4 .req-level-2-block { display: block !important; }
     .dashboard-container.lvl2 .req-level-2-grid, .dashboard-container.lvl3 .req-level-2-grid, .dashboard-container.lvl4 .req-level-2-grid { display: grid !important; }
     .dashboard-container.lvl2 .lock-lvl-2, .dashboard-container.lvl3 .lock-lvl-2, .dashboard-container.lvl4 .lock-lvl-2 { display: none !important; }
 
-    /* Level 3 解鎖內容 (L3, L4 皆可見) */
     .dashboard-container.lvl3 .req-level-3-flex, .dashboard-container.lvl4 .req-level-3-flex { display: flex !important; }
     .dashboard-container.lvl3 .req-level-3-block, .dashboard-container.lvl4 .req-level-3-block { display: block !important; }
     .dashboard-container.lvl3 .req-level-3-grid, .dashboard-container.lvl4 .req-level-3-grid { display: grid !important; }
     .dashboard-container.lvl3 .lock-lvl-3, .dashboard-container.lvl4 .lock-lvl-3 { display: none !important; }
 
-    /* Level 4 解鎖內容 (僅 L4 可見) */
     .dashboard-container.lvl4 .req-level-4-flex { display: flex !important; }
     .dashboard-container.lvl4 .req-level-4-block { display: block !important; }
     .dashboard-container.lvl4 .req-level-4-grid { display: grid !important; }
     .dashboard-container.lvl4 .lock-lvl-4 { display: none !important; }
 
-    /* 鎖定狀態提示框 */
-    .upgrade-prompt {
-        background: rgba(28, 28, 30, 0.6);
-        border: 1px dashed #444;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: #888;
-        font-size: 11px;
-        gap: 6px;
-        padding: 10px;
-    }
-    .upgrade-btn {
-        background: #333;
-        color: #aaa;
-        border: 1px solid #555;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 9px;
-    }
+    .upgrade-prompt { background: rgba(28, 28, 30, 0.6); border: 1px dashed #444; border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #888; font-size: 11px; gap: 6px; padding: 10px; }
+    .upgrade-btn { background: #333; color: #aaa; border: 1px solid #555; padding: 2px 8px; border-radius: 4px; font-size: 9px; }
 
-    /* 共用小標題 */
     .box-header { font-size: 11px; color: var(--gray); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* === 第一排：頂部報價 === */
     .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:6px; }
     .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
     .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
     .power-val { font-size:30px; font-weight:700; text-align:right; } 
     .chip-tag { font-size:10px; padding:2px 6px; border-radius:4px; width:fit-content; background:#333; color:#ccc; }
     
-    /* 顏色定義 */
     .c-red { color:var(--red); } .c-green { color:var(--green); }
     .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
     .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
     .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 10px rgba(255, 69, 58, 0.2); }
     .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 10px rgba(48, 209, 88, 0.2); }
 
-    /* === 第二排：Alpha-TX 高密度面板 === */
     .alpha-box { background: var(--card); border-radius: 10px; padding: 6px 8px; border: 1px solid #333; }
     .alpha-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;}
     .prob-badge { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; }
@@ -90,7 +61,6 @@
     .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
     .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
     
-    /* 核心標的 4 欄微型網格 */
     .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
     .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease; }
     .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
@@ -98,7 +68,6 @@
     .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     .target-diff-sm { font-size: 9px; font-weight: bold; line-height: 1; }
     
-    /* Alpha-TX 狀態邊框 */
     .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(255, 69, 58, 0.25); }
     .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
     .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
@@ -116,7 +85,6 @@
     .dot-blue { background: var(--blue); }
     .dot-gray { background: #555; }
 
-    /* === 第三排：莊家防線兵力對戰條 === */
     .battle-box { background: var(--card); border-radius: 12px; padding: 6px 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 2px; }
     .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 0; }
     .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
@@ -131,13 +99,11 @@
     .p9-val { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
     .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
-    /* === 第四排：AI 戰略指揮官區塊 === */
     .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
     .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 6px; }
     .phase-badge { background: #0a84ff; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .s-advice { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; color: #ddd; line-height: 1.4; border-left: 3px solid #888; font-size: 12px; }
     
-    /* === 第五排：戰場邊界 === */
     .range-box { background: var(--card); border-radius: 14px; padding: 10px 14px; border: 1px solid #333; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; position: relative; overflow: hidden; }
     .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
     .range-row { display: flex; justify-content: space-between; align-items: center; }
@@ -147,15 +113,12 @@
     .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
     .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
 
-    /* === 第六排：籌碼分佈 === */
     .chip-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
     .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     
-    /* 圖表區塊 */
     .split-chart-box { background: var(--card); border-radius: 14px; padding: 8px; border: 1px solid #333; height: 200px; position: relative; }
     .section-title { margin-top: 10px; margin-bottom: 2px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; font-weight: 600; }
 
-    /* === 登入遮罩 === */
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .auth-box { text-align: center; width: 85%; max-width: 320px; background: #1c1c1e; padding: 30px 20px; border-radius: 20px; border: 1px solid #333; }
     .auth-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
@@ -166,7 +129,6 @@
     .toggle-link { margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline; }
     #logout-btn { position: fixed; top: 10px; right: 10px; z-index: 1000; display: none; padding: 4px 10px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 11px; cursor: pointer; backdrop-filter: blur(5px); }
 
-    /* 戰力分級樣式 */
     .rank-s { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); animation: pulse-gold 1.5s infinite; border: 1px solid #d4af37 !important; }
     .rank-a-bull { color: var(--red) !important; border: 1px solid var(--red) !important; }
     .rank-a-bear { color: var(--green) !important; border: 1px solid var(--green) !important; }
@@ -416,9 +378,12 @@
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null;
     let p9SlopeHistory = [];
     
-    // ==========================================
-    // ★★★ 終極雙重防休眠機制 (No-Sleep Hack) ★★★
-    // ==========================================
+    // === 前端獨立記憶體：專為 Heat 建立時間軸 ===
+    let frontEndHeatLabels = [];
+    let frontEndHeatData = [];
+    let frontEndHeatExData = [];
+    // ============================================
+
     let wakeLock = null;
     let isNoSleepEnabled = false;
 
@@ -447,7 +412,6 @@
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') { isNoSleepEnabled = false; enableNoSleep(); }
     });
-    // ==========================================
 
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
@@ -556,7 +520,9 @@
     }
 
     function updateAlphaUI(data) {
-        const heatVal = parseFloat(data.heat || 0);
+        const heatVal = parseFloat(data.heat || 50);
+        const heatExVal = data.heat_ex !== undefined ? parseFloat(data.heat_ex) : 50;
+
         let heatEl = document.getElementById('alpha-heat-val');
         if(heatEl) {
             heatEl.innerText = heatVal.toFixed(1) + '%';
@@ -565,26 +531,23 @@
             else heatEl.style.color = 'var(--yellow)';
         }
 
-        if (data.heat_ex !== undefined) {
-            const heatExVal = parseFloat(data.heat_ex);
-            const exBox = document.getElementById('alpha-heat-ex-box');
-            const exValEl = document.getElementById('alpha-heat-ex-val');
-            if(exBox && exValEl) {
-                exBox.style.display = 'inline';
-                if (heatVal - heatExVal >= 15) {
-                    exBox.style.color = '#ff9f0a'; 
-                    if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護'; } 
-                    else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷出'; } 
-                    else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨'; }
-                } else if (heatExVal - heatVal >= 15) {
-                    exBox.style.color = '#30d158'; 
-                    if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗'; } 
-                    else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷買'; } 
-                    else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨'; }
-                } else {
-                    exBox.style.color = '#aaa'; 
-                    exValEl.innerText = heatExVal.toFixed(1) + '%';
-                }
+        const exBox = document.getElementById('alpha-heat-ex-box');
+        const exValEl = document.getElementById('alpha-heat-ex-val');
+        if(exBox && exValEl) {
+            exBox.style.display = 'inline';
+            if (heatVal - heatExVal >= 15) {
+                exBox.style.color = '#ff9f0a'; 
+                if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護'; } 
+                else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷出'; } 
+                else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨'; }
+            } else if (heatExVal - heatVal >= 15) {
+                exBox.style.color = '#30d158'; 
+                if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗'; } 
+                else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷買'; } 
+                else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨'; }
+            } else {
+                exBox.style.color = '#aaa'; 
+                exValEl.innerText = heatExVal.toFixed(1) + '%';
             }
         }
 
@@ -626,6 +589,37 @@
                  targetsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; font-size: 11px; padding: 10px; border: 1px dashed #333; border-radius: 6px;">盤前時段，等待核心指標報價中... ⏳</div>';
             }
         }
+
+        // ★★★ 專為「不改VBA」設計：前端自行捕捉每一次的即時 Heat 數據 ★★★
+        let rawTime = data.last_update ? data.last_update.split(' ')[1] : new Date().toLocaleTimeString('en-GB');
+        let minTimeStr = rawTime.substring(0, 5); // 只取 HH:mm 避免圖表過密
+
+        if (frontEndHeatLabels.length === 0 || frontEndHeatLabels[frontEndHeatLabels.length - 1] !== minTimeStr) {
+            // 如果是新的一分鐘，加入陣列
+            frontEndHeatLabels.push(minTimeStr);
+            frontEndHeatData.push(heatVal);
+            frontEndHeatExData.push(heatExVal);
+            
+            // 保持陣列長度不超過 120 根 K 棒
+            if (frontEndHeatLabels.length > 120) {
+                frontEndHeatLabels.shift();
+                frontEndHeatData.shift();
+                frontEndHeatExData.shift();
+            }
+        } else {
+            // 如果還在同一分鐘內，即時更新最後一個點的數值 (秒跳動)
+            frontEndHeatData[frontEndHeatData.length - 1] = heatVal;
+            frontEndHeatExData[frontEndHeatExData.length - 1] = heatExVal;
+        }
+
+        // 把累積的陣列餵給圖表
+        if (chartHeat) {
+            chartHeat.data.labels = frontEndHeatLabels;
+            chartHeat.data.datasets[0].data = frontEndHeatData;
+            chartHeat.data.datasets[1].data = frontEndHeatExData;
+            chartHeat.update();
+        }
+        // =============================================================
     }
 
     function analyzeStrategy(data) {
@@ -815,7 +809,7 @@
 
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
-        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[], dataHeat=[], dataHeatEx=[];
+        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
@@ -831,11 +825,6 @@
             
             dataP9.push(parseFloat(d.p9||0)); 
 
-            // === 新增：讀取 Heat 與 Heat_Ex 數據 ===
-            dataHeat.push(parseFloat(d.heat||50));
-            dataHeatEx.push(parseFloat(d.heat_ex||50));
-            // ======================================
-
             lastChipInfo=info;
             let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
             let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
@@ -849,14 +838,7 @@
         chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
         chartWall.data.labels=labels; chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS; chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
         
-        // === 新增：更新 Heat 圖表 ===
-        if (chartHeat) {
-            chartHeat.data.labels = labels;
-            chartHeat.data.datasets[0].data = dataHeat;
-            chartHeat.data.datasets[1].data = dataHeatEx;
-            chartHeat.update();
-        }
-        // ============================
+        // 歷史陣列不負責更新 chartHeat，交由前端記憶體處理
 
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
     }
@@ -870,7 +852,6 @@
         chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + (context.datasetIndex === 0 ? '%' : ''); } } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: '壓力線(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '支撐線(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '壓力厚度(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.15)', borderColor: 'rgba(48, 209, 88, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }, { label: '支撐厚度(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.15)', borderColor: 'rgba(255, 69, 58, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } } } });
         
-        // === 新增：Heat 與 Heat_Ex 的圖表 ===
         chartHeat = new Chart(document.getElementById('chartHeat').getContext('2d'), { 
             type: 'line', 
             data: { 
@@ -905,7 +886,6 @@
                 } 
             } 
         });
-        // ===================================
     }
   </script>
 </body>
