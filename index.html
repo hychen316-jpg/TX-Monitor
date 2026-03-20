@@ -182,6 +182,12 @@
             <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
         </div>
+        
+        <div class="req-level-4-flex" style="justify-content:space-between; align-items:center; margin-top:6px; font-size:11px; color:#d4af37; font-weight:600; background:rgba(212,175,55,0.1); padding:4px 6px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
+            <div>⚖️ 莊家理論價 (DN)</div>
+            <div id="oi-dn-price" style="font-size:14px; font-weight:800; letter-spacing: 0.5px;">--</div>
+        </div>
+
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
       </div>
       
@@ -711,6 +717,17 @@
               elNext.style.color = diffNext > 0 ? "var(--red)" : (diffNext < 0 ? "var(--green)" : "#fff");
           }
       }
+
+      // ★★★ 新增：更新 OI 莊家防線理論價 (Level 4 專屬) ★★★
+      let dnEl = document.getElementById('oi-dn-price');
+      if (dnEl) {
+          if (data.oi_dn && data.oi_dn !== "NULL" && data.oi_dn !== "") {
+              dnEl.innerText = data.oi_dn;
+          } else {
+              dnEl.innerText = "--";
+          }
+      }
+
       document.getElementById('update-time').innerText = "Update: " + data.t;
       
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
