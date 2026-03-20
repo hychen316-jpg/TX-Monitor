@@ -330,7 +330,7 @@
 
     <div class="chip-grid">
       <div class="chip-card" id="c1-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月夜</span><span id="c1-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c1-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
-      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月夜</span><span id="c3-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c1-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
+      <div class="chip-card" id="c3-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月夜</span><span id="c3-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c3-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
       <div class="chip-card" id="c2-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">近月日</span><span id="c2-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c2-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
       <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月日</span><span id="c4-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c4-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
     </div>
@@ -385,6 +385,13 @@
         <div class="upgrade-btn">需要 Level 2</div>
     </div>
 
+    <div class="section-title req-level-4-flex" style="margin-top:6px;">🔥 綜合熱度 (Heat) vs 非神山 (Heat_Ex)</div>
+    <div class="split-chart-box req-level-4-block"><canvas id="chartHeat"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-4" id="heat-chart-locked" style="margin-top:2px; height:80px;">
+        <div>🔒 Alpha-TX 雙熱度開口圖表</div>
+        <div class="upgrade-btn">需要 Level 4</div>
+    </div>
+
   </div>
 
   <script>
@@ -406,7 +413,7 @@
     const NODE_HISTORY  = 'monitor_history';
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
 
-    let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null;
+    let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null;
     let p9SlopeHistory = [];
     
     // ==========================================
@@ -808,7 +815,7 @@
 
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
-        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
+        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[], dataHeat=[], dataHeatEx=[];
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
@@ -819,11 +826,16 @@
             dataP.push(parseFloat(d.price||0));
             let info = getChipValueForArray(d); dataC.push(info.val);
             
-            // ★★★ 核心修改：P6 數據 X 100 轉換為百分比數值 ★★★
             let p6ValRaw = d.p6 !== undefined ? parseFloat(d.p6) : parseFloat((d.pwr_t||"0").replace("%","").replace("+",""));
             dataP6.push(p6ValRaw * 100); 
             
             dataP9.push(parseFloat(d.p9||0)); 
+
+            // === 新增：讀取 Heat 與 Heat_Ex 數據 ===
+            dataHeat.push(parseFloat(d.heat||50));
+            dataHeatEx.push(parseFloat(d.heat_ex||50));
+            // ======================================
+
             lastChipInfo=info;
             let pws = parseInt(d.now_p_s || 0); dataWallPS.push(pws > 0 ? pws : null);
             let sws = parseInt(d.now_s_s || 0); dataWallSS.push(sws > 0 ? sws : null);
@@ -836,6 +848,16 @@
         chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC; chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
         chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
         chartWall.data.labels=labels; chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS; chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
+        
+        // === 新增：更新 Heat 圖表 ===
+        if (chartHeat) {
+            chartHeat.data.labels = labels;
+            chartHeat.data.datasets[0].data = dataHeat;
+            chartHeat.data.datasets[1].data = dataHeatEx;
+            chartHeat.update();
+        }
+        // ============================
+
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
     }
     
@@ -847,6 +869,43 @@
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
         chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + (context.datasetIndex === 0 ? '%' : ''); } } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: '壓力線(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '支撐線(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '壓力厚度(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.15)', borderColor: 'rgba(48, 209, 88, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }, { label: '支撐厚度(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.15)', borderColor: 'rgba(255, 69, 58, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } } } });
+        
+        // === 新增：Heat 與 Heat_Ex 的圖表 ===
+        chartHeat = new Chart(document.getElementById('chartHeat').getContext('2d'), { 
+            type: 'line', 
+            data: { 
+                labels: [], 
+                datasets: [ 
+                    { label: '綜合熱度 (Heat)', data: [], borderColor: '#ff453a', borderWidth: 2, pointRadius: 0, tension: 0.4 }, 
+                    { label: '非神山熱度 (Heat_Ex)', data: [], borderColor: '#ffd60a', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, tension: 0.4 }
+                ] 
+            }, 
+            options: { 
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    ...commonOptions.scales, 
+                    y: { 
+                        display: true, 
+                        position: 'left', 
+                        grid: { color: '#333' }, 
+                        ticks: { color: '#aaa', callback: function(val){ return val + '%' } },
+                        suggestedMin: 0, 
+                        suggestedMax: 100 
+                    } 
+                } 
+            } 
+        });
+        // ===================================
     }
   </script>
 </body>
