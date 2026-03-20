@@ -176,6 +176,9 @@
             <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
         </div>
         <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#aaa; font-weight:500;">
+            <div>跨盤均價: <span id="vwap-cross" style="color:#fff; font-weight:600;">--</span></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#aaa; font-weight:500;">
             <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
         </div>
@@ -377,6 +380,7 @@
 
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null;
     let p9SlopeHistory = [];
+    let lastCrossVwap = "--";
     
     // === 前端獨立記憶體：專為 Heat 建立時間軸 ===
     let frontEndHeatLabels = [];
@@ -590,36 +594,30 @@
             }
         }
 
-        // ★★★ 專為「不改VBA」設計：前端自行捕捉每一次的即時 Heat 數據 ★★★
         let rawTime = data.last_update ? data.last_update.split(' ')[1] : new Date().toLocaleTimeString('en-GB');
-        let minTimeStr = rawTime.substring(0, 5); // 只取 HH:mm 避免圖表過密
+        let minTimeStr = rawTime.substring(0, 5); 
 
         if (frontEndHeatLabels.length === 0 || frontEndHeatLabels[frontEndHeatLabels.length - 1] !== minTimeStr) {
-            // 如果是新的一分鐘，加入陣列
             frontEndHeatLabels.push(minTimeStr);
             frontEndHeatData.push(heatVal);
             frontEndHeatExData.push(heatExVal);
             
-            // 保持陣列長度不超過 120 根 K 棒
             if (frontEndHeatLabels.length > 120) {
                 frontEndHeatLabels.shift();
                 frontEndHeatData.shift();
                 frontEndHeatExData.shift();
             }
         } else {
-            // 如果還在同一分鐘內，即時更新最後一個點的數值 (秒跳動)
             frontEndHeatData[frontEndHeatData.length - 1] = heatVal;
             frontEndHeatExData[frontEndHeatExData.length - 1] = heatExVal;
         }
 
-        // 把累積的陣列餵給圖表
         if (chartHeat) {
             chartHeat.data.labels = frontEndHeatLabels;
             chartHeat.data.datasets[0].data = frontEndHeatData;
             chartHeat.data.datasets[1].data = frontEndHeatExData;
             chartHeat.update();
         }
-        // =============================================================
     }
 
     function analyzeStrategy(data) {
@@ -714,8 +712,18 @@
           }
       }
       document.getElementById('update-time').innerText = "Update: " + data.t;
+      
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
+      
+      let tHour = parseInt((data.t || "00:00").split(':')[0], 10);
+      let isDaySession = (tHour >= 8 && tHour < 15);
+      if (isDaySession) {
+          if (data.vwap_day && data.vwap_night && parseFloat(data.vwap_day) > 0 && parseFloat(data.vwap_night) > 0) {
+              lastCrossVwap = Math.round((parseFloat(data.vwap_day) + parseFloat(data.vwap_night)) / 2);
+          }
+      }
+      document.getElementById('vwap-cross').innerText = lastCrossVwap;
 
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
@@ -838,8 +846,6 @@
         chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
         chartWall.data.labels=labels; chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS; chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
         
-        // 歷史陣列不負責更新 chartHeat，交由前端記憶體處理
-
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
     }
     
