@@ -796,11 +796,31 @@
       let valP9Slope = Math.round(p9SlopeHistory.reduce((a, b) => a + b, 0) / p9SlopeHistory.length);
       let p9SlopeEl = document.getElementById('p9-slope-label');
       if (p9SlopeEl) {
+          // ==========================================================================
+          // ★ v6.0 前端對接修正：將 P9 Slope 斜率警報改為「動態比例」
+          // 以 Attack (點火值) 的 30% 作為加速門檻，80% 作為極端竭盡反轉門檻
+          // ==========================================================================
+          let slopeAccelThresh = Math.abs(th_at_p) * 0.3;
+          let slopeExhaustThresh = Math.abs(th_at_p) * 0.8;
+          
+          if (slopeAccelThresh < 1500) slopeAccelThresh = 1500;
+          if (slopeExhaustThresh < 4000) slopeExhaustThresh = 4000;
+
           let statusText = ""; let bgColor = ""; let textColor = "";
-          if ((valP9 > th_ex_p && valP9Slope < -3000) || (valP9 < th_ex_n && valP9Slope > 3000)) { statusText = "⚠️ 天量竭盡 (反轉警報)"; bgColor = "#FFCC00"; textColor = "#000"; } 
-          else if (valP9 > 0 && valP9Slope > 1000) { statusText = "📈 多方加速"; bgColor = "#FF3B30"; textColor = "#FFF"; } 
-          else if (valP9 < 0 && valP9Slope < -1000) { statusText = "📉 空方加速"; bgColor = "#4CD964"; textColor = "#FFF"; }
-          else { statusText = "⚖️ 穩定游離"; bgColor = "transparent"; textColor = "#888"; }
+          
+          if ((valP9 > th_ex_p && valP9Slope < -slopeExhaustThresh) || (valP9 < th_ex_n && valP9Slope > slopeExhaustThresh)) { 
+              statusText = "⚠️ 天量竭盡 (反轉)"; bgColor = "#FFCC00"; textColor = "#000"; 
+          } 
+          else if (valP9 > 0 && valP9Slope > slopeAccelThresh) { 
+              statusText = "📈 多方加速"; bgColor = "#FF3B30"; textColor = "#FFF"; 
+          } 
+          else if (valP9 < 0 && valP9Slope < -slopeAccelThresh) { 
+              statusText = "📉 空方加速"; bgColor = "#4CD964"; textColor = "#FFF"; 
+          }
+          else { 
+              statusText = "⚖️ 穩定游離"; bgColor = "transparent"; textColor = "#888"; 
+          }
+          
           p9SlopeEl.innerText = statusText + " (Slope: " + (valP9Slope > 0 ? "+" : "") + valP9Slope + ")";
           p9SlopeEl.style.backgroundColor = bgColor; p9SlopeEl.style.color = textColor;
       }
