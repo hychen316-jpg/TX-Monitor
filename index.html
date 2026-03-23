@@ -826,7 +826,8 @@
       }
 
       let strategy = analyzeStrategy(data); let logicEl = document.getElementById('logic-text'); let battleCard = document.getElementById('battle-card');
-      if (data.four_pillars_advice) { logicEl.innerText = data.four_pillars_advice.split('|')[0].trim(); } else { logicEl.innerText = strategy.text; }
+      // ★ 修正：強制 logic-text 只顯示 Level 2/3 的基礎動能判定，禁止偷讀四柱矩陣 (Level 4 專屬)
+      logicEl.innerText = strategy.text; 
       battleCard.className = "battle-box req-level-2-flex " + strategy.class;
       updateStrategyBox(data, strategy);
 
