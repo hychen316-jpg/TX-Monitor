@@ -184,8 +184,11 @@
         </div>
         
         <div class="req-level-4-flex" style="justify-content:space-between; align-items:center; margin-top:6px; font-size:11px; color:#d4af37; font-weight:600; background:rgba(212,175,55,0.1); padding:4px 6px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
-            <div>⚖️ 莊家理論價 (DN)</div>
-            <div id="oi-dn-price" style="font-size:14px; font-weight:800; letter-spacing: 0.5px;">--</div>
+            <div>⚖️ Delta 中性值 (DN)</div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span id="oi-iv-val" style="font-size:10px; color:#aaa; font-weight:normal;">IV: --%</span>
+                <div id="oi-dn-price" style="font-size:14px; font-weight:800; letter-spacing: 0.5px;">--</div>
+            </div>
         </div>
 
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
@@ -718,13 +721,21 @@
           }
       }
 
-      // ★★★ 新增：更新 OI 莊家防線理論價 (Level 4 專屬) ★★★
+      // ★★★ 新增：更新 OI 莊家防線理論價與 IV (Level 4 專屬) ★★★
       let dnEl = document.getElementById('oi-dn-price');
       if (dnEl) {
           if (data.oi_dn && data.oi_dn !== "NULL" && data.oi_dn !== "") {
               dnEl.innerText = data.oi_dn;
           } else {
               dnEl.innerText = "--";
+          }
+      }
+      let ivEl = document.getElementById('oi-iv-val');
+      if (ivEl) {
+          if (data.option_iv && data.option_iv > 0) {
+              ivEl.innerText = "IV: " + parseFloat(data.option_iv).toFixed(1) + "%";
+          } else {
+              ivEl.innerText = "IV: --%";
           }
       }
 
