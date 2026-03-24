@@ -164,70 +164,70 @@
   <button id="logout-btn" onclick="doLogout()">登出</button>
 
   <div class="dashboard-container" id="dashboard">
-    <div class="top-section">
-      <div class="box" style="padding:6px 8px;">
-        <div class="box-header" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:flex-end;">
-            <span>TX 台指期</span>
-            <span style="font-size:9px; font-weight:normal; color:#888;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
+    <div class="top-section" style="gap:4px;">
+      <div class="box" style="padding:4px 6px;">
+        <div class="box-header" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:flex-end; line-height:1;">
+            <span style="font-size:10px;">TX 台指期</span>
+            <span style="font-size:8px; font-weight:normal; color:#888;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
         </div>
-        <div id="price" class="big-val" style="font-size:24px; margin-top:0; line-height:1.1;">---</div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:11px; color:#aaa; font-weight:500;">
+        <div id="price" class="big-val" style="font-size:22px; margin-top:2px; margin-bottom:2px; line-height:1;">---</div>
+        <div style="display:flex; justify-content:space-between; margin-top:1px; font-size:10px; color:#aaa; font-weight:500; line-height:1;">
             <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
             <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500;">
+        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500; line-height:1;">
             <div>跨盤均價: <span id="vwap-cross" style="color:#fff; font-weight:600;">--</span></div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500;">
+        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500; line-height:1;">
             <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
         </div>
         
-        <div class="req-level-4-flex" style="justify-content:space-between; align-items:center; margin-top:4px; background:rgba(212,175,55,0.08); padding:4px 6px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
+        <div class="req-level-4-flex" style="flex-direction:row; justify-content:space-between; align-items:center; margin-top:3px; background:rgba(212,175,55,0.08); padding:3px 5px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
             <div style="display:flex; flex-direction:column; gap:2px;">
-                <span style="font-size:10px; color:#d4af37; font-weight:700; line-height:1;">⚖️ Delta中性值</span>
+                <span style="font-size:9px; color:#d4af37; font-weight:700; line-height:1;">⚖️ Delta中性值</span>
                 <span id="oi-iv-val" style="font-size:8px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.3); padding:1px 3px; border-radius:3px; width:fit-content; line-height:1;">IV: --%</span>
             </div>
-            <div id="oi-dn-price" style="font-size:16px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px; line-height:1;">--</div>
+            <div id="oi-dn-price" style="font-size:18px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px; line-height:1;">--</div>
         </div>
 
-        <div id="update-time" style="margin-top:2px; color:#666; font-size:8px; text-align:right;">--:--:--</div>
+        <div id="update-time" style="margin-top:2px; color:#666; font-size:8px; text-align:right; line-height:1;">--:--:--</div>
       </div>
       
-      <div class="box req-level-2-flex" style="flex-direction:column; justify-content:space-between; padding:6px 8px;" id="pwr-box">
+      <div class="box req-level-2-flex" style="flex-direction:column; justify-content:space-between; padding:4px 6px;" id="pwr-box">
         <div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="box-header" style="margin-bottom:0;">🚀 P6 動能</div>
-                <div id="pwr-tag" class="chip-tag">Wait</div>
+                <div class="box-header" style="margin-bottom:0; font-size:10px; line-height:1;">🚀 P6 動能</div>
+                <div id="pwr-tag" class="chip-tag" style="font-size:8px; padding:1px 4px;">Wait</div>
             </div>
-            <div id="pwr-val" class="power-val" style="text-align:right; font-size:26px; margin-top:0; line-height:1.1;">0%</div>
+            <div id="pwr-val" class="power-val" style="text-align:right; font-size:24px; margin-top:2px; margin-bottom:2px; line-height:1;">0%</div>
         </div>
         
-        <div class="req-level-4-flex" style="border-top:1px dashed #333; margin-top:4px; padding-top:4px; flex-direction:column; align-items:flex-end; gap:2px;">
-            <div style="display:flex; gap:4px; margin-bottom:0;">
-                <div id="nsf-status-badge" style="font-size:9px; font-weight:bold; padding:2px 4px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 無</div>
-                <div id="event-radar-badge" style="font-size:9px; font-weight:bold; padding:2px 4px; border-radius:3px; border:1px solid #333; color:#aaa; white-space:nowrap; display:none;">⚖️ 無事件</div>
+        <div class="req-level-4-flex" style="border-top:1px dashed #333; margin-top:2px; padding-top:3px; flex-direction:column; align-items:flex-end; gap:1px;">
+            <div style="display:flex; gap:2px; margin-bottom:1px;">
+                <div id="nsf-status-badge" style="font-size:8px; font-weight:bold; padding:1px 3px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap; line-height:1;">🛡️ 護盤: 無</div>
+                <div id="event-radar-badge" style="font-size:8px; font-weight:bold; padding:1px 3px; border-radius:3px; border:1px solid #333; color:#aaa; white-space:nowrap; display:none; line-height:1;">⚖️ 無事件</div>
             </div>
             <div style="display:flex; align-items:baseline; gap:4px;">
-                <span style="font-size:10px; font-weight:700; color:#aaa;">Heat</span>
-                <span id="alpha-heat-val" style="font-size:20px; font-weight:800; letter-spacing:0.5px; line-height:1;">--%</span>
+                <span style="font-size:9px; font-weight:700; color:#aaa;">Heat</span>
+                <span id="alpha-heat-val" style="font-size:18px; font-weight:800; letter-spacing:0.5px; line-height:1;">--%</span>
             </div>
-            <div id="alpha-heat-ex-box" style="font-size:10px; font-weight:bold; color:#aaa; display:none; line-height:1;">
+            <div id="alpha-heat-ex-box" style="font-size:8px; font-weight:bold; color:#aaa; display:none; line-height:1;">
                 (非神山: <span id="alpha-heat-ex-val">--%</span>)
             </div>
         </div>
 
-        <div class="lock-lvl-4" style="border-top:1px dashed #333; margin-top:4px; padding-top:4px; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
-            <div style="display:flex; gap:4px; margin-bottom:0;">
-                <div style="font-size:9px; font-weight:bold; padding:2px 4px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap;">🛡️ 護盤: 系統監控中</div>
+        <div class="lock-lvl-4" style="border-top:1px dashed #333; margin-top:2px; padding-top:3px; display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
+            <div style="display:flex; gap:2px; margin-bottom:0;">
+                <div style="font-size:8px; font-weight:bold; padding:1px 3px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap; line-height:1;">🛡️ 護盤: 系統監控中</div>
             </div>
-            <div style="font-size:9px; color:#888; font-weight:bold; margin-top:2px;">🔒 Market Heat (需 L4)</div>
+            <div style="font-size:8px; color:#888; font-weight:bold; margin-top:2px; line-height:1;">🔒 Market Heat (需 L4)</div>
         </div>
       </div>
-      <div class="box upgrade-prompt lock-lvl-2" id="pwr-box-locked" style="padding:6px 8px;">
+      <div class="box upgrade-prompt lock-lvl-2" id="pwr-box-locked" style="padding:4px 6px;">
           <div style="font-size:14px;">🚀</div>
-          <div style="font-size:10px;">P6 / P9 動能分析</div>
-          <div class="upgrade-btn">解鎖 Level 2</div>
+          <div style="font-size:9px;">P6 / P9 動能分析</div>
+          <div class="upgrade-btn" style="font-size:8px; padding:2px 6px;">解鎖 Level 2</div>
       </div>
     </div>
 
@@ -808,14 +808,14 @@
       let p9SlopeEl = document.getElementById('p9-slope-label');
       if (p9SlopeEl) {
           // ==========================================================================
-          // ★ v6.0 前端對接修正：將 P9 Slope 斜率警報改為「動態比例」
-          // 以 Attack (點火值) 的 30% 作為加速門檻，80% 作為極端竭盡反轉門檻
+          // ★ v6.2 前端最佳化：P9 降維適應版 Slope 動態比例
+          // 以 Attack (點火值) 的 4% 作為加速門檻，10% 作為極端竭盡反轉門檻
           // ==========================================================================
-          let slopeAccelThresh = Math.abs(th_at_p) * 0.3;
-          let slopeExhaustThresh = Math.abs(th_at_p) * 0.8;
+          let slopeAccelThresh = Math.abs(th_at_p) * 0.04;
+          let slopeExhaustThresh = Math.abs(th_at_p) * 0.10;
           
-          if (slopeAccelThresh < 1500) slopeAccelThresh = 1500;
-          if (slopeExhaustThresh < 4000) slopeExhaustThresh = 4000;
+          if (slopeAccelThresh < 400) slopeAccelThresh = 400;
+          if (slopeExhaustThresh < 1000) slopeExhaustThresh = 1000;
 
           let statusText = ""; let bgColor = ""; let textColor = "";
           
