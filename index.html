@@ -183,12 +183,12 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
         </div>
         
-        <div class="req-level-4-flex" style="justify-content:space-between; align-items:center; margin-top:6px; font-size:11px; color:#d4af37; font-weight:600; background:rgba(212,175,55,0.1); padding:4px 6px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
-            <div>⚖️ Delta 中性值 (DN)</div>
-            <div style="display:flex; align-items:center; gap:6px;">
-                <span id="oi-iv-val" style="font-size:10px; color:#aaa; font-weight:normal;">IV: --%</span>
-                <div id="oi-dn-price" style="font-size:14px; font-weight:800; letter-spacing: 0.5px;">--</div>
+        <div class="req-level-4-flex" style="flex-direction:column; margin-top:6px; background:rgba(212,175,55,0.08); padding:6px 8px; border-radius:8px; border: 1px solid rgba(212,175,55,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                <span style="font-size:10px; color:#d4af37; font-weight:700;">⚖️ Delta 中性值</span>
+                <span id="oi-iv-val" style="font-size:9px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.3); padding:2px 5px; border-radius:4px;">IV: --%</span>
             </div>
+            <div id="oi-dn-price" style="font-size:20px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px;">--</div>
         </div>
 
         <div id="update-time" style="margin-top:4px; color:#666; font-size:9px; text-align:right;">--:--:--</div>
@@ -638,10 +638,10 @@
         let e_dir = 0;
         if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
         
-        let th_ex_p = parseFloat(data.p9_th_ex_p || 300000);
-        let th_ex_n = parseFloat(data.p9_th_ex_n || -200000);
-        let th_at_p = parseFloat(data.p9_th_at_p || 50000);
-        let th_at_n = parseFloat(data.p9_th_at_n || -50000);
+        let th_ex_p = parseFloat(data.p9_th_ex_p || 30000);
+        let th_ex_n = parseFloat(data.p9_th_ex_n || -20000);
+        let th_at_p = parseFloat(data.p9_th_at_p || 5000);
+        let th_at_n = parseFloat(data.p9_th_at_n || -5000);
         let th_push_p = th_ex_p * 0.5;
         let th_push_n = th_ex_n * 0.5;
 
@@ -777,7 +777,7 @@
       pTag.className = "chip-tag"; if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";} else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";} else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";} else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";} else{pTag.innerText="整理";}
 
       let valP9 = parseFloat(data.p9 || 0); let p9El = document.getElementById('p9-val'); p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US'); p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
-      let th_ex_p = parseFloat(data.p9_th_ex_p || 300000); let th_ex_n = parseFloat(data.p9_th_ex_n || -200000); let th_at_p = parseFloat(data.p9_th_at_p || 50000); let th_at_n = parseFloat(data.p9_th_at_n || -50000); let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
+      let th_ex_p = parseFloat(data.p9_th_ex_p || 30000); let th_ex_n = parseFloat(data.p9_th_ex_n || -20000); let th_at_p = parseFloat(data.p9_th_at_p || 5000); let th_at_n = parseFloat(data.p9_th_at_n || -5000); let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
       let ss = parseInt(data.now_s_s || 0); let old_ss = parseInt(data.old_s_s || 0); let sv = parseInt(data.now_s_v || 0);
@@ -944,4 +944,4 @@
     }
   </script>
 </body>
-</html>
+</html>"
