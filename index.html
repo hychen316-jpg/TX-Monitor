@@ -282,10 +282,18 @@
         </div>
         <div class="upgrade-prompt lock-lvl-3" style="margin:4px 0; padding:6px;">🔒 莊家防線與 AI 裁決 (Level 3)</div>
 
-        <div class="p9-container req-level-2-flex">
-            <div class="p9-label">🔥 實單能量 (P9):</div>
-            <div id="p9-val" class="p9-val">--</div>
-            <div id="p9-slope-label" class="slope-label">--</div>
+        <div style="display:flex; gap:4px; margin-top:4px;" class="req-level-2-flex">
+            <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0;">
+                <div class="p9-label" style="font-size:10px;">🔥 實單能量 (P9)</div>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
+                    <div id="p9-val" class="p9-val" style="font-size:16px;">--</div>
+                    <div id="p9-slope-label" class="slope-label" style="font-size:9px; padding:1px 4px;">--</div>
+                </div>
+            </div>
+            <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0; background:rgba(255,255,255,0.05); border:1px solid #333;">
+                <div class="p9-label" style="font-size:10px;">🛡️ 籌碼淨力道 (R7)</div>
+                <div id="r7-val" class="p9-val" style="font-size:16px; margin-top:2px;">--</div>
+            </div>
         </div>
         
         <div id="logic-text" class="logic-text req-level-3-block" style="margin-top:4px;">分析中...</div>
@@ -350,7 +358,7 @@
     <div class="section-title">📈 期貨現價 (Price)</div>
     <div class="split-chart-box"><canvas id="chartPrice"></canvas></div>
 
-    <div class="section-title">📊 籌碼力道 (R7)</div>
+    <div class="section-title">📊 大戶籌碼追蹤 (E6)</div>
     <div class="split-chart-box"><canvas id="chartChip"></canvas></div>
 
     <div class="section-title req-level-2-flex">🚀 P6動能(左) vs P9實單(右)</div>
@@ -796,6 +804,10 @@
       pTag.className = "chip-tag"; if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";} else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";} else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";} else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";} else{pTag.innerText="整理";}
 
       let valP9 = parseFloat(data.p9 || 0); let p9El = document.getElementById('p9-val'); p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US'); p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+      
+      // ★★★ 新增：更新 R7 顯示 ★★★
+      let valP7 = parseFloat(data.force || 0); let r7El = document.getElementById('r7-val'); if(r7El){ r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); }
+
       let th_ex_p = parseFloat(data.p9_th_ex_p || 30000); let th_ex_n = parseFloat(data.p9_th_ex_n || -20000); let th_at_p = parseFloat(data.p9_th_at_p || 5000); let th_at_n = parseFloat(data.p9_th_at_n || -5000); let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
