@@ -639,14 +639,26 @@
         let e_dir = 0;
         if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
         
+        // 1. 讀取 VBA 傳來的動態閥值 (原始數據)
         let th_ex_p = parseFloat(data.p9_th_ex_p || 30000);
         let th_ex_n = parseFloat(data.p9_th_ex_n || -20000);
         let th_at_p = parseFloat(data.p9_th_at_p || 5000);
         let th_at_n = parseFloat(data.p9_th_at_n || -5000);
+
+        // ==========================================================================
+        // ★ 核心修改：加入與 VBA 同步的「防呆底限」，過濾死魚盤雜訊 ★
+        // ==========================================================================
+        if (th_at_p < 500) th_at_p = 500;
+        if (th_at_n > -500) th_at_n = -500;
+        if (th_ex_p < 2500) th_ex_p = 2500;
+        if (th_ex_n > -2500) th_ex_n = -2500;
+
+        // 推升值 (介於攻擊與竭盡之間的中繼站)
         let th_push_p = th_ex_p * 0.5;
         let th_push_n = th_ex_n * 0.5;
 
         let result = { text: "☕ [N級] 冰封觀望 (無明顯方向)", class: "rank-n" };
+        
         if (p9 > th_at_p) {
             let isResonance = (p7 > 0); let isTrend = (e_dir === 1);
             if (p9 > th_ex_p) result = { text: `🔥 [S級] 多方天量 (準備反轉)`, class: "rank-s" };
@@ -946,4 +958,4 @@
     }
   </script>
 </body>
-</html>
+</html>",請幫我在這加入這一段如果 p9>0 且 p7<0 且籌碼p5或p6>0 是【誘多】如果 p9<0 且 p7>0 且籌碼p5或p6<0 是【誘空】加入在哪邊比較好呢？
