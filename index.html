@@ -639,23 +639,29 @@
         let e_dir = 0;
         if (e_str.includes("多")) e_dir = 1; else if (e_str.includes("空")) e_dir = -1;
         
-        // 1. 讀取 VBA 傳來的動態閥值 (原始數據)
         let th_ex_p = parseFloat(data.p9_th_ex_p || 30000);
         let th_ex_n = parseFloat(data.p9_th_ex_n || -20000);
         let th_at_p = parseFloat(data.p9_th_at_p || 5000);
         let th_at_n = parseFloat(data.p9_th_at_n || -5000);
 
-        // ==========================================================================
-        // ★ 核心修改：加入與 VBA 同步的「防呆底限」，過濾死魚盤雜訊 ★
-        // ==========================================================================
         if (th_at_p < 500) th_at_p = 500;
         if (th_at_n > -500) th_at_n = -500;
         if (th_ex_p < 2500) th_ex_p = 2500;
         if (th_ex_n > -2500) th_ex_n = -2500;
 
-        // 推升值 (介於攻擊與竭盡之間的中繼站)
         let th_push_p = th_ex_p * 0.5;
         let th_push_n = th_ex_n * 0.5;
+
+        // ==========================================================================
+        // ★ 新增：精準誘多/誘空背離判定 (加在最前面優先攔截)
+        // 為了避免微小雜訊，設定 p9 絕對值需大於 500 才會觸發誘多/誘空警告
+        // ==========================================================================
+        if (p9 > 500 && p7 < 0 && e_dir === 1) {
+            return { text: `🪤 [B級] 【誘多】陷阱 (實單買/淨力賣)`, class: "rank-b" };
+        }
+        if (p9 < -500 && p7 > 0 && e_dir === -1) {
+            return { text: `🪤 [B級] 【誘空】陷阱 (實單賣/淨力買)`, class: "rank-b" };
+        }
 
         let result = { text: "☕ [N級] 冰封觀望 (無明顯方向)", class: "rank-n" };
         
@@ -663,14 +669,14 @@
             let isResonance = (p7 > 0); let isTrend = (e_dir === 1);
             if (p9 > th_ex_p) result = { text: `🔥 [S級] 多方天量 (準備反轉)`, class: "rank-s" };
             else if (p9 > th_push_p && isResonance) result = { text: `🚀 [A+級] 裝甲推進 (強力多頭)`, class: "rank-a-bull" };
-            else if (p9 > th_at_p && !isResonance) result = { text: `🪤 [B級] 誘空壓盤 (逢低找買)`, class: "rank-b" };
+            else if (p9 > th_at_p && !isResonance) result = { text: `🪤 [B級] 買盤背離 (注意回檔)`, class: "rank-b" };
             else result = { text: `💪 [B+級] 主力點火 (偏多震盪)`, class: "rank-a-bull" };
         }
         else if (p9 < th_at_n) {
             let isResonance = (p7 < 0); let isTrend = (e_dir === -1);
             if (p9 < th_ex_n) result = { text: `☠️ [S級] 空方天量 (準備反轉)`, class: "rank-s" };
             else if (p9 < th_push_n && isResonance) result = { text: `📉 [A+級] 順勢殺盤 (強力空頭)`, class: "rank-a-bear" };
-            else if (p9 < th_at_n && !isResonance) result = { text: `🪤 [B級] 誘多護盤 (逢高找空)`, class: "rank-b" };
+            else if (p9 < th_at_n && !isResonance) result = { text: `🪤 [B級] 賣盤背離 (注意反彈)`, class: "rank-b" };
             else result = { text: `🪓 [B+級] 主力點火 (偏空震盪)`, class: "rank-a-bear" };
         }
         return result;
@@ -958,4 +964,4 @@
     }
   </script>
 </body>
-</html>",請幫我在這加入這一段如果 p9>0 且 p7<0 且籌碼p5或p6>0 是【誘多】如果 p9<0 且 p7>0 且籌碼p5或p6<0 是【誘空】加入在哪邊比較好呢？
+</html>
