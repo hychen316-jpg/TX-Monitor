@@ -96,7 +96,7 @@
     
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
     .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
-    .p9-val { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+    .p9-val { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s ease; }
     .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
     .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
@@ -137,6 +137,15 @@
 
     @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
     @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5); } 70% { box-shadow: 0 0 0 8px rgba(255, 69, 58, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0); } }
+
+    /* ★★★ P9 動態視覺特效 ★★★ */
+    @keyframes p9-exhaust-red { 0% { text-shadow: 0 0 5px var(--red); transform: scale(1); } 50% { text-shadow: 0 0 15px var(--red), 0 0 25px var(--red); transform: scale(1.05); } 100% { text-shadow: 0 0 5px var(--red); transform: scale(1); } }
+    @keyframes p9-exhaust-green { 0% { text-shadow: 0 0 5px var(--green); transform: scale(1); } 50% { text-shadow: 0 0 15px var(--green), 0 0 25px var(--green); transform: scale(1.05); } 100% { text-shadow: 0 0 5px var(--green); transform: scale(1); } }
+    
+    .p9-attack-red { text-shadow: 0 0 8px var(--red); font-weight: 900; }
+    .p9-attack-green { text-shadow: 0 0 8px var(--green); font-weight: 900; }
+    .p9-exhaust-red { animation: p9-exhaust-red 1s infinite; font-weight: 900; color: #fff !important; }
+    .p9-exhaust-green { animation: p9-exhaust-green 1s infinite; font-weight: 900; color: #fff !important; }
   </style>
 </head>
 <body>
@@ -288,6 +297,9 @@
                 <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
                     <div id="p9-val" class="p9-val" style="font-size:16px;">--</div>
                     <div id="p9-slope-label" class="slope-label" style="font-size:9px; padding:1px 4px;">--</div>
+                </div>
+                <div id="p9-thresholds-display" style="font-size:8px; color:#888; margin-top:2px; text-align:center; line-height:1; letter-spacing:0.5px;">
+                    攻: ±<span id="p9-th-at">--</span> / 竭: ±<span id="p9-th-ex">--</span>
                 </div>
             </div>
             <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0; background:rgba(255,255,255,0.05); border:1px solid #333;">
@@ -748,7 +760,6 @@
           }
       }
 
-      // ★★★ 新增：更新 OI 莊家防線理論價與 IV (Level 4 專屬) ★★★
       let dnEl = document.getElementById('oi-dn-price');
       if (dnEl) {
           if (data.oi_dn && data.oi_dn !== "NULL" && data.oi_dn !== "") {
@@ -803,12 +814,27 @@
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       pTag.className = "chip-tag"; if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";} else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";} else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";} else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";} else{pTag.innerText="整理";}
 
-      let valP9 = parseFloat(data.p9 || 0); let p9El = document.getElementById('p9-val'); p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US'); p9El.className = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+      // ★★★ 新增：動態閾值計算與 P9 視覺狂暴特效 ★★★
+      let th_ex_p = parseFloat(data.p9_th_ex_p || 30000); let th_ex_n = parseFloat(data.p9_th_ex_n || -20000); let th_at_p = parseFloat(data.p9_th_at_p || 5000); let th_at_n = parseFloat(data.p9_th_at_n || -5000);
+      if (th_at_p < 500) th_at_p = 500; if (th_at_n > -500) th_at_n = -500; if (th_ex_p < 2500) th_ex_p = 2500; if (th_ex_n > -2500) th_ex_n = -2500;
+      let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
+
+      let valP9 = parseFloat(data.p9 || 0); 
+      let p9El = document.getElementById('p9-val'); 
+      p9El.innerText = (valP9>0?"+":"") + valP9.toLocaleString('en-US'); 
       
+      let p9Class = "p9-val " + (valP9>0?"c-red":(valP9<0?"c-green":""));
+      if (valP9 > th_ex_p) { p9Class += " p9-exhaust-red"; } 
+      else if (valP9 < th_ex_n) { p9Class += " p9-exhaust-green"; } 
+      else if (valP9 > th_at_p) { p9Class += " p9-attack-red"; } 
+      else if (valP9 < th_at_n) { p9Class += " p9-attack-green"; }
+      p9El.className = p9Class;
+
+      let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = th_at_p.toLocaleString('en-US');
+      let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = th_ex_p.toLocaleString('en-US');
+
       // ★★★ 新增：更新 R7 顯示 ★★★
       let valP7 = parseFloat(data.force || 0); let r7El = document.getElementById('r7-val'); if(r7El){ r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); }
-
-      let th_ex_p = parseFloat(data.p9_th_ex_p || 30000); let th_ex_n = parseFloat(data.p9_th_ex_n || -20000); let th_at_p = parseFloat(data.p9_th_at_p || 5000); let th_at_n = parseFloat(data.p9_th_at_n || -5000); let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
       let ss = parseInt(data.now_s_s || 0); let old_ss = parseInt(data.old_s_s || 0); let sv = parseInt(data.now_s_v || 0);
@@ -839,10 +865,6 @@
       let valP9Slope = Math.round(p9SlopeHistory.reduce((a, b) => a + b, 0) / p9SlopeHistory.length);
       let p9SlopeEl = document.getElementById('p9-slope-label');
       if (p9SlopeEl) {
-          // ==========================================================================
-          // ★ v6.2 前端最佳化：P9 降維適應版 Slope 動態比例
-          // 以 Attack (點火值) 的 4% 作為加速門檻，10% 作為極端竭盡反轉門檻
-          // ==========================================================================
           let slopeAccelThresh = Math.abs(th_at_p) * 0.04;
           let slopeExhaustThresh = Math.abs(th_at_p) * 0.10;
           
@@ -869,7 +891,6 @@
       }
 
       let strategy = analyzeStrategy(data); let logicEl = document.getElementById('logic-text'); let battleCard = document.getElementById('battle-card');
-      // ★ 修正：強制 logic-text 只顯示 Level 2/3 的基礎動能判定，禁止偷讀四柱矩陣 (Level 4 專屬)
       logicEl.innerText = strategy.text; 
       battleCard.className = "battle-box req-level-2-flex " + strategy.class;
       updateStrategyBox(data, strategy);
