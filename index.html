@@ -299,7 +299,7 @@
                     <div id="p9-slope-label" class="slope-label" style="font-size:9px; padding:1px 4px;">--</div>
                 </div>
                 <div id="p9-thresholds-display" style="font-size:8px; color:#888; margin-top:2px; text-align:center; line-height:1; letter-spacing:0.5px;">
-                    攻: ±<span id="p9-th-at">--</span> / 竭: ±<span id="p9-th-ex">--</span>
+                    攻: <span id="p9-th-at">--</span> / 竭: <span id="p9-th-ex">--</span>
                 </div>
             </div>
             <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0; background:rgba(255,255,255,0.05); border:1px solid #333;">
@@ -830,8 +830,10 @@
       else if (valP9 < th_at_n) { p9Class += " p9-attack-green"; }
       p9El.className = p9Class;
 
-      let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = th_at_p.toLocaleString('en-US');
-      let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = th_ex_p.toLocaleString('en-US');
+      let display_th_at = valP9 >= 0 ? th_at_p : th_at_n;
+      let display_th_ex = valP9 >= 0 ? th_ex_p : th_ex_n;
+      let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = (display_th_at > 0 ? "+" : "") + display_th_at.toLocaleString('en-US');
+      let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = (display_th_ex > 0 ? "+" : "") + display_th_ex.toLocaleString('en-US');
 
       // ★★★ 新增：更新 R7 顯示 ★★★
       let valP7 = parseFloat(data.force || 0); let r7El = document.getElementById('r7-val'); if(r7El){ r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); }
