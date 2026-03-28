@@ -42,7 +42,8 @@
 
     .box-header { font-size: 11px; color: var(--gray); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .top-section { display:grid; grid-template-columns:1fr 1.3fr; gap:6px; }
+    /* ★ 調整上方區塊寬度比例 (左 1.3 : 右 1) */
+    .top-section { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
     .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
     .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
     .power-val { font-size:30px; font-weight:700; text-align:right; } 
@@ -179,7 +180,7 @@
             <span style="font-size:10px;">TX 台指期</span>
             <span style="font-size:8px; font-weight:normal; color:#888;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
         </div>
-        <div id="price" class="big-val" style="font-size:22px; margin-top:2px; margin-bottom:2px; line-height:1;">---</div>
+        <div id="price" class="big-val" style="font-size:28px; margin-top:2px; margin-bottom:2px; line-height:1;">---</div>
         <div style="display:flex; justify-content:space-between; margin-top:1px; font-size:10px; color:#aaa; font-weight:500; line-height:1;">
             <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
             <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
@@ -197,7 +198,7 @@
                 <span style="font-size:9px; color:#d4af37; font-weight:700; line-height:1;">⚖️ Delta中性值</span>
                 <span id="oi-iv-val" style="font-size:8px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.3); padding:1px 3px; border-radius:3px; width:fit-content; line-height:1;">IV: --%</span>
             </div>
-            <div id="oi-dn-price" style="font-size:18px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px; line-height:1;">--</div>
+            <div id="oi-dn-price" style="font-size:20px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px; line-height:1;">--</div>
         </div>
 
         <div id="update-time" style="margin-top:2px; color:#666; font-size:8px; text-align:right; line-height:1;">--:--:--</div>
@@ -769,7 +770,6 @@
           }
       }
       
-      // ★★★ 修改：分別讀取並比對 Call IV 與 Put IV ★★★
       let ivEl = document.getElementById('oi-iv-val');
       if (ivEl) {
           let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
