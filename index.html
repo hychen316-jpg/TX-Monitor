@@ -674,8 +674,37 @@
         let th_push_n = th_ex_n * 0.5;
 
         // ==========================================================================
-        // ★ 新增：精準誘多/誘空背離判定 (加在最前面優先攔截)
-        // 為了避免微小雜訊，設定 p9 絕對值需大於 500 才會觸發誘多/誘空警告
+        // ★ 新增：Skew 與莊家牆位意圖判定 (最高優先級攔截)
+        // ==========================================================================
+        let price = parseFloat(data.p || 0);
+        let s_strike = parseInt(data.now_s_s || 0);
+        let p_strike = parseInt(data.now_p_s || 0);
+        let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
+        let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
+        let skew = putIV - callIV;
+
+        if (callIV > 0 && putIV > 0) {
+            // 莊家賣 Put 準備拉抬 (接近支撐 + P9轉正 + Skew轉負)
+            if (s_strike > 0 && price - s_strike <= 50 && p9 > 0 && skew < -0.2) {
+                return { text: `🚀 [S級] 【莊家防守】近支撐/實單進/莊賣P`, class: "rank-a-bull" };
+            }
+            // 莊家賣 Call 準備殺盤 (接近壓力 + P9轉負 + Skew轉正)
+            if (p_strike > 0 && p_strike - price <= 50 && p9 < 0 && skew > 0.2) {
+                return { text: `📉 [S級] 【莊家防守】近壓力/實單出/莊賣C`, class: "rank-a-bear" };
+            }
+
+            // 誘多派發 (P9 買盤狂飆，但 Skew 顯示莊家正在天花板賣 Call 壓盤)
+            if (p9 > 500 && skew > 0.2) {
+                return { text: `🪤 [S級] 【誘多派發】實單買/IV偏態(莊賣C)`, class: "rank-s" };
+            }
+            // 誘空建倉 (P9 賣盤狂殺，但 Skew 顯示莊家正在地板賣 Put 護盤)
+            if (p9 < -500 && skew < -0.2) {
+                return { text: `🪤 [S級] 【誘空建倉】實單賣/IV偏態(莊賣P)`, class: "rank-s" };
+            }
+        }
+
+        // ==========================================================================
+        // 原本：精準誘多/誘空背離判定
         // ==========================================================================
         if (p9 > 500 && p7 < 0 && e_dir === 1) {
             return { text: `🪤 [B級] 【誘多】陷阱 (實單買/淨力賣)`, class: "rank-b" };
@@ -778,15 +807,30 @@
           if (callIV > 0 || putIV > 0) {
               let callColor = "#e5c05c"; // 預設黃色
               let putColor = "#e5c05c";  // 預設黃色
+              let skewTag = "";
+              let skew = putIV - callIV;
               
-              if (callIV > putIV) {
-                  callColor = "var(--red)"; // Call 比較貴，紅色警示
-              } else if (putIV > callIV) {
-                  putColor = "var(--green)"; // Put 比較貴，綠色警示
+              // ============================================
+              // ★ 這裡將 Skew 的視覺效果大幅強化，改為醒目數據牌
+              // ============================================
+              let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
+              
+              if (skew < -0.2) {
+                  callColor = "var(--red)"; // Call 比較貴，紅色警示 (莊賣P護盤)
+                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:10px;">Skew ${skewStr}% (撐)</div>`;
+              } else if (skew > 0.2) {
+                  putColor = "var(--green)"; // Put 比較貴，綠色警示 (莊賣C壓盤)
+                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:10px;">Skew ${skewStr}% (壓)</div>`;
+              } else {
+                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">Skew ${skewStr}% (平)</div>`;
               }
               
-              ivEl.innerHTML = `C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span> | P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span>`;
+              ivEl.style.display = "flex";
+              ivEl.style.flexDirection = "column";
+              ivEl.style.padding = "3px 5px"; // 稍微加寬 padding
+              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:11px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}`;
           } else {
+              ivEl.style.display = "inline-block";
               ivEl.innerText = "IV: --%";
           }
       }
