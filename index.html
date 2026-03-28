@@ -768,10 +768,24 @@
               dnEl.innerText = "--";
           }
       }
+      
+      // ★★★ 修改：分別讀取並比對 Call IV 與 Put IV ★★★
       let ivEl = document.getElementById('oi-iv-val');
       if (ivEl) {
-          if (data.option_iv && data.option_iv > 0) {
-              ivEl.innerText = "IV: " + parseFloat(data.option_iv).toFixed(1) + "%";
+          let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
+          let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
+          
+          if (callIV > 0 || putIV > 0) {
+              let callColor = "#e5c05c"; // 預設黃色
+              let putColor = "#e5c05c";  // 預設黃色
+              
+              if (callIV > putIV) {
+                  callColor = "var(--red)"; // Call 比較貴，紅色警示
+              } else if (putIV > callIV) {
+                  putColor = "var(--green)"; // Put 比較貴，綠色警示
+              }
+              
+              ivEl.innerHTML = `C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span> | P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span>`;
           } else {
               ivEl.innerText = "IV: --%";
           }
@@ -814,7 +828,6 @@
       if (Math.abs(pVal) >= 20) pBox.classList.add(pVal > 0 ? "alert-red" : "alert-green");
       pTag.className = "chip-tag"; if(pVal>25){pTag.classList.add("bg-red");pTag.innerText="極強多";} else if(pVal>=10){pTag.classList.add("bg-red");pTag.innerText="偏多";} else if(pVal<=-25){pTag.classList.add("bg-green");pTag.innerText="極強空";} else if(pVal<=-10){pTag.classList.add("bg-green");pTag.innerText="偏空";} else{pTag.innerText="整理";}
 
-      // ★★★ 新增：動態閾值計算與 P9 視覺狂暴特效 ★★★
       let th_ex_p = parseFloat(data.p9_th_ex_p || 30000); let th_ex_n = parseFloat(data.p9_th_ex_n || -20000); let th_at_p = parseFloat(data.p9_th_at_p || 5000); let th_at_n = parseFloat(data.p9_th_at_n || -5000);
       if (th_at_p < 500) th_at_p = 500; if (th_at_n > -500) th_at_n = -500; if (th_ex_p < 2500) th_ex_p = 2500; if (th_ex_n > -2500) th_ex_n = -2500;
       let th_push_p = th_ex_p * 0.5; let th_push_n = th_ex_n * 0.5;
@@ -835,7 +848,6 @@
       let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = (display_th_at > 0 ? "+" : "") + display_th_at.toLocaleString('en-US');
       let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = (display_th_ex > 0 ? "+" : "") + display_th_ex.toLocaleString('en-US');
 
-      // ★★★ 新增：更新 R7 顯示 ★★★
       let valP7 = parseFloat(data.force || 0); let r7El = document.getElementById('r7-val'); if(r7El){ r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); }
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
