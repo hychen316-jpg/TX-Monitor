@@ -42,7 +42,6 @@
 
     .box-header { font-size: 11px; color: var(--gray); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* ★ 調整上方區塊寬度比例 (左 1.3 : 右 1) */
     .top-section { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
     .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
     .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
@@ -92,12 +91,17 @@
     .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
     .percent-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px #000; z-index: 5; }
     .force-display { text-align: center; font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-    .army-stats { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-top: 0; padding: 0 5px; }
+    .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 0; padding: 0 5px; }
     .logic-text { text-align: center; font-size: 12px; font-weight: 700; color: #fff; margin-top: 0; letter-spacing: 0.5px; }
     
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
     .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
-    .p9-val { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s ease; }
+    
+    /* ★ 放大 P9 字體 */
+    .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s ease; }
+    /* ★ 放大 R7 字體 */
+    #r7-val { font-size: 20px; }
+    
     .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
 
     .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
@@ -220,7 +224,7 @@
             </div>
             <div style="display:flex; align-items:baseline; gap:4px;">
                 <span style="font-size:9px; font-weight:700; color:#aaa;">Heat</span>
-                <span id="alpha-heat-val" style="font-size:18px; font-weight:800; letter-spacing:0.5px; line-height:1;">--%</span>
+                <span id="alpha-heat-val" style="font-size:20px; font-weight:800; letter-spacing:0.5px; line-height:1;">--%</span>
             </div>
             <div id="alpha-heat-ex-box" style="font-size:8px; font-weight:bold; color:#aaa; display:none; line-height:1;">
                 (非神山: <span id="alpha-heat-ex-val">--%</span>)
@@ -285,9 +289,9 @@
             </div>
             <div id="wall-net-force-val" class="force-display">-- 淨力道</div>
             <div class="army-stats">
-                <div>🔴 支撐(<span id="wall-s-strike" style="color:#ccc;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
+                <div>🔴 支撐(<span id="wall-s-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
                 <div style="text-align:center; color:#888;">⚖️ 中關:<span id="wall-mid-strike" style="color:#d4af37; font-weight:bold; margin-left:2px;">--</span></div>
-                <div>🟢 壓力(<span id="wall-p-strike" style="color:#ccc;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
+                <div>🟢 壓力(<span id="wall-p-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
             </div>
         </div>
         <div class="upgrade-prompt lock-lvl-3" style="margin:4px 0; padding:6px;">🔒 莊家防線與 AI 裁決 (Level 3)</div>
@@ -810,25 +814,22 @@
               let skewTag = "";
               let skew = putIV - callIV;
               
-              // ============================================
-              // ★ 這裡將 Skew 的視覺效果大幅強化，改為醒目數據牌
-              // ============================================
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               
               if (skew < -0.2) {
                   callColor = "var(--red)"; // Call 比較貴，紅色警示 (莊賣P護盤)
-                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:10px;">Skew ${skewStr}% (撐)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;">Skew ${skewStr}% (撐)</div>`;
               } else if (skew > 0.2) {
                   putColor = "var(--green)"; // Put 比較貴，綠色警示 (莊賣C壓盤)
-                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:10px;">Skew ${skewStr}% (壓)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;">Skew ${skewStr}% (壓)</div>`;
               } else {
-                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">Skew ${skewStr}% (平)</div>`;
+                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:11px;">Skew ${skewStr}% (平)</div>`;
               }
               
               ivEl.style.display = "flex";
               ivEl.style.flexDirection = "column";
-              ivEl.style.padding = "3px 5px"; // 稍微加寬 padding
-              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:11px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}`;
+              ivEl.style.padding = "3px 5px";
+              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}`;
           } else {
               ivEl.style.display = "inline-block";
               ivEl.innerText = "IV: --%";
