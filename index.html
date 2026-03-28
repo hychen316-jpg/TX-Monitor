@@ -97,9 +97,7 @@
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
     .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
     
-    /* ★ 放大 P9 字體 */
     .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s ease; }
-    /* ★ 放大 R7 字體 */
     #r7-val { font-size: 20px; }
     
     .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
@@ -189,15 +187,15 @@
             <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
             <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500; line-height:1;">
-            <div>跨盤均價: <span id="vwap-cross" style="color:#fff; font-weight:600;">--</span></div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#aaa; font-weight:500; line-height:1; align-items:center;">
+            <div>跨盤均價: <span id="vwap-cross" style="color:#fff; font-weight:800; font-size:14px; text-shadow:0 0 4px rgba(255,255,255,0.3);">--</span></div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px; color:#aaa; font-weight:500; line-height:1;">
-            <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:600;">--</span></div>
-            <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:600;">--</span></div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:#aaa; font-weight:500; line-height:1; background:rgba(255,255,255,0.05); padding:4px; border-radius:4px;">
+            <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:800; font-size:13px;">--</span></div>
+            <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:13px;">--</span></div>
         </div>
         
-        <div class="req-level-4-flex" style="flex-direction:row; justify-content:space-between; align-items:center; margin-top:3px; background:rgba(212,175,55,0.08); padding:3px 5px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
+        <div class="req-level-4-flex" style="flex-direction:row; justify-content:space-between; align-items:center; margin-top:4px; background:rgba(212,175,55,0.08); padding:3px 5px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
             <div style="display:flex; flex-direction:column; gap:2px;">
                 <span style="font-size:9px; color:#d4af37; font-weight:700; line-height:1;">⚖️ Delta中性值</span>
                 <span id="oi-iv-val" style="font-size:8px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.3); padding:1px 3px; border-radius:3px; width:fit-content; line-height:1;">IV: --%</span>
@@ -222,11 +220,11 @@
                 <div id="nsf-status-badge" style="font-size:8px; font-weight:bold; padding:1px 3px; border-radius:3px; border:1px solid #333; color:#555; white-space:nowrap; line-height:1;">🛡️ 護盤: 無</div>
                 <div id="event-radar-badge" style="font-size:8px; font-weight:bold; padding:1px 3px; border-radius:3px; border:1px solid #333; color:#aaa; white-space:nowrap; display:none; line-height:1;">⚖️ 無事件</div>
             </div>
-            <div style="display:flex; align-items:baseline; gap:4px;">
-                <span style="font-size:9px; font-weight:700; color:#aaa;">Heat</span>
-                <span id="alpha-heat-val" style="font-size:20px; font-weight:800; letter-spacing:0.5px; line-height:1;">--%</span>
+            <div style="display:flex; align-items:baseline; gap:4px; margin-top:2px;">
+                <span style="font-size:10px; font-weight:700; color:#aaa;">Heat</span>
+                <span id="alpha-heat-val" style="font-size:24px; font-weight:900; letter-spacing:0.5px; line-height:1;">--%</span>
             </div>
-            <div id="alpha-heat-ex-box" style="font-size:8px; font-weight:bold; color:#aaa; display:none; line-height:1;">
+            <div id="alpha-heat-ex-box" style="font-size:9px; font-weight:bold; color:#aaa; display:none; line-height:1;">
                 (非神山: <span id="alpha-heat-ex-val">--%</span>)
             </div>
         </div>
