@@ -681,7 +681,6 @@
 
         let price = parseFloat(data.p || 0);
         
-        // ★ 讀取完整的防線數據 (距離、厚度、推移)
         let s_strike = parseInt(data.now_s_s || 0);
         let p_strike = parseInt(data.now_p_s || 0);
         let s_vol = parseInt(data.now_s_v || 0); 
@@ -689,37 +688,30 @@
         let old_s_strike = parseInt(data.old_s_s || 0);
         let old_p_strike = parseInt(data.old_p_s || 0);
 
+        // ★ 讀取 Firebase 傳來的數據
         let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
         let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
-        let skew = putIV - callIV;
+        let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0; 
+        
+        // ★ 扣除偏移量，計算真實主力意圖 Skew
+        let skew = (putIV - callIV) - skewOffset; 
         let SKEW_THRESH = data.skew_thresh !== undefined ? parseFloat(data.skew_thresh) : 0.2;
 
-        // ==========================================================================
-        // ★ SS級：極限動態捕捉 (防線推移 + 偏態 + 實單)
-        // ==========================================================================
         if (callIV > 0 && putIV > 0) {
-            // 泰山壓頂 (壓力牆主動下移 + 莊賣C + P9轉負)
             if (old_p_strike > 0 && p_strike < old_p_strike && p9 < 0 && skew > SKEW_THRESH) {
                 return { text: `🧨 [SS級] 【泰山壓頂】壓力下逼/莊賣C壓盤/順勢空`, class: "rank-a-bear" };
             }
-            // 多軍推土 (支撐牆主動上移 + 莊賣P + P9轉正)
             if (old_s_strike > 0 && s_strike > old_s_strike && p9 > 0 && skew < -SKEW_THRESH) {
                 return { text: `🚜 [SS級] 【多軍推土】支撐上移/莊賣P撐盤/順勢多`, class: "rank-a-bull" };
             }
             
-            // 完美誘多陷阱 (實單狂買 + 上方重壓 + 莊賣C)
             if (p9 > th_push_p && skew > SKEW_THRESH && p_vol > s_vol * 1.2) {
                 return { text: `🪤 [SS級] 【完美誘多】散戶追價/上方重壓/莊賣C天花板`, class: "rank-s" };
             }
-            // 完美誘空陷阱 (實單狂殺 + 下方鐵板 + 莊賣P)
             if (p9 < th_push_n && skew < -SKEW_THRESH && s_vol > p_vol * 1.2) {
                 return { text: `🪤 [SS級] 【完美誘空】散戶追空/下方鐵板/莊賣P護城河`, class: "rank-s" };
             }
 
-        // ==========================================================================
-        // ★ S級：莊家陣地防衛戰 (加入兵力厚度驗證)
-        // ==========================================================================
-            // 莊家做多防禦 (近支撐 + 實單進 + 莊賣P + 支撐兵力夠厚)
             if (s_strike > 0 && price - s_strike <= 50 && p9 > 0 && skew < -SKEW_THRESH) {
                 if (s_vol > p_vol || s_vol > 1500) {
                     return { text: `🚀 [S級] 【鐵板防守】近支撐/實單進/莊賣P重兵防衛`, class: "rank-a-bull" };
@@ -727,7 +719,6 @@
                     return { text: `⚠️ [A級] 【虛假防守】莊賣P但支撐兵力薄弱(防貫穿)`, class: "rank-b" };
                 }
             }
-            // 莊家做空防禦 (近壓力 + 實單出 + 莊賣C + 壓力兵力夠厚)
             if (p_strike > 0 && p_strike - price <= 50 && p9 < 0 && skew > SKEW_THRESH) {
                 if (p_vol > s_vol || p_vol > 1500) {
                     return { text: `📉 [S級] 【重壓防守】近壓力/實單出/莊賣C重兵防衛`, class: "rank-a-bear" };
@@ -737,9 +728,6 @@
             }
         }
 
-        // ==========================================================================
-        // ★ 基礎背離與趨勢判定
-        // ==========================================================================
         if (p9 > 500 && p7 < 0 && e_dir === 1) {
             return { text: `🪤 [B級] 【誘多】籌碼背離陷阱 (實單買/淨力賣)`, class: "rank-b" };
         }
@@ -843,7 +831,11 @@
               let callColor = "#e5c05c"; // 預設黃色
               let putColor = "#e5c05c";  // 預設黃色
               let skewTag = "";
-              let skew = putIV - callIV;
+              
+              // ★ 讀取 VBA 傳來的靜態偏移量 (預設為 0 防呆)
+              let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0; 
+              // ★ 扣除偏移量，計算真實主力意圖 Skew
+              let skew = (putIV - callIV) - skewOffset; 
               
               let SKEW_THRESH = data.skew_thresh !== undefined ? parseFloat(data.skew_thresh) : 0.2;
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
