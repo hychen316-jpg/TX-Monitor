@@ -230,6 +230,9 @@
             <div id="alpha-heat-ex-box" style="font-size:9px; font-weight:bold; color:#aaa; display:none; line-height:1;">
                 (非神山: <span id="alpha-heat-ex-val">--%</span>)
             </div>
+            <div id="alpha-fin-heat-box" style="font-size:9px; font-weight:bold; color:#aaa; display:none; line-height:1; margin-top:2px;">
+                (金融: <span id="alpha-fin-heat-val">--%</span>)
+            </div>
         </div>
 
         <div class="lock-lvl-4" style="border-top:1px dashed #333; margin-top:2px; padding-top:3px; display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
@@ -387,7 +390,7 @@
         <div class="upgrade-btn">需要 Level 2</div>
     </div>
 
-    <div class="section-title req-level-4-flex" style="margin-top:6px;">🔥 綜合熱度 (Heat) vs 非神山 (Heat_Ex)</div>
+    <div class="section-title req-level-4-flex" style="margin-top:6px;">🔥 綜合熱度 (Heat) vs 非神山 (Heat_Ex) vs 金融 (Fin)</div>
     <div class="split-chart-box req-level-4-block"><canvas id="chartHeat"></canvas></div>
     <div class="split-chart-box upgrade-prompt lock-lvl-4" id="heat-chart-locked" style="margin-top:2px; height:80px;">
         <div>🔒 Alpha-TX 雙熱度開口圖表</div>
@@ -423,6 +426,7 @@
     let frontEndHeatLabels = [];
     let frontEndHeatData = [];
     let frontEndHeatExData = [];
+    let frontEndFinHeatData = [];
     // ============================================
 
     let wakeLock = null;
@@ -563,6 +567,7 @@
     function updateAlphaUI(data) {
         const heatVal = parseFloat(data.heat || 50);
         const heatExVal = data.heat_ex !== undefined ? parseFloat(data.heat_ex) : 50;
+        const finHeatVal = data.fin_heat !== undefined ? parseFloat(data.fin_heat) : 50;
 
         let heatEl = document.getElementById('alpha-heat-val');
         if(heatEl) {
@@ -590,6 +595,16 @@
                 exBox.style.color = '#aaa'; 
                 exValEl.innerText = heatExVal.toFixed(1) + '%';
             }
+        }
+        
+        const finBox = document.getElementById('alpha-fin-heat-box');
+        const finValEl = document.getElementById('alpha-fin-heat-val');
+        if(finBox && finValEl) {
+            finBox.style.display = 'inline';
+            finValEl.innerText = finHeatVal.toFixed(1) + '%';
+            if (finHeatVal > 60) finValEl.style.color = 'var(--red)';
+            else if (finHeatVal < 40) finValEl.style.color = 'var(--green)';
+            else finValEl.style.color = '#aaa';
         }
 
         const probBadge = document.getElementById('alpha-prob-badge');
@@ -638,21 +653,25 @@
             frontEndHeatLabels.push(minTimeStr);
             frontEndHeatData.push(heatVal);
             frontEndHeatExData.push(heatExVal);
+            frontEndFinHeatData.push(finHeatVal);
             
             if (frontEndHeatLabels.length > 120) {
                 frontEndHeatLabels.shift();
                 frontEndHeatData.shift();
                 frontEndHeatExData.shift();
+                frontEndFinHeatData.shift();
             }
         } else {
             frontEndHeatData[frontEndHeatData.length - 1] = heatVal;
             frontEndHeatExData[frontEndHeatExData.length - 1] = heatExVal;
+            frontEndFinHeatData[frontEndFinHeatData.length - 1] = finHeatVal;
         }
 
         if (chartHeat) {
             chartHeat.data.labels = frontEndHeatLabels;
             chartHeat.data.datasets[0].data = frontEndHeatData;
             chartHeat.data.datasets[1].data = frontEndHeatExData;
+            chartHeat.data.datasets[2].data = frontEndFinHeatData;
             chartHeat.update();
         }
     }
@@ -1049,7 +1068,8 @@
                 labels: [], 
                 datasets: [ 
                     { label: '綜合熱度 (Heat)', data: [], borderColor: '#ff453a', borderWidth: 2, pointRadius: 0, tension: 0.4 }, 
-                    { label: '非神山熱度 (Heat_Ex)', data: [], borderColor: '#ffd60a', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, tension: 0.4 }
+                    { label: '非神山熱度 (Heat_Ex)', data: [], borderColor: '#ffd60a', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                    { label: '金融熱度 (Fin)', data: [], borderColor: '#0a84ff', borderDash: [2, 2], borderWidth: 2, pointRadius: 0, tension: 0.4 }
                 ] 
             }, 
             options: { 
