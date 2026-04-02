@@ -683,7 +683,7 @@
     function analyzeStrategy(data) {
         let price = parseFloat(data.p || 0);
         let oi_dn = parseFloat(data.oi_dn || price);
-        let diffSign = (price < oi_dn) ? '+' : '-'; // + 超跌 (Price < oi_dn), - 超漲 (Price > oi_dn)
+        let diffSign = (oi_dn > price) ? '+' : '-'; // + 超跌 (Price < oi_dn), - 超漲 (Price > oi_dn)
 
         let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
         let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
@@ -691,74 +691,51 @@
         let skewVal = (putIV - callIV) - skewOffset;
         let skewSign = (skewVal > 0) ? '正' : '負';
 
-        // ★ [核心升級] 讀取 R7 的動態乖離值 (Delta)，加入 ±300 口遲滯濾網
-        let r7Delta = data.r7_delta !== undefined ? parseFloat(data.r7_delta) : 0;
-        
-        if (r7Delta > 300) {
-            lastForceSign = '+'; // 主力主動墊高買牆
-        } else if (r7Delta < -300) {
-            lastForceSign = '-'; // 主力瞬間抽單撤退
-        }
-        // 若在 ±300 內，lastForceSign 保持上一秒的狀態 (記憶功能)
-        
-        let forceSign = lastForceSign;
+        // ★ [核心回歸] 判定改回使用 R7 絕對值 (force)
+        let valForce = parseFloat(data.force || 0);
+        let forceSign = (valForce >= 0) ? '+' : '-'; 
 
         let p9Val = parseFloat(data.p9 || 0);
         let p9Sign = (p9Val > 0) ? '+' : '-';
 
-        // 建立 16 種陣型密碼 [Diff Skew Force(動態) P9]
+        // 建立 16 種陣型密碼 [Diff Skew Force(絕對) P9]
         let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
-        // ★ [核心升級] 矩陣解析說明全面翻新為「墊高/抽單」的動態語意
+        // ★ 完全依照 CSV 定義更新說明文字與主力企圖底牌
         switch(matrixCode) {
-            // ==========================================
-            // 🔥 第一戰區 (S/A級核心狙擊)
-            // ==========================================
-            case '[+ 負 + +]': 
-                result = { text: `🚀 [S級] ${matrixCode} S級必殺做多(絕對軋空)`, class: "rank-s", advice: "莊家托底 + 買牆強勢墊高(R7增) + 市價狂掃。引力將帶動報復性 V 轉。👉 動作：無腦市價做多，讓利潤奔跑！" }; break;
-            case '[- 正 - -]': 
-                result = { text: `📉 [S級] ${matrixCode} S級必殺做空(絕對殺多)`, class: "rank-s", advice: "莊家蓋鍋 + 防線瞬間抽單(R7減) + 市價狂砸。引力將引發多殺多斷頭墜落。👉 動作：無腦市價放空，迎接瀑布！" }; break;
-            case '[+ 負 + -]': 
-                result = { text: `🪤 [A級] ${matrixCode} 完美誘空陷阱(壓低吃貨)`, class: "rank-a-bull", advice: "【籌碼背離】散戶恐慌砸盤，但主力死守並增厚買牆(R7增)默默吃貨。👉 動作：禁追空！盯緊 P9，由負翻正瞬間市價做多！" }; break;
-            case '[- 正 - +]': 
-                result = { text: `🪤 [A級] ${matrixCode} 完美誘多陷阱(拉高出貨)`, class: "rank-a-bear", advice: "【籌碼背離】散戶瘋狂追高，但主力暗中撤出防線(R7減)且莊家蓋鍋。👉 動作：禁追多！盯緊 P9，由正翻綠瞬間市價放空！" }; break;
-
-            // ==========================================
-            // 🌊 第二戰區 (趨勢中繼)
-            // ==========================================
-            case '[+ 負 - +]': 
-                result = { text: `🌊 [洗盤] ${matrixCode} 壓盤洗籌碼(底部震盪)`, class: "rank-n", advice: "莊家托底且市價進攻，但主力刻意抽單不跟上(R7減)壓抑價格，企圖在底部吸籌。👉 盯盤：空手觀望，等待 R7 買牆重新墊高(翻正)再進場。" }; break;
-            case '[- 正 + -]': 
-                result = { text: `🎣 [A級] ${matrixCode} 撐盤緩跌(高檔出貨)`, class: "rank-a-bear", advice: "莊家蓋鍋，主力故意在下方維持假買牆(R7虛撐)，進行階梯式高檔出貨。👉 盯盤：絕對別空！等 R7 買牆「瞬間抽單崩塌(翻負)」才空！" }; break;
-            case '[+ 負 - -]': 
-                result = { text: `🛡️ [洗盤] ${matrixCode} 莊家底線測試(單兵死守)`, class: "rank-n", advice: "市場恐慌砸盤且防線退縮(R7減)，只剩莊家單兵用 Sell Put 死守底線。👉 盯盤：極限測試區，等待 P9 賣壓衰竭或防線貫穿。" }; break;
-            case '[- 正 + +]': 
-                result = { text: `⚔️ [A級] ${matrixCode} 莊家火鍋測試(單兵壓制)`, class: "rank-a-bull", advice: "市場瘋狗買盤硬闖且買牆推進(R7增)，只剩莊家在上方用 Sell Call 死命壓制。👉 盯盤：多空神仙打架，等待 Skew 壓力鍋炸開(翻負)再追多。" }; break;
-
-            // ==========================================
-            // ☠️ 第三戰區 (結算破壞區)
-            // ==========================================
-            case '[+ 正 - -]': 
-                result = { text: `☠️ [S級] ${matrixCode} 破底殺多(放棄防守)`, class: "rank-s", advice: "【極度危險】嚴重超跌但莊家卻跟著踩一腳(壓盤)，且下方防線全撤(R7崩潰)。👉 動作：順勢放空，準備下調結算價，多單快逃！" }; break;
-            case '[- 負 + +]': 
-                result = { text: `🌋 [S級] ${matrixCode} 噴出軋空(強制升空)`, class: "rank-s", advice: "【極度危險】嚴重超漲但莊家卻跟著買進(托底)，且買牆瘋狂墊高(R7暴增)。👉 動作：順勢追多，準備上調結算價，空單快逃！" }; break;
-            case '[+ 正 + +]': 
-                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢軋莊(多方兵變)`, class: "rank-a-bull", advice: "【倒莊警戒】大戶用真金白銀築起買牆(R7增)把莊家的火鍋買爆，迫使莊家停損。👉 盯盤：準備迎接 Gamma Squeeze 暴力多頭海嘯。" }; break;
-            case '[- 負 - -]': 
-                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢殺莊(空方兵變)`, class: "rank-a-bear", advice: "【倒莊警戒】大戶用真金白銀砸穿防線(R7減)把莊家的鐵板貫穿，迫使莊家停損。👉 盯盤：準備迎接 Gamma Crash 崩盤級股災。" }; break;
-
-            // ==========================================
-            // 👻 第四戰區 (雜訊區)
-            // ==========================================
-            case '[+ 正 + -]': 
-                result = { text: `👻 [雜訊] ${matrixCode} 假撐誘空(虛假底)`, class: "rank-n", advice: "莊家壓盤且市價砸盤，下方卻出現異常買牆(R7增)。此為高頻假掛單(Spoofing)。👉 警報：虛假支撐，隨時抽單破底，切勿做多！" }; break;
-            case '[+ 正 - +]': 
-                result = { text: `🐈 [雜訊] ${matrixCode} 死貓反彈(接刀陷阱)`, class: "rank-n", advice: "上方賣壓沉重且莊家蓋鍋，下方毫無防線(R7減)，散戶卻盲目用市價單搶反彈。👉 警報：標準接刀陷阱，進場必定套牢，空手觀望！" }; break;
-            case '[- 負 - +]': 
-                result = { text: `🎆 [雜訊] ${matrixCode} 逃命煙火波(虛假頂)`, class: "rank-n", advice: "莊家雖撐盤，但買牆已撤(R7減)且上方已有沉重限價賣壓，散戶仍在市價追高。👉 警報：主力最後的煙火秀，動能隨時熄火，多單準備停利！" }; break;
-            case '[- 負 + -]': 
-                result = { text: `🤡 [雜訊] ${matrixCode} 假摔誘多(虛假跌)`, class: "rank-n", advice: "莊家撐盤且下方防護堅固(R7增)，市價卻異常砸盤。通常為洗出多頭浮額。👉 警報：製造假摔錯覺，切勿追空，容易被反軋！" }; break;
+            case '[+ 負 + +]':
+                result = { text: `🚀 S級必殺做多(絕對軋空) ${matrixCode}`, class: "rank-s", advice: "主力用無限資金在下方鋪好鐵板與買單，市價單發動總攻。引力將帶動報復性 V 轉。👉 動作：重倉做多" }; break;
+            case '[- 正 - -]':
+                result = { text: `📉 S級必殺做空(絕對殺多) ${matrixCode}`, class: "rank-s", advice: "莊家在天花板佈下重兵，大戶市價狂倒貨。引力將引發多殺多斷頭墜落。👉 動作：重倉做空" }; break;
+            case '[+ 負 + -]':
+                result = { text: `🪤 完美誘空陷阱(壓低吃貨) ${matrixCode}`, class: "rank-a-bull", advice: "【籌碼背離】 散戶恐慌殺跌 (P9-負)，但莊家在托底，且主力把限價買單掛滿 (F-正) 默默吃掉所有停損單。👉 動作：禁追空，準備接刀" }; break;
+            case '[- 正 - +]':
+                result = { text: `🪤 完美誘多陷阱(拉高出貨) ${matrixCode}`, class: "rank-a-bear", advice: "【籌碼背離】 散戶看大漲瘋狂追多 (P9-正)，但全撞在主力厚實的限價賣單上，且莊家已蓋上火鍋準備收網。👉 動作：禁追多，準備放空" }; break;
+            case '[+ 負 - +]':
+                result = { text: `🌊 壓盤洗籌碼(底部震盪) ${matrixCode}`, class: "rank-n", advice: "莊家托底，散戶想買，但主力刻意在上方掛滿賣單壓抑價格。企圖在底部吃夠籌碼後才會撤掉賣單。" }; break;
+            case '[- 正 + -]':
+                result = { text: `🎣 撐盤緩跌(高檔出貨) ${matrixCode}`, class: "rank-a-bear", advice: "莊家蓋鍋，散戶想逃，但主力在下方掛買單護航，目的是「階梯式緩慢出貨」，不讓價格崩潰導致自己賣不掉。" }; break;
+            case '[+ 負 - -]':
+                result = { text: `🛡️ 莊家底線測試(單兵死守) ${matrixCode}`, class: "rank-n", advice: "散戶與大戶一起瘋狂砸盤，只剩莊家在下方用 Sell Put 單獨死撐。隨時可能貫穿防線或上演極限反轉。" }; break;
+            case '[- 正 + +]':
+                result = { text: `⚔️ 莊家火鍋測試(單兵壓制) ${matrixCode}`, class: "rank-a-bull", advice: "散戶與大戶瘋狂往上衝，只剩莊家在上方用 Sell Call 死壓。測試上方壓力牆的極限。" }; break;
+            case '[+ 正 - -]':
+                result = { text: `☠️ 破底殺多(放棄防守) ${matrixCode}`, class: "rank-s", advice: "【極度危險】 明明已經超跌，但莊家居然跟著踩一腳 (Sell Call)，大戶也狂砸。這代表主力放棄防守，準備下調結算價。" }; break;
+            case '[- 負 + +]':
+                result = { text: `🌋 噴出軋空(強制升空) ${matrixCode}`, class: "rank-s", advice: "【極度危險】 明明已經超漲，負莊家不壓反撐 (Sell Put)，大戶繼續狂買。代表主力上調目標價，強行軋空散戶。" }; break;
+            case '[+ 正 + +]':
+                result = { text: `⚠️ 逆勢軋莊(多方兵變) ${matrixCode}`, class: "rank-a-bull", advice: "超跌且莊家壓盤，但大戶與散戶用真金白銀把莊家買爆。若莊家被迫停損 (Buy Call)，將引發極度暴力的多頭海嘯。" }; break;
+            case '[- 負 - -]':
+                result = { text: `⚠️ 逆勢殺莊(空方兵變) ${matrixCode}`, class: "rank-a-bear", advice: "超漲且莊家撐盤，但大戶與散戶用真金白銀把莊家的鐵板砸穿。若莊家被迫停損 (Buy Put)，將引發崩盤級的股災。" }; break;
+            case '[+ 正 + -]':
+                result = { text: `👻 假撐誘空(虛假底) ${matrixCode}`, class: "rank-n", advice: "莊家壓盤，市價狂砸，但下方卻出現異常買單裝甲。通常是主力掛假單(Spoofing)吸引散戶做空，隨時會抽單。" }; break;
+            case '[+ 正 - +]':
+                result = { text: `🐈 死貓反彈(接刀陷阱) ${matrixCode}`, class: "rank-n", advice: "超跌且上方賣壓沉重，散戶卻用市價單進場搶反彈。這是標準的死貓反彈，進場必定套牢。" }; break;
+            case '[- 負 - +]':
+                result = { text: `🎆 逃命煙火波(虛假頂) ${matrixCode}`, class: "rank-n", advice: "超漲且莊家依然撐盤，但上方已有沉重賣壓，散戶仍在市價追高。屬於主力最後的煙火秀，隨時熄火。" }; break;
+            case '[- 負 + -]':
+                result = { text: `🤡 假摔誘多(虛假跌) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出浮額，製造假摔的錯覺。" }; break;
         }
 
         // T-0 結算日引力奇點覆寫 (Wednesday Override)
@@ -768,7 +745,7 @@
         if (isWednesday && ((timeHour === 12 && timeMin >= 30) || timeHour === 13) && Math.abs(price - oi_dn) > 150) {
              result.text = `🛑 [結算保護] ${matrixCode} 引力奇點覆寫`;
              result.class = "rank-n";
-             result.advice = "Override: 結算強制收斂期，封鎖所有順勢突破權限，僅限空手觀望！";
+             result.advice = "Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！";
         }
 
         return result;
@@ -1116,8 +1093,8 @@
                         position: 'left', 
                         grid: { color: '#333' }, 
                         ticks: { color: '#aaa', callback: function(val){ return val + '%' } },
-                        suggestedMin: 0, 
-                        suggestedMax: 100 
+                        suggestMin: 0, 
+                        suggestMax: 100 
                     } 
                 } 
             } 
