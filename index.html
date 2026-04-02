@@ -312,8 +312,9 @@
                 </div>
             </div>
             <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0; background:rgba(255,255,255,0.05); border:1px solid #333;">
-                <div class="p9-label" style="font-size:10px;">🛡️ 累積買賣差均值 (R7)</div>
+                <div class="p9-label" style="font-size:10px;">🛡️ 累積買賣差動態 (R7)</div>
                 <div id="r7-val" class="p9-val" style="font-size:16px; margin-top:2px;">--</div>
+                <div id="r7-delta-display" style="font-size:9px; color:#888; margin-top:2px;">(乖離: --)</div>
             </div>
         </div>
         
@@ -428,6 +429,9 @@
     let frontEndHeatExData = [];
     let frontEndFinHeatData = [];
     // ============================================
+
+    // ★ 增加一個全域變數來儲存 R7 的上一個狀態
+    let lastForceSign = '+';
 
     let wakeLock = null;
     let isNoSleepEnabled = false;
@@ -687,64 +691,74 @@
         let skewVal = (putIV - callIV) - skewOffset;
         let skewSign = (skewVal > 0) ? '正' : '負';
 
-        let forceVal = parseFloat(data.force || 0);
-        let forceSign = (forceVal > 0) ? '+' : '-';
+        // ★ [核心升級] 讀取 R7 的動態乖離值 (Delta)，加入 ±300 口遲滯濾網
+        let r7Delta = data.r7_delta !== undefined ? parseFloat(data.r7_delta) : 0;
+        
+        if (r7Delta > 300) {
+            lastForceSign = '+'; // 主力主動墊高買牆
+        } else if (r7Delta < -300) {
+            lastForceSign = '-'; // 主力瞬間抽單撤退
+        }
+        // 若在 ±300 內，lastForceSign 保持上一秒的狀態 (記憶功能)
+        
+        let forceSign = lastForceSign;
 
         let p9Val = parseFloat(data.p9 || 0);
         let p9Sign = (p9Val > 0) ? '+' : '-';
 
-        // 建立 16 種陣型密碼 [Diff Skew Force P9]
+        // 建立 16 種陣型密碼 [Diff Skew Force(動態) P9]
         let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
+        // ★ [核心升級] 矩陣解析說明全面翻新為「墊高/抽單」的動態語意
         switch(matrixCode) {
             // ==========================================
             // 🔥 第一戰區 (S/A級核心狙擊)
             // ==========================================
             case '[+ 負 + +]': 
-                result = { text: `🚀 [S級] ${matrixCode} S級必殺做多(絕對軋空)`, class: "rank-s", advice: "莊家托底 + 買牆推進 + 市價狂掃。👉 動作：無腦市價做多，讓利潤奔跑！" }; break;
+                result = { text: `🚀 [S級] ${matrixCode} S級必殺做多(絕對軋空)`, class: "rank-s", advice: "莊家托底 + 買牆強勢墊高(R7增) + 市價狂掃。引力將帶動報復性 V 轉。👉 動作：無腦市價做多，讓利潤奔跑！" }; break;
             case '[- 正 - -]': 
-                result = { text: `📉 [S級] ${matrixCode} S級必殺做空(絕對殺多)`, class: "rank-s", advice: "莊家蓋鍋 + 賣牆壓制 + 市價狂砸。👉 動作：無腦市價放空，迎接瀑布！" }; break;
+                result = { text: `📉 [S級] ${matrixCode} S級必殺做空(絕對殺多)`, class: "rank-s", advice: "莊家蓋鍋 + 防線瞬間抽單(R7減) + 市價狂砸。引力將引發多殺多斷頭墜落。👉 動作：無腦市價放空，迎接瀑布！" }; break;
             case '[+ 負 + -]': 
-                result = { text: `🪤 [A級] ${matrixCode} 完美誘空陷阱(壓低吃貨)`, class: "rank-a-bull", advice: "【籌碼背離】散戶恐慌砸盤，但主力用限價買牆默默吃貨。👉 動作：禁追空！盯緊 P9，由負翻正瞬間市價做多！" }; break;
+                result = { text: `🪤 [A級] ${matrixCode} 完美誘空陷阱(壓低吃貨)`, class: "rank-a-bull", advice: "【籌碼背離】散戶恐慌砸盤，但主力死守並增厚買牆(R7增)默默吃貨。👉 動作：禁追空！盯緊 P9，由負翻正瞬間市價做多！" }; break;
             case '[- 正 - +]': 
-                result = { text: `🪤 [A級] ${matrixCode} 完美誘多陷阱(拉高出貨)`, class: "rank-a-bear", advice: "【籌碼背離】散戶瘋狂追高，全撞在主力厚實的限價賣牆上。👉 動作：禁追多！盯緊 P9，由正翻綠瞬間市價放空！" }; break;
+                result = { text: `🪤 [A級] ${matrixCode} 完美誘多陷阱(拉高出貨)`, class: "rank-a-bear", advice: "【籌碼背離】散戶瘋狂追高，但主力暗中撤出防線(R7減)且莊家蓋鍋。👉 動作：禁追多！盯緊 P9，由正翻綠瞬間市價放空！" }; break;
 
             // ==========================================
             // 🌊 第二戰區 (趨勢中繼)
             // ==========================================
             case '[+ 負 - +]': 
-                result = { text: `🌊 [洗盤] ${matrixCode} 壓盤洗籌碼(底部震盪)`, class: "rank-n", advice: "莊家托底，但主力刻意掛滿限價賣單壓抑價格，企圖在底部吸籌。👉 盯盤：空手觀望，等待 Force 賣牆撤單翻正再進場。" }; break;
+                result = { text: `🌊 [洗盤] ${matrixCode} 壓盤洗籌碼(底部震盪)`, class: "rank-n", advice: "莊家托底且市價進攻，但主力刻意抽單不跟上(R7減)壓抑價格，企圖在底部吸籌。👉 盯盤：空手觀望，等待 R7 買牆重新墊高(翻正)再進場。" }; break;
             case '[- 正 + -]': 
-                result = { text: `🎣 [A級] ${matrixCode} 撐盤緩跌(高檔出貨)`, class: "rank-a-bear", advice: "莊家蓋鍋，主力故意在下方掛買牆護航，進行階梯式高檔出貨。👉 盯盤：絕對別空！等 Force 買牆撤單翻綠瞬間才空！" }; break;
+                result = { text: `🎣 [A級] ${matrixCode} 撐盤緩跌(高檔出貨)`, class: "rank-a-bear", advice: "莊家蓋鍋，主力故意在下方維持假買牆(R7虛撐)，進行階梯式高檔出貨。👉 盯盤：絕對別空！等 R7 買牆「瞬間抽單崩塌(翻負)」才空！" }; break;
             case '[+ 負 - -]': 
-                result = { text: `🛡️ [洗盤] ${matrixCode} 莊家底線測試(單兵死守)`, class: "rank-n", advice: "市場全面恐慌砸盤，只剩莊家單兵用 Sell Put 死守底線。👉 盯盤：極限測試區，等待 P9 賣壓衰竭或防線貫穿。" }; break;
+                result = { text: `🛡️ [洗盤] ${matrixCode} 莊家底線測試(單兵死守)`, class: "rank-n", advice: "市場恐慌砸盤且防線退縮(R7減)，只剩莊家單兵用 Sell Put 死守底線。👉 盯盤：極限測試區，等待 P9 賣壓衰竭或防線貫穿。" }; break;
             case '[- 正 + +]': 
-                result = { text: `⚔️ [A級] ${matrixCode} 莊家火鍋測試(單兵壓制)`, class: "rank-a-bull", advice: "市場瘋狗買盤硬闖，只剩莊家在上方用 Sell Call 死命壓制。👉 盯盤：多空神仙打架，等待 Skew 壓力鍋炸開(翻負)再追多。" }; break;
+                result = { text: `⚔️ [A級] ${matrixCode} 莊家火鍋測試(單兵壓制)`, class: "rank-a-bull", advice: "市場瘋狗買盤硬闖且買牆推進(R7增)，只剩莊家在上方用 Sell Call 死命壓制。👉 盯盤：多空神仙打架，等待 Skew 壓力鍋炸開(翻負)再追多。" }; break;
 
             // ==========================================
             // ☠️ 第三戰區 (結算破壞區)
             // ==========================================
             case '[+ 正 - -]': 
-                result = { text: `☠️ [S級] ${matrixCode} 破底殺多(放棄防守)`, class: "rank-s", advice: "【極度危險】嚴重超跌但莊家卻跟著踩一腳(壓盤)，主力放棄防守。👉 動作：順勢放空，準備下調結算價，多單快逃！" }; break;
+                result = { text: `☠️ [S級] ${matrixCode} 破底殺多(放棄防守)`, class: "rank-s", advice: "【極度危險】嚴重超跌但莊家卻跟著踩一腳(壓盤)，且下方防線全撤(R7崩潰)。👉 動作：順勢放空，準備下調結算價，多單快逃！" }; break;
             case '[- 負 + +]': 
-                result = { text: `🌋 [S級] ${matrixCode} 噴出軋空(強制升空)`, class: "rank-s", advice: "【極度危險】嚴重超漲但莊家卻跟著買進(托底)，主力強行軋空。👉 動作：順勢追多，準備上調結算價，空單快逃！" }; break;
+                result = { text: `🌋 [S級] ${matrixCode} 噴出軋空(強制升空)`, class: "rank-s", advice: "【極度危險】嚴重超漲但莊家卻跟著買進(托底)，且買牆瘋狂墊高(R7暴增)。👉 動作：順勢追多，準備上調結算價，空單快逃！" }; break;
             case '[+ 正 + +]': 
-                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢軋莊(多方兵變)`, class: "rank-a-bull", advice: "【倒莊警戒】大戶用真金白銀把莊家的火鍋買爆，迫使莊家停損。👉 盯盤：準備迎接 Gamma Squeeze 暴力多頭海嘯。" }; break;
+                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢軋莊(多方兵變)`, class: "rank-a-bull", advice: "【倒莊警戒】大戶用真金白銀築起買牆(R7增)把莊家的火鍋買爆，迫使莊家停損。👉 盯盤：準備迎接 Gamma Squeeze 暴力多頭海嘯。" }; break;
             case '[- 負 - -]': 
-                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢殺莊(空方兵變)`, class: "rank-a-bear", advice: "【倒莊警戒】大戶用真金白銀把莊家的鐵板砸穿，迫使莊家停損。👉 盯盤：準備迎接 Gamma Crash 崩盤級股災。" }; break;
+                result = { text: `⚠️ [警戒] ${matrixCode} 逆勢殺莊(空方兵變)`, class: "rank-a-bear", advice: "【倒莊警戒】大戶用真金白銀砸穿防線(R7減)把莊家的鐵板貫穿，迫使莊家停損。👉 盯盤：準備迎接 Gamma Crash 崩盤級股災。" }; break;
 
             // ==========================================
             // 👻 第四戰區 (雜訊區)
             // ==========================================
             case '[+ 正 + -]': 
-                result = { text: `👻 [雜訊] ${matrixCode} 假撐誘空(虛假底)`, class: "rank-n", advice: "莊家壓盤且市價砸盤，下方卻出現異常買牆。此為高頻假掛單(Spoofing)。👉 警報：虛假支撐，隨時抽單破底，切勿做多！" }; break;
+                result = { text: `👻 [雜訊] ${matrixCode} 假撐誘空(虛假底)`, class: "rank-n", advice: "莊家壓盤且市價砸盤，下方卻出現異常買牆(R7增)。此為高頻假掛單(Spoofing)。👉 警報：虛假支撐，隨時抽單破底，切勿做多！" }; break;
             case '[+ 正 - +]': 
-                result = { text: `🐈 [雜訊] ${matrixCode} 死貓反彈(接刀陷阱)`, class: "rank-n", advice: "上方賣壓沉重且莊家蓋鍋，散戶卻盲目用市價單搶反彈。👉 警報：標準接刀陷阱，進場必定套牢，空手觀望！" }; break;
+                result = { text: `🐈 [雜訊] ${matrixCode} 死貓反彈(接刀陷阱)`, class: "rank-n", advice: "上方賣壓沉重且莊家蓋鍋，下方毫無防線(R7減)，散戶卻盲目用市價單搶反彈。👉 警報：標準接刀陷阱，進場必定套牢，空手觀望！" }; break;
             case '[- 負 - +]': 
-                result = { text: `🎆 [雜訊] ${matrixCode} 逃命煙火波(虛假頂)`, class: "rank-n", advice: "莊家雖撐盤，但上方已有沉重限價賣壓，散戶仍在市價追高。👉 警報：主力最後的煙火秀，動能隨時熄火，多單準備停利！" }; break;
+                result = { text: `🎆 [雜訊] ${matrixCode} 逃命煙火波(虛假頂)`, class: "rank-n", advice: "莊家雖撐盤，但買牆已撤(R7減)且上方已有沉重限價賣壓，散戶仍在市價追高。👉 警報：主力最後的煙火秀，動能隨時熄火，多單準備停利！" }; break;
             case '[- 負 + -]': 
-                result = { text: `🤡 [雜訊] ${matrixCode} 假摔誘多(虛假跌)`, class: "rank-n", advice: "莊家撐盤且下方有防護，市價卻異常砸盤。通常為洗出多頭浮額。👉 警報：製造假摔錯覺，切勿追空，容易被反軋！" }; break;
+                result = { text: `🤡 [雜訊] ${matrixCode} 假摔誘多(虛假跌)`, class: "rank-n", advice: "莊家撐盤且下方防護堅固(R7增)，市價卻異常砸盤。通常為洗出多頭浮額。👉 警報：製造假摔錯覺，切勿追空，容易被反軋！" }; break;
         }
 
         // T-0 結算日引力奇點覆寫 (Wednesday Override)
@@ -927,7 +941,22 @@
       let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = (display_th_at > 0 ? "+" : "") + display_th_at.toLocaleString('en-US');
       let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = (display_th_ex > 0 ? "+" : "") + display_th_ex.toLocaleString('en-US');
 
-      let valP7 = parseFloat(data.force || 0); let r7El = document.getElementById('r7-val'); if(r7El){ r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); }
+      // ★ [新增] 讀取 R7 與 Delta 並更新畫面
+      let valP7 = parseFloat(data.force || 0); 
+      let r7El = document.getElementById('r7-val'); 
+      if(r7El) { 
+          r7El.innerText = (valP7>0?"+":"") + valP7.toLocaleString('en-US'); 
+          r7El.className = "p9-val " + (valP7>0?"c-red":(valP7<0?"c-green":"")); 
+      }
+      
+      let r7Delta = data.r7_delta !== undefined ? parseFloat(data.r7_delta) : 0;
+      let r7DeltaEl = document.getElementById('r7-delta-display');
+      if (r7DeltaEl) {
+          let deltaStr = (r7Delta > 0 ? "+" : "") + Math.round(r7Delta);
+          let deltaColor = r7Delta > 300 ? "var(--red)" : (r7Delta < -300 ? "var(--green)" : "#888");
+          let deltaIcon = r7Delta > 300 ? "🔼" : (r7Delta < -300 ? "🔽" : "➖");
+          r7DeltaEl.innerHTML = `(乖離: <span style="color:${deltaColor}; font-weight:bold;">${deltaIcon} ${deltaStr}</span>)`;
+      }
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
       let ss = parseInt(data.now_s_s || 0); let old_ss = parseInt(data.old_s_s || 0); let sv = parseInt(data.now_s_v || 0);
