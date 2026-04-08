@@ -152,6 +152,10 @@
     .p9-attack-green { text-shadow: 0 0 8px var(--green); font-weight: 900; }
     .p9-exhaust-red { animation: p9-exhaust-red 1s infinite; font-weight: 900; color: #fff !important; }
     .p9-exhaust-green { animation: p9-exhaust-green 1s infinite; font-weight: 900; color: #fff !important; }
+
+    /* ★★★ 新增：Skew 訊號呼吸燈特效 ★★★ */
+    @keyframes skew-signal-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+    .skew-signal-active { display: inline-block; animation: skew-signal-pulse 1.5s infinite; }
   </style>
 </head>
 <body>
@@ -839,12 +843,12 @@
               
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;">${latestSkewSignalIcon}Skew ${skewStr}% (撐)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (撐)</div>`;
               } else if (skew > SKEW_THRESH) {
                   putColor = "var(--green)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;">${latestSkewSignalIcon}Skew ${skewStr}% (壓)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (壓)</div>`;
               } else {
-                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">${latestSkewSignalIcon}Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
+                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
               }
               
               ivEl.style.display = "flex";
@@ -1021,13 +1025,15 @@
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let dataSkew=[]; 
         
-        // ★ 新增：用來存放 Skew 圖表的動態點位樣式
         let skewRadii = [];
         let skewColors = [];
         let skewStyles = [];
 
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
+        let memoryIcon = ""; 
+        let highestPriorityFound = 0; 
+
         dataArray.forEach((d, i) => {
             if (!d) return;
             let timeStr = d.time || (d.t ? d.t.substring(0,5) : "");
@@ -1057,13 +1063,9 @@
             }
             dataSkew.push(currentSkew);
 
-            // ==========================================
-            // ★ Skew 訊號偵測與視覺標記邏輯
-            // ==========================================
             let ptRadius = 0;           
             let ptColor = '#bf5af2';    
             let ptStyle = 'circle';     
-            let tempIcon = "";          // ★ 暫存當下這筆的訊號圖示
 
             if (i >= 2 && currentSkew !== null) {
                 let prevD = dataArray[i-1];
@@ -1077,20 +1079,30 @@
                 let prevPrice = parseFloat(prevD.price||0);
 
                 if (prevSkew !== null && prevPrevSkew !== null) {
-                    // 🎯 訊號 1：正值轉負值 (神級黃金坑)
                     if (prevSkew > 0 && currentSkew < 0) {
                         ptRadius = 8;
-                        ptColor = '#30d158'; // 綠色
-                        ptStyle = 'triangle'; // 向上三角形
-                        tempIcon = '<span style="color:#30d158; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">▲</span>';
+                        ptColor = '#ff453a'; 
+                        ptStyle = 'triangle'; 
+                        
+                        if (i >= dataArray.length - 5) {
+                            if (highestPriorityFound < 2) {
+                                highestPriorityFound = 2;
+                                memoryIcon = '<span style="color:#ff453a; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">▲</span>';
+                            }
+                        }
                     }
-                    // 🎯 訊號 2：正值打V (價格下跌，Skew 在正值區見頂回落)
                     else if (prevSkew > 0 && currentSkew > 0) {
                         if (prevSkew > prevPrevSkew && currentSkew < prevSkew && currentPrice < prevPrice) {
                             ptRadius = 6;
-                            ptColor = '#ffd60a'; // 黃色
-                            ptStyle = 'rectRot'; // 菱形
-                            tempIcon = '<span style="color:#ffd60a; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">◆</span>';
+                            ptColor = '#ff6b22'; 
+                            ptStyle = 'rectRot'; 
+                            
+                            if (i >= dataArray.length - 5) {
+                                if (highestPriorityFound < 1) {
+                                    highestPriorityFound = 1;
+                                    memoryIcon = '<span style="color:#ff6b22; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">◆</span>';
+                                }
+                            }
                         }
                     }
                 }
@@ -1100,11 +1112,9 @@
             skewColors.push(ptColor);
             skewStyles.push(ptStyle);
             
-            // ★ 將最後一筆的訊號存入全域變數，供上方 UI 顯示
             if (i === dataArray.length - 1) {
-                latestSkewSignalIcon = tempIcon;
+                latestSkewSignalIcon = memoryIcon; 
             }
-            // ==========================================
         });
         
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
