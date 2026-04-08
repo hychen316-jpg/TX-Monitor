@@ -438,7 +438,9 @@
     let frontEndFinHeatData = [];
     // ============================================
 
-    // ★ 增加一個全域變數來儲存 R7 的上一個狀態
+    // ★ 新增全域變數，用來攔截即時數據中的 Offset，並同步給歷史圖表使用
+    let currentSkewOffset = 0; 
+    let lastHistoryData = null; 
     let lastForceSign = '+';
 
     let wakeLock = null;
@@ -570,6 +572,7 @@
           if(s.val()) {
               let dataArray = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
               dataArray = dataArray.filter(d => d !== null && d !== undefined);
+              lastHistoryData = dataArray; // ★ 存下最新歷史資料供重繪使用
               loadChartHistory(dataArray); 
           }
       });
@@ -691,7 +694,7 @@
     function analyzeStrategy(data) {
         let price = parseFloat(data.p || 0);
         let oi_dn = parseFloat(data.oi_dn || price);
-        let diffSign = (oi_dn > price) ? '+' : '-'; // + 超跌 (Price < oi_dn), - 超漲 (Price > oi_dn)
+        let diffSign = (oi_dn > price) ? '+' : '-'; 
 
         let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
         let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
@@ -699,18 +702,15 @@
         let skewVal = (putIV - callIV) - skewOffset;
         let skewSign = (skewVal > 0) ? '正' : '負';
 
-        // ★ [核心回歸] 判定改回使用 R7 絕對值 (force)
         let valForce = parseFloat(data.force || 0);
         let forceSign = (valForce >= 0) ? '+' : '-'; 
 
         let p9Val = parseFloat(data.p9 || 0);
         let p9Sign = (p9Val > 0) ? '+' : '-';
 
-        // 建立 16 種陣型密碼 [Diff Skew Force(絕對) P9]
         let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
-        // ★ 完全依照 OmniWhale 戰術中心 CSV 檔案定義更新 (v2.8) - 邏輯漏洞修正版
         switch(matrixCode) {
             case '[+ 負 + +]': result = { text: `🚀 S級必殺做多(絕對軋空) ${matrixCode}`, class: "rank-s", advice: "主力用無限資金在下方鋪好鐵板與買單，市價單發動總攻。引力將帶動報復性 V 轉。👉 動作：重倉做多" }; break;
             case '[- 正 - -]': result = { text: `📉 S級必殺做空(絕對殺多) ${matrixCode}`, class: "rank-s", advice: "莊家在天花板佈下重兵，大戶市價狂倒貨。引力將引發多殺多斷頭墜落。👉 動作：重倉做空" }; break;
@@ -730,7 +730,6 @@
             case '[- 負 + -]': result = { text: `🤡 假摔誘空(洗盤錯覺) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出多單浮額，製造假摔崩盤的錯覺，誘使散戶追空。" }; break;
         }
 
-        // T-0 結算日引力奇點覆寫 (Wednesday Override)
         let timeHour = parseInt((data.t || "00:00").split(':')[0]);
         let timeMin = parseInt((data.t || "00:00").split(':')[1]);
         let isWednesday = new Date().getDay() === 3;
@@ -757,7 +756,6 @@
         let dayDNA = data.day_advice || "等待結算中...";
         finalAdvice += `<div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;"><span style="color:#ffd60a; font-weight:700; font-size:11px;">🌞 日盤結算 DNA (13:45)：</span><br><span style="color:#ccc; font-size:12px; font-weight:bold;">${dayDNA}</span></div>`;
 
-        // ★ 核心升級：Alpha-TX V2.4 矩陣解析 UI 輸出 (CSV原汁原味)
         finalAdvice += `<div style="margin-bottom:8px; background:rgba(255,255,255,0.05); padding:8px; border-radius:6px; border:1px solid #444;">
             <div style="color:#64d2ff; font-weight:800; font-size:13px; margin-bottom:4px;">${strategyResult.text}</div>
             <div style="color:#fff; font-size:12px; line-height:1.4;">👉 戰術解析：<br><span style="color:#ffd60a; font-weight:700;">${strategyResult.advice}</span></div>
@@ -821,12 +819,19 @@
           let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
           
           if (callIV > 0 || putIV > 0) {
-              let callColor = "#e5c05c"; // 預設黃色
-              let putColor = "#e5c05c";  // 預設黃色
+              let callColor = "#e5c05c"; 
+              let putColor = "#e5c05c";  
               let skewTag = "";
               
               // ★ 讀取 VBA 傳來的靜態偏移量 (預設為 0 防呆)
               let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0; 
+              
+              // ★ 更新全域 Offset，並同步給歷史圖表使用
+              if (currentSkewOffset !== skewOffset) {
+                  currentSkewOffset = skewOffset;
+                  if (lastHistoryData) loadChartHistory(lastHistoryData); // 偏移量改變時自動重繪圖表
+              }
+
               // ★ 扣除偏移量，計算真實主力意圖 Skew
               let skew = (putIV - callIV) - skewOffset; 
               
@@ -834,10 +839,10 @@
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               
               if (skew < -SKEW_THRESH) {
-                  callColor = "var(--red)"; // Call 比較貴，紅色警示 (莊賣P護盤)
+                  callColor = "var(--red)"; 
                   skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;">Skew ${skewStr}% (撐)</div>`;
               } else if (skew > SKEW_THRESH) {
-                  putColor = "var(--green)"; // Put 比較貴，綠色警示 (莊賣C壓盤)
+                  putColor = "var(--green)"; 
                   skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;">Skew ${skewStr}% (壓)</div>`;
               } else {
                   skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
@@ -910,7 +915,7 @@
       let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = (display_th_at > 0 ? "+" : "") + display_th_at.toLocaleString('en-US');
       let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = (display_th_ex > 0 ? "+" : "") + display_th_ex.toLocaleString('en-US');
 
-      // ★ [新增] 讀取 R7 與 Delta 並更新畫面
+      // ★ 讀取 R7 與 Delta 並更新畫面
       let valP7 = parseFloat(data.force || 0); 
       let r7El = document.getElementById('r7-val'); 
       if(r7El) { 
@@ -1039,12 +1044,12 @@
             let sv = d.wall_s !== undefined ? parseInt(d.wall_s) : parseInt(d.now_s_v || 0);
             dataWallPV.push(pv); dataWallSV.push(sv);
             
-            // ★ 修正：從歷史資料抓取 skew 時扣除 offset
+            // ★ 修正：從歷史資料抓取 skew 時統一扣除全域的 currentSkewOffset
             let skewValRaw = d.skew !== undefined ? parseFloat(d.skew) : null;
-            if (skewValRaw !== null && d.skew_offset !== undefined) {
-                dataSkew.push(skewValRaw - parseFloat(d.skew_offset));
+            if (skewValRaw !== null) {
+                dataSkew.push(skewValRaw - currentSkewOffset);
             } else {
-                dataSkew.push(skewValRaw);
+                dataSkew.push(null);
             }
         });
         
