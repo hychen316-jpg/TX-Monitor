@@ -1039,8 +1039,13 @@
             let sv = d.wall_s !== undefined ? parseInt(d.wall_s) : parseInt(d.now_s_v || 0);
             dataWallPV.push(pv); dataWallSV.push(sv);
             
-            let skewVal = d.skew !== undefined ? parseFloat(d.skew) : null; // ★ 新增
-            dataSkew.push(skewVal); // ★ 新增
+            // ★ 修正：從歷史資料抓取 skew 時扣除 offset
+            let skewValRaw = d.skew !== undefined ? parseFloat(d.skew) : null;
+            if (skewValRaw !== null && d.skew_offset !== undefined) {
+                dataSkew.push(skewValRaw - parseFloat(d.skew_offset));
+            } else {
+                dataSkew.push(skewValRaw);
+            }
         });
         
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
@@ -1103,7 +1108,7 @@
             } 
         });
 
-        // ★ 新增 chartSkew 初始化
+        // ★ 新增 chartSkew 初始化 (強化 0 軸置中與基準線)
         chartSkew = new Chart(document.getElementById('chartSkew').getContext('2d'), { 
             type: 'line', 
             data: { 
@@ -1117,8 +1122,21 @@
                     y: { 
                         display: true, 
                         position: 'left', 
-                        grid: { color: '#333' }, 
-                        ticks: { color: '#bf5af2' } 
+                        grid: { 
+                            // ★ 特別加粗/打亮 0 軸的格線
+                            color: (ctx) => ctx.tick.value === 0 ? 'rgba(255, 255, 255, 0.4)' : '#333',
+                            lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1
+                        }, 
+                        ticks: { 
+                            // ★ 讓 0 軸的數字顯示為白色，其餘為紫色
+                            color: (ctx) => ctx.tick.value === 0 ? '#fff' : '#bf5af2' 
+                        },
+                        // ★ 強制 Y 軸上下對稱 (Symmetrical)
+                        afterDataLimits: (scale) => {
+                            const maxAbs = Math.max(Math.abs(scale.min), Math.abs(scale.max));
+                            scale.min = -maxAbs;
+                            scale.max = maxAbs;
+                        }
                     } 
                 } 
             } 
