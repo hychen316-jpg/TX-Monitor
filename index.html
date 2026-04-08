@@ -730,10 +730,15 @@
             case '[- 負 + -]': result = { text: `🤡 假摔誘空(洗盤錯覺) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出多單浮額，製造假摔崩盤的錯覺，誘使散戶追空。" }; break;
         }
 
+        // T-0 結算日引力奇點覆寫 (Wednesday Override)
         let timeHour = parseInt((data.t || "00:00").split(':')[0]);
         let timeMin = parseInt((data.t || "00:00").split(':')[1]);
         let isWednesday = new Date().getDay() === 3;
-        if (isWednesday && ((timeHour === 12 && timeMin >= 30) || timeHour === 13) && Math.abs(price - oi_dn) > 150) {
+        
+        // ★ 修正：指揮官 13:00 換倉，結算保護僅限 12:30 ~ 12:59
+        let isSettlementDangerZone = (timeHour === 12 && timeMin >= 30);
+        
+        if (isWednesday && isSettlementDangerZone && Math.abs(price - oi_dn) > 150) {
              result.text = `🛑 [結算保護] ${matrixCode} 引力奇點覆寫`;
              result.class = "rank-n";
              result.advice = "Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！";
