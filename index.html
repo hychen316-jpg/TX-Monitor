@@ -426,7 +426,6 @@
     const NODE_HISTORY  = 'monitor_history';
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
 
-    // ★ 新增 chartSkew 變數
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null; let chartSkew = null;
     let p9SlopeHistory = [];
     let lastCrossVwap = "--";
@@ -438,10 +437,10 @@
     let frontEndFinHeatData = [];
     // ============================================
 
-    // ★ 新增全域變數，用來攔截即時數據中的 Offset，並同步給歷史圖表使用
     let currentSkewOffset = 0; 
     let lastHistoryData = null; 
     let lastForceSign = '+';
+    let latestSkewSignalIcon = ""; // ★ 新增：全域變數存儲最新 Skew 訊號
 
     let wakeLock = null;
     let isNoSleepEnabled = false;
@@ -572,7 +571,7 @@
           if(s.val()) {
               let dataArray = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
               dataArray = dataArray.filter(d => d !== null && d !== undefined);
-              lastHistoryData = dataArray; // ★ 存下最新歷史資料供重繪使用
+              lastHistoryData = dataArray; 
               loadChartHistory(dataArray); 
           }
       });
@@ -840,12 +839,12 @@
               
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;">Skew ${skewStr}% (撐)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;">${latestSkewSignalIcon}Skew ${skewStr}% (撐)</div>`;
               } else if (skew > SKEW_THRESH) {
                   putColor = "var(--green)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;">Skew ${skewStr}% (壓)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;">${latestSkewSignalIcon}Skew ${skewStr}% (壓)</div>`;
               } else {
-                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
+                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;">${latestSkewSignalIcon}Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
               }
               
               ivEl.style.display = "flex";
@@ -1051,7 +1050,6 @@
             let sv = d.wall_s !== undefined ? parseInt(d.wall_s) : parseInt(d.now_s_v || 0);
             dataWallPV.push(pv); dataWallSV.push(sv);
             
-            // ★ 修正：從歷史資料抓取 skew 時統一扣除全域的 currentSkewOffset
             let skewValRaw = d.skew !== undefined ? parseFloat(d.skew) : null;
             let currentSkew = null;
             if (skewValRaw !== null) {
@@ -1062,9 +1060,10 @@
             // ==========================================
             // ★ Skew 訊號偵測與視覺標記邏輯
             // ==========================================
-            let ptRadius = 0;           // 預設隱藏點
-            let ptColor = '#bf5af2';    // 預設紫色
-            let ptStyle = 'circle';     // 預設圓形
+            let ptRadius = 0;           
+            let ptColor = '#bf5af2';    
+            let ptStyle = 'circle';     
+            let tempIcon = "";          // ★ 暫存當下這筆的訊號圖示
 
             if (i >= 2 && currentSkew !== null) {
                 let prevD = dataArray[i-1];
@@ -1083,6 +1082,7 @@
                         ptRadius = 8;
                         ptColor = '#30d158'; // 綠色
                         ptStyle = 'triangle'; // 向上三角形
+                        tempIcon = '<span style="color:#30d158; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">▲</span>';
                     }
                     // 🎯 訊號 2：正值打V (價格下跌，Skew 在正值區見頂回落)
                     else if (prevSkew > 0 && currentSkew > 0) {
@@ -1090,6 +1090,7 @@
                             ptRadius = 6;
                             ptColor = '#ffd60a'; // 黃色
                             ptStyle = 'rectRot'; // 菱形
+                            tempIcon = '<span style="color:#ffd60a; font-size:12px; margin-right:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">◆</span>';
                         }
                     }
                 }
@@ -1098,6 +1099,11 @@
             skewRadii.push(ptRadius);
             skewColors.push(ptColor);
             skewStyles.push(ptStyle);
+            
+            // ★ 將最後一筆的訊號存入全域變數，供上方 UI 顯示
+            if (i === dataArray.length - 1) {
+                latestSkewSignalIcon = tempIcon;
+            }
             // ==========================================
         });
         
@@ -1108,7 +1114,6 @@
         
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
         
-        // ★ 新增 Skew 更新
         if(chartSkew) {
             chartSkew.data.labels=labels;
             chartSkew.data.datasets[0].data=dataSkew;
@@ -1166,7 +1171,6 @@
             } 
         });
 
-        // ★ 新增 chartSkew 初始化 (強化 0 軸置中與基準線)
         chartSkew = new Chart(document.getElementById('chartSkew').getContext('2d'), { 
             type: 'line', 
             data: { 
@@ -1177,7 +1181,6 @@
                     borderColor: '#bf5af2', 
                     borderWidth: 2, 
                     tension: 0.4 
-                    // ★ 取消 pointRadius: 0，改由動態陣列控制
                 }] 
             }, 
             options: { 
@@ -1188,15 +1191,12 @@
                         display: true, 
                         position: 'left', 
                         grid: { 
-                            // ★ 特別加粗/打亮 0 軸的格線
                             color: (ctx) => ctx.tick.value === 0 ? 'rgba(255, 255, 255, 0.4)' : '#333',
                             lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1
                         }, 
                         ticks: { 
-                            // ★ 讓 0 軸的數字顯示為白色，其餘為紫色
                             color: (ctx) => ctx.tick.value === 0 ? '#fff' : '#bf5af2' 
                         },
-                        // ★ 強制 Y 軸上下對稱 (Symmetrical)
                         afterDataLimits: (scale) => {
                             const maxAbs = Math.max(Math.abs(scale.min), Math.abs(scale.max));
                             if (maxAbs === 0) { scale.min = -5; scale.max = 5; return; }
