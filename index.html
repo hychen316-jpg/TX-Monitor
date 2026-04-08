@@ -729,13 +729,13 @@
             case '[- 負 - -]':
                 result = { text: `⚠️ 逆勢殺莊(空方兵變) ${matrixCode}`, class: "rank-a-bear", advice: "超漲且莊家撐盤，但大戶與散戶用真金白銀把莊家的鐵板砸穿。若莊家被迫停損 (Buy Put)，將引發崩盤級的股災。" }; break;
             case '[+ 正 + -]':
-                result = { text: `👻 假撐誘多(虛假底) ${matrixCode}`, class: "rank-n", advice: "莊家壓盤，市價狂砸，但下方卻出現異常買單裝甲。通常是主力掛假單(Spoofing)吸引散戶做多，隨時會抽單。" }; break;
+                result = { text: `👻 假撐誘多(虛假底) ${matrixCode}`, class: "rank-n", advice: "莊家壓盤，市價狂砸，但下方卻出現異常買單裝甲。通常是主力掛假單(Spoofing)吸引散戶以為跌不下去而做多，隨時會抽單貫穿。" }; break;
             case '[+ 正 - +]':
                 result = { text: `🐈 死貓反彈(接刀陷阱) ${matrixCode}`, class: "rank-n", advice: "超跌且上方賣壓沉重，散戶卻用市價單進場搶反彈。這是標準的死貓反彈，進場必定套牢。" }; break;
             case '[- 負 - +]':
-                result = { text: `🎆 逃命煙火波(虛假頂) ${matrixCode}`, class: "rank-n", advice: "超漲且莊家依然撐盤，但上方已有沉重賣壓，散戶仍在市價追高。屬於主力最後的煙火秀，隨時熄火。" }; break;
+                result = { text: `🎆 逃命煙火波(極限真頂) ${matrixCode}`, class: "rank-n", advice: "超漲且莊家依然撐盤，但上方已有沉重賣壓，散戶仍在市價追高。屬於主力最後的煙火秀，隨時熄火反轉。" }; break;
             case '[- 負 + -]':
-                result = { text: `🤡 假摔誘多(虛假跌) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出浮額，製造假摔的錯覺。" }; break;
+                result = { text: `🤡 假摔誘空(洗盤錯覺) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出多單浮額，製造假摔崩盤的錯覺，誘使散戶追空。" }; break;
         }
 
         // T-0 結算日引力奇點覆寫 (Wednesday Override)
