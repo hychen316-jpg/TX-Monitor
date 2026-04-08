@@ -730,12 +730,10 @@
             case '[- 負 + -]': result = { text: `🤡 假摔誘空(洗盤錯覺) ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出多單浮額，製造假摔崩盤的錯覺，誘使散戶追空。" }; break;
         }
 
-        // T-0 結算日引力奇點覆寫 (Wednesday Override)
         let timeHour = parseInt((data.t || "00:00").split(':')[0]);
         let timeMin = parseInt((data.t || "00:00").split(':')[1]);
         let isWednesday = new Date().getDay() === 3;
         
-        // ★ 修正：指揮官 13:00 換倉，結算保護僅限 12:30 ~ 12:59
         let isSettlementDangerZone = (timeHour === 12 && timeMin >= 30);
         
         if (isWednesday && isSettlementDangerZone && Math.abs(price - oi_dn) > 150) {
@@ -828,16 +826,13 @@
               let putColor = "#e5c05c";  
               let skewTag = "";
               
-              // ★ 讀取 VBA 傳來的靜態偏移量 (預設為 0 防呆)
               let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0; 
               
-              // ★ 更新全域 Offset，並同步給歷史圖表使用
               if (currentSkewOffset !== skewOffset) {
                   currentSkewOffset = skewOffset;
-                  if (lastHistoryData) loadChartHistory(lastHistoryData); // 偏移量改變時自動重繪圖表
+                  if (lastHistoryData) loadChartHistory(lastHistoryData); 
               }
 
-              // ★ 扣除偏移量，計算真實主力意圖 Skew
               let skew = (putIV - callIV) - skewOffset; 
               
               let SKEW_THRESH = data.skew_thresh !== undefined ? parseFloat(data.skew_thresh) : 0.2;
@@ -920,7 +915,6 @@
       let thAtEl = document.getElementById('p9-th-at'); if(thAtEl) thAtEl.innerText = (display_th_at > 0 ? "+" : "") + display_th_at.toLocaleString('en-US');
       let thExEl = document.getElementById('p9-th-ex'); if(thExEl) thExEl.innerText = (display_th_ex > 0 ? "+" : "") + display_th_ex.toLocaleString('en-US');
 
-      // ★ 讀取 R7 與 Delta 並更新畫面
       let valP7 = parseFloat(data.force || 0); 
       let r7El = document.getElementById('r7-val'); 
       if(r7El) { 
@@ -991,7 +985,6 @@
           p9SlopeEl.style.backgroundColor = bgColor; p9SlopeEl.style.color = textColor;
       }
 
-      // ★ 在這裡整合了策略說明與動作指示至 logicEl 中
       let strategy = analyzeStrategy(data); 
       let logicEl = document.getElementById('logic-text'); 
       let battleCard = document.getElementById('battle-card');
@@ -1027,14 +1020,23 @@
         if (!chartPrice) return;
         let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
-        let dataSkew=[]; // ★ 新增
+        let dataSkew=[]; 
+        
+        // ★ 新增：用來存放 Skew 圖表的動態點位樣式
+        let skewRadii = [];
+        let skewColors = [];
+        let skewStyles = [];
+
         let lastChipInfo={label:"籌碼",color:'#30d158'};
         
-        dataArray.forEach(d => {
+        dataArray.forEach((d, i) => {
             if (!d) return;
             let timeStr = d.time || (d.t ? d.t.substring(0,5) : "");
             labels.push(timeStr); 
-            dataP.push(parseFloat(d.price||0));
+            
+            let currentPrice = parseFloat(d.price||0);
+            dataP.push(currentPrice);
+            
             let info = getChipValueForArray(d); dataC.push(info.val);
             
             let p6ValRaw = d.p6 !== undefined ? parseFloat(d.p6) : parseFloat((d.pwr_t||"0").replace("%","").replace("+",""));
@@ -1051,11 +1053,52 @@
             
             // ★ 修正：從歷史資料抓取 skew 時統一扣除全域的 currentSkewOffset
             let skewValRaw = d.skew !== undefined ? parseFloat(d.skew) : null;
+            let currentSkew = null;
             if (skewValRaw !== null) {
-                dataSkew.push(skewValRaw - currentSkewOffset);
-            } else {
-                dataSkew.push(null);
+                currentSkew = skewValRaw - currentSkewOffset;
             }
+            dataSkew.push(currentSkew);
+
+            // ==========================================
+            // ★ Skew 訊號偵測與視覺標記邏輯
+            // ==========================================
+            let ptRadius = 0;           // 預設隱藏點
+            let ptColor = '#bf5af2';    // 預設紫色
+            let ptStyle = 'circle';     // 預設圓形
+
+            if (i >= 2 && currentSkew !== null) {
+                let prevD = dataArray[i-1];
+                let prevPrevD = dataArray[i-2];
+                
+                let prevSkewRaw = prevD.skew !== undefined ? parseFloat(prevD.skew) : null;
+                let prevPrevSkewRaw = prevPrevD.skew !== undefined ? parseFloat(prevPrevD.skew) : null;
+                
+                let prevSkew = prevSkewRaw !== null ? (prevSkewRaw - currentSkewOffset) : null;
+                let prevPrevSkew = prevPrevSkewRaw !== null ? (prevPrevSkewRaw - currentSkewOffset) : null;
+                let prevPrice = parseFloat(prevD.price||0);
+
+                if (prevSkew !== null && prevPrevSkew !== null) {
+                    // 🎯 訊號 1：正值轉負值 (神級黃金坑)
+                    if (prevSkew > 0 && currentSkew < 0) {
+                        ptRadius = 8;
+                        ptColor = '#30d158'; // 綠色
+                        ptStyle = 'triangle'; // 向上三角形
+                    }
+                    // 🎯 訊號 2：正值打V (價格下跌，Skew 在正值區見頂回落)
+                    else if (prevSkew > 0 && currentSkew > 0) {
+                        if (prevSkew > prevPrevSkew && currentSkew < prevSkew && currentPrice < prevPrice) {
+                            ptRadius = 6;
+                            ptColor = '#ffd60a'; // 黃色
+                            ptStyle = 'rectRot'; // 菱形
+                        }
+                    }
+                }
+            }
+
+            skewRadii.push(ptRadius);
+            skewColors.push(ptColor);
+            skewStyles.push(ptStyle);
+            // ==========================================
         });
         
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
@@ -1069,6 +1112,11 @@
         if(chartSkew) {
             chartSkew.data.labels=labels;
             chartSkew.data.datasets[0].data=dataSkew;
+            chartSkew.data.datasets[0].pointRadius = skewRadii;
+            chartSkew.data.datasets[0].pointBackgroundColor = skewColors;
+            chartSkew.data.datasets[0].pointBorderColor = '#fff';
+            chartSkew.data.datasets[0].pointBorderWidth = 1;
+            chartSkew.data.datasets[0].pointStyle = skewStyles;
             chartSkew.update();
         }
     }
@@ -1123,7 +1171,14 @@
             type: 'line', 
             data: { 
                 labels: [], 
-                datasets: [{ label: '莊家選擇權偏態 (Skew)', data: [], borderColor: '#bf5af2', borderWidth: 2, pointRadius: 0, tension: 0.4 }] 
+                datasets: [{ 
+                    label: '莊家選擇權偏態 (Skew)', 
+                    data: [], 
+                    borderColor: '#bf5af2', 
+                    borderWidth: 2, 
+                    tension: 0.4 
+                    // ★ 取消 pointRadius: 0，改由動態陣列控制
+                }] 
             }, 
             options: { 
                 ...commonOptions, 
@@ -1144,6 +1199,7 @@
                         // ★ 強制 Y 軸上下對稱 (Symmetrical)
                         afterDataLimits: (scale) => {
                             const maxAbs = Math.max(Math.abs(scale.min), Math.abs(scale.max));
+                            if (maxAbs === 0) { scale.min = -5; scale.max = 5; return; }
                             scale.min = -maxAbs;
                             scale.max = maxAbs;
                         }
