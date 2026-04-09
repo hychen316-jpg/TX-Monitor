@@ -388,10 +388,10 @@
     <div class="section-title">📊 大戶籌碼追蹤 (E6)</div>
     <div class="split-chart-box"><canvas id="chartChip"></canvas></div>
 
-    <div class="section-title req-level-2-flex">🚀 P6動能(左) vs P9實單(右)</div>
+    <div class="section-title req-level-2-flex">🚀 R7累積買賣差(左) vs P9實單(右)</div>
     <div class="split-chart-box req-level-2-block"><canvas id="chartP6"></canvas></div>
     <div class="split-chart-box upgrade-prompt lock-lvl-2" id="p6-chart-locked" style="margin-top:2px; height:80px;">
-        <div>🔒 P6 / P9 能量交叉圖表</div>
+        <div>🔒 R7 / P9 能量交叉圖表</div>
         <div class="upgrade-btn">需要 Level 2</div>
     </div>
 
@@ -931,7 +931,7 @@
           let deltaStr = (r7Delta > 0 ? "+" : "") + Math.round(r7Delta);
           let deltaColor = r7Delta > 300 ? "var(--red)" : (r7Delta < -300 ? "var(--green)" : "#888");
           let deltaIcon = r7Delta > 300 ? "🔼" : (r7Delta < -300 ? "🔽" : "➖");
-          r7DeltaEl.innerHTML = `(乖離: <span style="color:${deltaColor}; font-weight:bold;">${deltaIcon} ${deltaStr}</span>)`;
+          r7DeltaEl.innerHTML = `(乖離: <span style="${deltaColor}; font-weight:bold;">${deltaIcon} ${deltaStr}</span>)`;
       }
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
@@ -1021,7 +1021,7 @@
 
     function loadChartHistory(dataArray) {
         if (!chartPrice) return;
-        let labels=[], dataP=[], dataC=[], dataP6=[], dataP9=[];
+        let labels=[], dataP=[], dataC=[], dataR7=[], dataP9=[];
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let dataSkew=[]; 
         
@@ -1044,8 +1044,8 @@
             
             let info = getChipValueForArray(d); dataC.push(info.val);
             
-            let p6ValRaw = d.p6 !== undefined ? parseFloat(d.p6) : parseFloat((d.pwr_t||"0").replace("%","").replace("+",""));
-            dataP6.push(p6ValRaw * 100); 
+            let r7ValRaw = d.r7 !== undefined ? parseFloat(d.r7) : (d.force !== undefined ? parseFloat(d.force) : (d['R7_累積買賣差'] !== undefined ? parseFloat(d['R7_累積買賣差']) : (d['r7_累積買賣差'] !== undefined ? parseFloat(d['r7_累積買賣差']) : 0)));
+            dataR7.push(r7ValRaw); 
             
             dataP9.push(parseFloat(d.p9||0)); 
 
@@ -1119,7 +1119,7 @@
         
         chartPrice.data.labels=labels; chartPrice.data.datasets[0].data=dataP;
         chartChip.data.labels=labels; chartChip.data.datasets[0].data=dataC; chartChip.data.datasets[0].label=lastChipInfo.label; chartChip.data.datasets[0].borderColor=lastChipInfo.color;
-        chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataP6; chartP6.data.datasets[1].data=dataP9;
+        chartP6.data.labels=labels; chartP6.data.datasets[0].data=dataR7; chartP6.data.datasets[1].data=dataP9;
         chartWall.data.labels=labels; chartWall.data.datasets[0].data=dataWallPS; chartWall.data.datasets[1].data=dataWallSS; chartWall.data.datasets[2].data=dataWallPV; chartWall.data.datasets[3].data=dataWallSV;
         
         chartPrice.update(); chartChip.update(); chartP6.update(); chartWall.update();
@@ -1142,7 +1142,7 @@
         const commonOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: '#aaa', font: {size: 11} } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } } } };
         chartPrice = new Chart(document.getElementById('chartPrice').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '期貨現價', data: [], borderColor: '#ffd700', borderWidth: 2, pointRadius: 0, tension: 0.2 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'right', grid: { color: '#333' }, ticks: { color: '#ffd700' } } } } });
         chartChip = new Chart(document.getElementById('chartChip').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ label: '籌碼', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 0, tension: 0.4 }] }, options: { ...commonOptions, scales: { ...commonOptions.scales, y: { display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#aaa' } } } } });
-        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'P6動能(%)', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + (context.datasetIndex === 0 ? '%' : ''); } } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a', callback: function(val){ return val + '%' } }, suggestedMin: -20, suggestedMax: 20 }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
+        chartP6 = new Chart(document.getElementById('chartP6').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: 'R7累積買賣差', data: [], borderColor: '#ff453a', backgroundColor: 'rgba(255, 69, 58, 0.1)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' }, { label: 'P9實單(能量)', data: [], borderColor: '#0a84ff', borderWidth: 2, tension: 0.4, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'y1' } ] }, options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y; } } } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#222' }, ticks: { color: '#ff453a' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0a84ff' } } } } });
         chartWall = new Chart(document.getElementById('chartWall').getContext('2d'), { type: 'line', data: { labels: [], datasets: [ { label: '壓力線(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '支撐線(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, stepped: true, pointRadius: 0, fill: false, yAxisID: 'y' }, { label: '壓力厚度(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.15)', borderColor: 'rgba(48, 209, 88, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }, { label: '支撐厚度(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.15)', borderColor: 'rgba(255, 69, 58, 0.5)', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' } ] }, options: { ...commonOptions, scales: { x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' }, min: 0 } } } });
         
         chartHeat = new Chart(document.getElementById('chartHeat').getContext('2d'), { 
