@@ -208,12 +208,15 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:13px;">--</span></div>
         </div>
         
-        <div class="req-level-4-flex" style="flex-direction:column; gap:4px; margin-top:5px; background:linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(212,175,55,0.03) 100%); padding:6px; border-radius:8px; border: 1px solid rgba(212,175,55,0.3); box-shadow: inset 0 0 8px rgba(212,175,55,0.05);">
-            <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed rgba(212,175,55,0.2); padding-bottom:4px;">
-                <span style="font-size:10px; color:#d4af37; font-weight:800; letter-spacing:0.5px;">⚖️ Delta中性值</span>
-                <span id="oi-dn-price" style="font-size:20px; font-weight:900; color:#ffd700; letter-spacing:0.5px; text-shadow: 0 0 6px rgba(212,175,55,0.4); line-height:1;">--</span>
+        <div class="req-level-4-flex" style="flex-direction:column; gap:6px; margin-top:6px; background:linear-gradient(180deg, rgba(212,175,55,0.15) 0%, rgba(0,0,0,0.5) 100%); padding:8px; border-radius:10px; border: 1px solid rgba(212,175,55,0.4); box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);">
+            <div style="text-align:center; margin-bottom:2px;">
+                <div style="font-size:10px; color:#d4af37; font-weight:800; letter-spacing:1px; margin-bottom:2px; text-transform:uppercase;">⚖️ Delta 中性結算點</div>
+                <div id="oi-dn-price" style="font-size:32px; font-weight:900; color:#ffd700; letter-spacing:-0.5px; text-shadow: 0 0 15px rgba(212,175,55,0.6), 0 2px 4px rgba(0,0,0,0.8); line-height:1;">--</div>
             </div>
-            <div id="oi-iv-val" style="font-size:9px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.2); padding:3px 5px; border-radius:4px; width:100%; box-sizing:border-box; line-height:1.2;">IV: --%</div>
+            
+            <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent); margin: 2px 0;"></div>
+            
+            <div id="oi-iv-val" style="width:100%; box-sizing:border-box;"></div>
         </div>
 
         <div id="update-time" style="margin-top:2px; color:#666; font-size:8px; text-align:right; line-height:1;">--:--:--</div>
@@ -452,9 +455,13 @@
     let lastForceSign = '+';
     let latestSkewSignalIcon = ""; // ★ 新增：全域變數存儲最新 Skew 訊號
 
+    // ==========================================
+    // 🛡️ 終極螢幕不滅機制 (Dual Engine: WakeLock + Video Hack)
+    // ==========================================
     let wakeLock = null;
     let isNoSleepEnabled = false;
 
+    // 引擎 1: 隱藏無聲影片 (欺騙 iOS 系統)
     const noSleepVideo = document.createElement('video');
     noSleepVideo.setAttribute('playsinline', '');
     noSleepVideo.setAttribute('muted', '');
@@ -466,20 +473,43 @@
     async function enableNoSleep() {
         if (isNoSleepEnabled) return;
         try {
+            // 啟動影片引擎
             await noSleepVideo.play();
-            if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); }
+            
+            // 引擎 2: 現代瀏覽器原生的 Screen Wake Lock API
+            if ('wakeLock' in navigator) { 
+                wakeLock = await navigator.wakeLock.request('screen'); 
+                
+                // ⚠️ 關鍵防護：當系統強制釋放 WakeLock (如電量過低) 時，自動嘗試重連
+                wakeLock.addEventListener('release', () => {
+                    if (document.visibilityState === 'visible') {
+                        navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(console.error);
+                    }
+                });
+            }
+            
             isNoSleepEnabled = true;
             document.removeEventListener('touchstart', enableNoSleep);
             document.removeEventListener('click', enableNoSleep);
-        } catch (err) {}
+            console.log("🛡️ NoSleep 機制已全面啟動");
+        } catch (err) {
+            console.error("NoSleep 啟動失敗:", err);
+            isNoSleepEnabled = false; // 允許下次點擊重試
+        }
     }
 
+    // 任何觸控或點擊都會觸發不滅機制
     document.addEventListener('touchstart', enableNoSleep, { once: true });
     document.addEventListener('click', enableNoSleep, { once: true });
 
+    // 當使用者切換 APP 後再回來，必須重新喚醒 (因為 iOS 會強制暫停影片與釋放 WakeLock)
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') { isNoSleepEnabled = false; enableNoSleep(); }
+        if (document.visibilityState === 'visible') { 
+            isNoSleepEnabled = false; // 重置狀態
+            enableNoSleep(); // 重新啟動雙引擎
+        }
     });
+    // ==========================================
 
     auth.onAuthStateChanged((user) => {
       const overlay = document.getElementById('auth-overlay');
@@ -813,7 +843,7 @@
         if (isWednesday && isSettlementDangerZone && Math.abs(price - oi_dn) > 150) {
              result.text = `🛑 [結算保護] ${matrixCode} 引力奇點覆寫`;
              result.class = "rank-n";
-             result.advice = `<span class="action-badge action-wait">強制觀望</span><br>Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！`;
+             result.advice = `<span class="action-badge action-wait">強制觀望</span><br>Override: 結算強制收斂期，封鎖所有順勢突破操作，仅限空手觀望！`;
         }
 
         return result;
@@ -917,34 +947,50 @@
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
               
-              let tSkewLabel = (trueCallIV > 0 || truePutIV > 0) ? ` | T(Skew): ${trueSkewStr}%` : "";
+              let tSkewLabel = (trueCallIV > 0 || truePutIV > 0) ? ` <span style="color:rgba(255,255,255,0.6); font-size:10px; margin-left:4px; font-weight:normal;">| T: ${trueSkewStr}%</span>` : "";
 
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (撐)</div>`;
+                  skewTag = `<div style="background:linear-gradient(90deg, rgba(255,69,58,0.8), var(--red)); color:#fff; font-weight:900; padding:4px 8px; border-radius:6px; text-align:center; box-shadow:0 0 10px rgba(255,69,58,0.5); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:12px; margin: 4px 0;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (撐)${tSkewLabel}</div>`;
               } else if (skew > SKEW_THRESH) {
                   putColor = "var(--green)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (壓)</div>`;
+                  skewTag = `<div style="background:linear-gradient(90deg, rgba(48,209,88,0.8), var(--green)); color:#fff; font-weight:900; padding:4px 8px; border-radius:6px; text-align:center; box-shadow:0 0 10px rgba(48,209,88,0.5); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:12px; margin: 4px 0;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (壓)${tSkewLabel}</div>`;
               } else {
-                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
+                  skewTag = `<div style="color:#ddd; font-weight:bold; text-align:center; padding:4px; font-size:11px; background:rgba(255,255,255,0.08); border-radius:6px; margin: 4px 0; border:1px solid rgba(255,255,255,0.1);"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% <span style="color:#888; font-weight:normal;">(±${SKEW_THRESH.toFixed(2)})</span>${tSkewLabel}</div>`;
               }
               
               ivEl.style.display = "flex";
               ivEl.style.flexDirection = "column";
-              ivEl.style.padding = "3px 5px";
+              ivEl.style.gap = "4px"; 
+              ivEl.style.padding = "2px 0 0 0";
+              ivEl.style.background = "transparent"; 
+              ivEl.style.border = "none"; 
               
               let trueIvHtml = "";
               if (trueCallIV > 0 || truePutIV > 0) {
-                  trueIvHtml = `<div style="display:flex; flex-wrap:wrap; justify-content:space-evenly; gap:4px 12px; font-size:12px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
-                                  <span style="white-space:nowrap;">(T)C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
-                                  <span style="white-space:nowrap;">(T)P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
+                  trueIvHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(10, 132, 255, 0.2);">
+                                  <span style="color:var(--blue); font-size:10px; font-weight:bold;">True IV</span>
+                                  <div style="display:flex; gap:12px; font-size:11px; color:#fff;">
+                                      <span style="white-space:nowrap; color:#aaa;">C: <span style="font-weight:bold; color:#fff;">${trueCallIV.toFixed(1)}%</span></span>
+                                      <span style="white-space:nowrap; color:#aaa;">P: <span style="font-weight:bold; color:#fff;">${truePutIV.toFixed(1)}%</span></span>
+                                  </div>
                                 </div>`;
               }
               
-              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}${trueIvHtml}`;
+              ivEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:baseline; padding:0 4px;">
+                    <span style="color:#aaa; font-size:11px;">C: <span style="color:${callColor}; font-weight:900; font-size:16px;">${callIV.toFixed(1)}%</span></span>
+                    <span style="color:#aaa; font-size:11px;">P: <span style="color:${putColor}; font-weight:900; font-size:16px;">${putIV.toFixed(1)}%</span></span>
+                </div>
+                ${skewTag}
+                ${trueIvHtml}
+              `;
           } else {
-              ivEl.style.display = "inline-block";
-              ivEl.innerText = "IV: --%";
+              ivEl.style.display = "block";
+              ivEl.style.textAlign = "center";
+              ivEl.style.color = "#888";
+              ivEl.style.fontSize = "11px";
+              ivEl.innerText = "IV 數據等待中...";
           }
       }
 
@@ -1308,3 +1354,4 @@
   </script>
 </body>
 </html>
+請幫我修正,其餘禁止變動
