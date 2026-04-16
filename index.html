@@ -758,86 +758,87 @@
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
         // ★ v3.1 校準版 Matrix 定義與 SOP 動作
+        // ★ v3.1 校準版 Matrix 定義與 SOP 動作
         switch(matrixCode) {
             case '[+ 負 + +]': 
                 result = { 
-                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>鐵板托底+市價總攻。引力帶動 V 轉。`
+                    text: `🚀 S級必殺做多(絕對軋空) ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">重倉做多</span><br>主力用無限資金在下方鋪好鐵板與買單，市價單發動總攻。引力將帶動報復性 V 轉。`
                 }; break;
             case '[- 正 - -]': 
                 result = { 
-                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>天花板重兵+市價狂倒。引力引發墜落。` 
+                    text: `📉 S級必殺做空(絕對殺多) ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-short">重倉做空</span><br>莊家在天花板佈下重兵，大戶市價狂倒貨。引力將引發多殺多斷頭墜落。` 
                 }; break;
             case '[+ 負 + -]': 
                 result = { 
-                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 P9 翻負則轉試單</span><br>散戶恐慌殺跌，莊家托底，主力吃貨。` 
+                    text: `🪤 完美誘空陷阱(壓低吃貨) ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">準備接刀</span> <span class="override-badge">⚠️禁追空</span><br>【籌碼背離】散戶恐慌殺跌，但莊家在托底，且主力把限價買單掛滿默默吃掉所有停損單。` 
                 }; break;
             case '[- 正 - +]': 
                 result = { 
-                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 P9 翻正則轉試單</span><br>散戶追多，主力蓋火鍋，莊家收網。` 
+                    text: `🪤 完美誘多陷阱(拉高出貨) ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-short">準備放空</span> <span class="override-badge">⚠️禁追多</span><br>【籌碼背離】散戶看大漲瘋狂追多，但全撞在主力厚實的限價賣單上，且莊家已蓋上火鍋準備收網。` 
                 }; break;
             case '[+ 負 - +]': 
                 result = { 
-                    text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>莊家托底，主力掛賣單壓抑價格。` 
+                    text: `🌊 壓盤洗籌碼(底部震盪) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">觀望</span><br>莊家托底，散戶想買，但主力刻意在上方掛滿賣單壓抑價格。企圖在底部吃夠籌碼後才會撤掉賣單。` 
                 }; break;
             case '[- 正 + -]': 
                 result = { 
-                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家蓋鍋，主力掛買單護航，階梯出貨。` 
+                    text: `🎣 撐盤緩跌(高檔出貨) ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-wait">觀望</span><br>莊家蓋鍋，散戶想逃，但主力在下方掛買單護航，目的是「階梯式緩慢出貨」，不讓價格崩潰導致自己賣不掉。` 
                 }; break;
             case '[+ 負 - -]': 
                 result = { 
-                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 Skew 轉負則準備LONG</span><br>散戶砸盤，莊家單兵死撐。` 
+                    text: `🛡️ 莊家底線測試(單兵死守) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">觀望</span><br>散戶與大戶一起瘋狂砸盤，只剩莊家在下方用 Sell Put 單獨死撐。隨時可能貫穿防線或上演極限反轉。` 
                 }; break;
             case '[- 正 + +]': 
                 result = { 
-                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>散戶衝高，莊家單兵壓制。` 
+                    text: `⚔️ 莊家火鍋測試(單兵壓制) ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-wait">觀望</span><br>散戶與大戶瘋狂往上衝，只剩莊家在上方用 Sell Call 死壓。測試上方壓力牆的極限。` 
                 }; break;
             case '[+ 正 - -]': 
                 result = { 
-                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>超跌但莊家踩一腳，主力放棄防守。` 
+                    text: `☠️ 破底殺多(放棄防守) ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-short">多單快逃</span> <span class="override-badge">⚠️極度危險</span><br>明明已經超跌，但莊家居然跟著踩一腳，大戶也狂砸。這代表主力放棄防守，準備下調結算價。` 
                 }; break;
             case '[- 負 + +]': 
                 result = { 
-                    text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>超漲但莊家不壓反撐，主力上調目標。` 
+                    text: `🌋 噴出軋空(強制升空) ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">空單快逃</span> <span class="override-badge">⚠️極度危險</span><br>明明已經超漲，但莊家不壓反撐，大戶繼續狂買。代表主力上調目標價，強行軋空散戶。` 
                 }; break;
             case '[+ 正 + +]': 
                 result = { 
-                    text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>超跌且莊家壓盤，但散戶買爆莊家。` 
+                    text: `⚠️ 逆勢軋莊(多方兵變) ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-wait">準備多頭海嘯</span><br>超跌且莊家壓盤，但大戶與散戶用真金白銀把莊家買爆。若莊家被迫停損，將引發極度暴力的多頭海嘯。` 
                 }; break;
             case '[- 負 - -]': 
                 result = { 
-                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>超漲且莊家撐盤，但散戶砸穿鐵板。` 
+                    text: `⚠️ 逆勢殺莊(空方兵變) ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-wait">準備崩盤股災</span><br>超漲且莊家撐盤，但大戶與散戶用真金白銀把莊家的鐵板砸穿。若莊家被迫停損，將引發崩盤級的股災。` 
                 }; break;
             case '[+ 正 + -]': 
                 result = { 
-                    text: `👻 假撐誘多 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-long">順勢做空</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家壓盤，市價砸，下方掛假單。` 
+                    text: `👻 假撐誘多(虛假底) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">切勿做多</span> <span class="override-badge">⚠️警報</span><br>莊家壓盤，市價狂砸，但下方卻出現異常買單裝甲。通常是主力掛假單(Spoofing)吸引散戶以為跌不下去而做多，隨時會抽單貫穿。` 
                 }; break;
             case '[+ 正 - +]': 
                 result = { 
-                    text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>超跌且上方賣壓沉重，散戶搶反彈。` 
+                    text: `🐈 死貓反彈(接刀陷阱) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">空手觀望</span> <span class="override-badge">⚠️警報</span><br>超跌且上方賣壓沉重，散戶卻用市價單進場搶反彈。這是標準的死貓反彈，進場必定套牢。` 
                 }; break;
             case '[- 負 - +]': 
                 result = { 
-                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>超漲且莊家撐盤，上方賣壓沉重。` 
+                    text: `🎆 逃命煙火波(極限真頂) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">多單停利</span> <span class="override-badge">⚠️警報</span><br>超漲且莊家依然撐盤，但上方已有沉重賣壓，散戶仍在市價追高。屬於主力最後的煙火秀，隨時熄火反轉。` 
                 }; break;
             case '[- 負 + -]': 
                 result = { 
-                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家撐盤，下方有防護，市價砸盤。` 
+                    text: `🤡 假摔誘空(虛假跌) ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">切勿追空</span> <span class="override-badge">⚠️警報</span><br>莊家撐盤，下方有防護，市價卻異常砸盤。通常是為了洗出多單浮額，製造假摔崩盤的錯覺，誘使散戶追空。` 
                 }; break;
         }
 
