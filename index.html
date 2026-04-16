@@ -933,10 +933,10 @@
               
               let trueIvHtml = "";
               if (trueCallIV > 0 || truePutIV > 0) {
-                  trueIvHtml = `<div style="display:flex; justify-content:space-between; gap:4px; font-size:9px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
-                                  <span>True C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
-                                  <span>True P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
-                                  <span>True S:<span style="font-weight:bold;">${trueSkewStr}%</span></span>
+                  trueIvHtml = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
+                                  <span>(T)C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
+                                  <span>(T)P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
+                                  <span>T(Skew):<span style="font-weight:bold;">${trueSkewStr}%</span></span>
                                 </div>`;
               }
               
