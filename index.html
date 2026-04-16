@@ -93,7 +93,12 @@
     .percent-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px #000; z-index: 5; }
     .force-display { text-align: center; font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
     .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 0; padding: 0 5px; }
-    .logic-text { text-align: center; font-size: 12px; font-weight: 700; color: #fff; margin-top: 0; letter-spacing: 0.5px; line-height: 1.3; }
+    .logic-text { text-align: left; font-size: 12px; font-weight: 400; color: #ccc; margin-top: 0; letter-spacing: 0.3px; line-height: 1.4; }
+    .action-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; margin-right: 4px; }
+    .action-long { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); }
+    .action-short { background: rgba(48, 209, 88, 0.2); color: var(--green); border: 1px solid var(--green); }
+    .action-wait { background: rgba(255, 214, 10, 0.2); color: var(--yellow); border: 1px solid var(--yellow); }
+    .override-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; background: rgba(10, 132, 255, 0.2); color: var(--blue); border: 1px solid var(--blue); margin-top: 4px;}
     
     .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
     .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
@@ -714,23 +719,88 @@
         let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
+        // ★ v3.1 校準版 Matrix 定義與 SOP 動作
         switch(matrixCode) {
-            case '[+ 負 + +]': result = { text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-s", advice: "鐵板托底+市價總攻。引力帶動 V 轉。👉 動作：重倉做多" }; break;
-            case '[- 正 - -]': result = { text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-s", advice: "天花板重兵+市價狂倒。引力引發墜落。👉 動作：重倉做空" }; break;
-            case '[+ 負 + -]': result = { text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", advice: "莊家托底，主力吃貨。👉 動作：準備做多" }; break;
-            case '[- 正 - +]': result = { text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bear", advice: "主力蓋火鍋，莊家收網。👉 動作：準備做空" }; break;
-            case '[+ 負 - +]': result = { text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-n", advice: "莊家托底，主力假賣牆壓抑價格。👉 動作：觀望" }; break;
-            case '[- 正 + -]': result = { text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bear", advice: "莊家蓋鍋，主力假買牆護航，階梯出貨。👉 動作：觀望" }; break;
-            case '[+ 負 - -]': result = { text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-n", advice: "散戶砸盤，莊家單兵死撐。👉 動作：嚴禁追空" }; break;
-            case '[- 正 + +]': result = { text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", advice: "散戶衝高，莊家單兵壓制。👉 動作：嚴禁追高" }; break;
-            case '[+ 正 + +]': result = { text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-a-bull", advice: "超跌且莊家壓盤，但散戶買爆莊家。👉 動作：試單做多" }; break;
-            case '[- 負 - -]': result = { text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", advice: "超漲且莊家撐盤，但散戶砸穿鐵板。👉 動作：試單做空" }; break;
-            case '[+ 正 - -]': result = { text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-s", advice: "莊家踩一腳，主力放棄防守。👉 動作：順勢做空" }; break;
-            case '[- 負 + +]': result = { text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", advice: "莊家不壓反撐，主力上調目標。👉 動作：順勢做多" }; break;
-            case '[+ 正 + -]': result = { text: `👻 假撐誘多 ${matrixCode}`, class: "rank-n", advice: "莊家壓盤，市價砸，下方掛假單。👉 動作：嚴禁做多" }; break;
-            case '[+ 正 - +]': result = { text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-n", advice: "超跌且上方賣壓沉重，散戶搶反彈。👉 動作：順勢做空 (若 R7 > 0 則轉為試單)" }; break;
-            case '[- 負 - +]': result = { text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-n", advice: "超漲且莊家撐盤，上方賣壓沉重。👉 動作：順勢做空 (若 R7 > 0 則轉為試單)" }; break;
-            case '[- 負 + -]': result = { text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-n", advice: "莊家撐盤，下方有防護，市價砸盤。👉 動作：順勢做多 (若 R7 < 0 則轉為試單)" }; break;
+            case '[+ 負 + +]': 
+                result = { 
+                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>鐵板托底+市價總攻。引力帶動 V 轉。`
+                }; break;
+            case '[- 正 - -]': 
+                result = { 
+                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>天花板重兵+市價狂倒。引力引發墜落。` 
+                }; break;
+            case '[+ 負 + -]': 
+                result = { 
+                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 P9 翻負則轉試單</span><br>散戶恐慌殺跌，莊家托底，主力吃貨。` 
+                }; break;
+            case '[- 正 - +]': 
+                result = { 
+                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 P9 翻正則轉試單</span><br>散戶追多，主力蓋火鍋，莊家收網。` 
+                }; break;
+            case '[+ 負 - +]': 
+                result = { 
+                    text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>莊家托底，主力掛賣單壓抑價格。` 
+                }; break;
+            case '[- 正 + -]': 
+                result = { 
+                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家蓋鍋，主力掛買單護航，階梯出貨。` 
+                }; break;
+            case '[+ 負 - -]': 
+                result = { 
+                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 Skew 轉負則準備LONG</span><br>散戶砸盤，莊家單兵死撐。` 
+                }; break;
+            case '[- 正 + +]': 
+                result = { 
+                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>散戶衝高，莊家單兵壓制。` 
+                }; break;
+            case '[+ 正 - -]': 
+                result = { 
+                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>超跌但莊家踩一腳，主力放棄防守。` 
+                }; break;
+            case '[- 負 + +]': 
+                result = { 
+                    text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>超漲但莊家不壓反撐，主力上調目標。` 
+                }; break;
+            case '[+ 正 + +]': 
+                result = { 
+                    text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">重倉做多</span> <span class="override-badge">⚠️若 R7 < 0 則減碼</span><br>超跌且莊家壓盤，但散戶買爆莊家。` 
+                }; break;
+            case '[- 負 - -]': 
+                result = { 
+                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-short">重倉做空</span> <span class="override-badge">⚠️若 R7 > 0 則減碼</span><br>超漲且莊家撐盤，但散戶砸穿鐵板。` 
+                }; break;
+            case '[+ 正 + -]': 
+                result = { 
+                    text: `👻 假撐誘多 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家壓盤，市價砸，下方掛假單。` 
+                }; break;
+            case '[+ 正 - +]': 
+                result = { 
+                    text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>超跌且上方賣壓沉重，散戶搶反彈。` 
+                }; break;
+            case '[- 負 - +]': 
+                result = { 
+                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-short">順勢做空</span> <span class="override-badge">⚠️若 R7 > 0 則轉試單</span><br>超漲且莊家撐盤，上方賣壓沉重。` 
+                }; break;
+            case '[- 負 + -]': 
+                result = { 
+                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-long">順勢做多</span> <span class="override-badge">⚠️若 R7 < 0 則轉試單</span><br>莊家撐盤，下方有防護，市價砸盤。` 
+                }; break;
         }
 
         let timeHour = parseInt((data.t || "00:00").split(':')[0]);
@@ -742,7 +812,7 @@
         if (isWednesday && isSettlementDangerZone && Math.abs(price - oi_dn) > 150) {
              result.text = `🛑 [結算保護] ${matrixCode} 引力奇點覆寫`;
              result.class = "rank-n";
-             result.advice = "Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！";
+             result.advice = `<span class="action-badge action-wait">強制觀望</span><br>Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！`;
         }
 
         return result;
@@ -764,7 +834,7 @@
 
         finalAdvice += `<div style="margin-bottom:8px; background:rgba(255,255,255,0.05); padding:8px; border-radius:6px; border:1px solid #444;">
             <div style="color:#64d2ff; font-weight:800; font-size:13px; margin-bottom:4px;">${strategyResult.text}</div>
-            <div style="color:#fff; font-size:12px; line-height:1.4;">👉 戰術解析：<br><span style="color:#ffd60a; font-weight:700;">${strategyResult.advice}</span></div>
+            <div style="color:#fff; font-size:12px; line-height:1.4;">${strategyResult.advice}</div>
         </div>`;
 
         if (data.four_pillars_advice) {
