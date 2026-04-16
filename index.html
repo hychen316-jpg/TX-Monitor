@@ -894,6 +894,9 @@
           let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
           let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
           
+          let trueCallIV = data.true_call_iv !== undefined ? parseFloat(data.true_call_iv) : 0;
+          let truePutIV = data.true_put_iv !== undefined ? parseFloat(data.true_put_iv) : 0;
+          
           if (callIV > 0 || putIV > 0) {
               let callColor = "#e5c05c"; 
               let putColor = "#e5c05c";  
@@ -907,9 +910,11 @@
               }
 
               let skew = (putIV - callIV) - skewOffset; 
+              let trueSkew = (truePutIV - trueCallIV) - skewOffset;
               
               let SKEW_THRESH = data.skew_thresh !== undefined ? parseFloat(data.skew_thresh) : 0.2;
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
+              let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
               
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
@@ -924,7 +929,17 @@
               ivEl.style.display = "flex";
               ivEl.style.flexDirection = "column";
               ivEl.style.padding = "3px 5px";
-              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}`;
+              
+              let trueIvHtml = "";
+              if (trueCallIV > 0 || truePutIV > 0) {
+                  trueIvHtml = `<div style="display:flex; justify-content:space-between; gap:4px; font-size:9px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
+                                  <span>True C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
+                                  <span>True P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
+                                  <span>True S:<span style="font-weight:bold;">${trueSkewStr}%</span></span>
+                                </div>`;
+              }
+              
+              ivEl.innerHTML = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px;"><span>C:<span style="color:${callColor}; font-weight:bold;">${callIV.toFixed(1)}%</span></span><span>P:<span style="color:${putColor}; font-weight:bold;">${putIV.toFixed(1)}%</span></span></div>${skewTag}${trueIvHtml}`;
           } else {
               ivEl.style.display = "inline-block";
               ivEl.innerText = "IV: --%";
