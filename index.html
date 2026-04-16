@@ -44,7 +44,8 @@
 
     /* ★ 調整上方區塊寬度比例 (左 1.3 : 右 1) */
     .top-section { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
-    .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; }
+    /* ★ 加入 min-width: 0; 解決手機窄螢幕跑版問題 */
+    .box { background:var(--card); border-radius:14px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; border: 1px solid #333; min-width: 0; }
     .big-val { font-size:26px; font-weight:600; letter-spacing:-1px; margin-top:2px; }
     .power-val { font-size:30px; font-weight:700; text-align:right; } 
     .chip-tag { font-size:10px; padding:2px 6px; border-radius:4px; width:fit-content; background:#333; color:#ccc; }
@@ -207,12 +208,12 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:13px;">--</span></div>
         </div>
         
-        <div class="req-level-4-flex" style="flex-direction:row; justify-content:space-between; align-items:center; margin-top:4px; background:rgba(212,175,55,0.08); padding:3px 5px; border-radius:6px; border: 1px solid rgba(212,175,55,0.3);">
-            <div style="display:flex; flex-direction:column; gap:2px;">
-                <span style="font-size:9px; color:#d4af37; font-weight:700; line-height:1;">⚖️ Delta中性值</span>
-                <span id="oi-iv-val" style="font-size:8px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.3); padding:1px 3px; border-radius:3px; width:fit-content; line-height:1;">IV: --%</span>
+        <div class="req-level-4-flex" style="flex-direction:column; gap:4px; margin-top:5px; background:linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(212,175,55,0.03) 100%); padding:6px; border-radius:8px; border: 1px solid rgba(212,175,55,0.3); box-shadow: inset 0 0 8px rgba(212,175,55,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed rgba(212,175,55,0.2); padding-bottom:4px;">
+                <span style="font-size:10px; color:#d4af37; font-weight:800; letter-spacing:0.5px;">⚖️ Delta中性值</span>
+                <span id="oi-dn-price" style="font-size:20px; font-weight:900; color:#ffd700; letter-spacing:0.5px; text-shadow: 0 0 6px rgba(212,175,55,0.4); line-height:1;">--</span>
             </div>
-            <div id="oi-dn-price" style="font-size:20px; font-weight:800; color:#d4af37; text-align:right; letter-spacing:0.5px; line-height:1;">--</div>
+            <div id="oi-iv-val" style="font-size:9px; color:#e5c05c; background:rgba(0,0,0,0.4); border:1px solid rgba(212,175,55,0.2); padding:3px 5px; border-radius:4px; width:100%; box-sizing:border-box; line-height:1.2;">IV: --%</div>
         </div>
 
         <div id="update-time" style="margin-top:2px; color:#666; font-size:8px; text-align:right; line-height:1;">--:--:--</div>
