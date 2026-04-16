@@ -917,14 +917,16 @@
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
               
+              let tSkewLabel = (trueCallIV > 0 || truePutIV > 0) ? ` | T(Skew): ${trueSkewStr}%` : "";
+
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (撐)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--red); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--red); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (撐)</div>`;
               } else if (skew > SKEW_THRESH) {
                   putColor = "var(--green)"; 
-                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (壓)</div>`;
+                  skewTag = `<div style="margin-top:2px; background:var(--green); color:#fff; font-weight:900; padding:2px 4px; border-radius:3px; text-align:center; box-shadow:0 0 6px var(--green); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:11px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (壓)</div>`;
               } else {
-                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
+                  skewTag = `<div style="margin-top:2px; color:#aaa; font-weight:bold; text-align:center; border-top:1px dashed rgba(212,175,55,0.3); padding-top:2px; font-size:10px;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}%${tSkewLabel} (門檻:±${SKEW_THRESH.toFixed(2)})</div>`;
               }
               
               ivEl.style.display = "flex";
@@ -933,10 +935,9 @@
               
               let trueIvHtml = "";
               if (trueCallIV > 0 || truePutIV > 0) {
-                  trueIvHtml = `<div style="display:flex; justify-content:space-between; gap:6px; font-size:12px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
-                                  <span>(T)C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
-                                  <span>(T)P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
-                                  <span>T(Skew):<span style="font-weight:bold;">${trueSkewStr}%</span></span>
+                  trueIvHtml = `<div style="display:flex; flex-wrap:wrap; justify-content:space-evenly; gap:4px 12px; font-size:12px; color:var(--blue); margin-top:3px; padding-top:3px; border-top:1px solid rgba(10, 132, 255, 0.3);">
+                                  <span style="white-space:nowrap;">(T)C:<span style="font-weight:bold;">${trueCallIV.toFixed(1)}%</span></span>
+                                  <span style="white-space:nowrap;">(T)P:<span style="font-weight:bold;">${truePutIV.toFixed(1)}%</span></span>
                                 </div>`;
               }
               
@@ -1307,3 +1308,4 @@
   </script>
 </body>
 </html>
+",這個好像無法在背景跑，會斷線，你有建議怎麼改才能長時間順利跑在背景嗎？（我用iPhone)
