@@ -759,87 +759,87 @@
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
         // ★ v3.1 校準版 Matrix 定義與 SOP 動作
-        // ★ v3.4 終極版 Matrix 定義與 SOP 動作 (Delta 中性引力融合)
+        // ★ v3.3 手冊版 Matrix 定義與 SOP 動作
         switch(matrixCode) {
             case '[+ 負 + +]': 
                 result = { 
-                    text: `🚀 S級必殺做多(絕對軋空) ${matrixCode}`, class: "rank-s", 
+                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">重倉做多</span><br>價格低於中性位，莊家托底+市價總攻。向上引力將帶動報復性 V 轉回歸。`
                 }; break;
             case '[- 正 - -]': 
                 result = { 
-                    text: `📉 S級必殺做空(絕對殺多) ${matrixCode}`, class: "rank-s", 
+                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-short">重倉做空</span><br>價格高於中性位，莊家蓋鍋+市價狂砸。向下引力將引發多殺多斷頭墜落。` 
                 }; break;
             case '[+ 負 + -]': 
                 result = { 
-                    text: `🪤 完美誘空陷阱(壓低吃貨) ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">準備接刀</span> <span class="override-badge">⚠️禁追空</span><br>【籌碼背離】恐慌殺跌偏離中性位，但莊家托底，主力掛滿買單默默吃貨。` 
+                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-wait">禁追空，準備接刀</span><br>【籌碼背離】恐慌殺跌偏離中性位(P9-負)，但莊家托底，主力掛滿買單(R7-正)吃貨。` 
                 }; break;
             case '[- 正 - +]': 
                 result = { 
-                    text: `🪤 完美誘多陷阱(拉高出貨) ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">準備放空</span> <span class="override-badge">⚠️禁追多</span><br>【籌碼背離】瘋狂追多偏離中性位，但全撞在厚實賣牆，莊家準備收網。` 
+                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-wait">禁追多，準備放空</span><br>【籌碼背離】瘋狂追多偏離中性位(P9-正)，但全撞在厚實賣牆，莊家準備收網。` 
                 }; break;
             case '[+ 負 - +]': 
                 result = { 
-                    text: `🌊 壓盤洗籌碼(底部震盪) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">觀望</span><br>莊家托底，散戶想買，但主力刻意掛滿賣單壓抑價格，底部吃夠籌碼後才會放行。` 
+                    text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">觀望，等賣牆撤單做多</span><br>莊家托底，散戶想買，但主力刻意掛滿賣單壓抑價格，底部吃夠籌碼後才會放行。` 
                 }; break;
             case '[- 正 + -]': 
                 result = { 
-                    text: `🎣 撐盤緩跌(高檔出貨) ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-wait">觀望</span><br>莊家蓋鍋，散戶想逃，但主力掛買單護航，延緩向下引力以進行階梯式出貨。` 
+                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-wait">觀望，等買牆崩塌放空</span><br>莊家蓋鍋，散戶想逃，但主力掛買單護航，延緩向下引力以進行階梯式出貨。` 
                 }; break;
             case '[+ 負 - -]': 
                 result = { 
-                    text: `🛡️ 莊家底線測試(單兵死守) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">觀望</span><br>散戶與大戶瘋狂砸盤，只剩莊家單兵死撐(Sell Put)。極限測試引力邊界。` 
+                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">觀望，破底追空</span><br>散戶與大戶瘋狂砸盤，只剩莊家單兵死撐(Sell Put)。極限測試引力邊界。` 
                 }; break;
             case '[- 正 + +]': 
                 result = { 
-                    text: `⚔️ 莊家火鍋測試(單兵壓制) ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-wait">觀望</span><br>散戶與大戶瘋狂衝高，只剩莊家單兵壓制(Sell Call)。測試上方壓力牆極限。` 
+                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-wait">觀望，突破追多</span><br>散戶與大戶瘋狂衝高，只剩莊家單兵壓制(Sell Call)。測試上方壓力牆極限。` 
                 }; break;
             case '[+ 正 - -]': 
                 result = { 
-                    text: `☠️ 破底殺多(放棄防守) ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-short">多單快逃</span> <span class="override-badge">⚠️極度危險</span><br>超跌但莊家踩一腳(壓盤)，大戶狂砸。主力放棄防守，Delta中性位準備下移。` 
+                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-short">順勢做空，多單逃命</span><br>超跌但莊家踩一腳(壓盤)，大戶狂砸。主力放棄防守，Delta中性位準備下移。` 
                 }; break;
             case '[- 負 + +]': 
                 result = { 
-                    text: `🌋 噴出軋空(強制升空) ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">空單快逃</span> <span class="override-badge">⚠️極度危險</span><br>超漲但莊家不壓反撐(托底)，大戶狂買。主力強行軋空，Delta中性位準備上移。` 
+                    text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">順勢做多，空單逃命</span><br>超漲但莊家不壓反撐(托底)，大戶狂買。主力強行軋空，Delta中性位準備上移。` 
                 }; break;
             case '[+ 正 + +]': 
                 result = { 
-                    text: `⚠️ 逆勢軋莊(多方兵變) ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-wait">警戒中</span> <span class="override-badge">⚠️準備多頭海嘯</span><br>價格低於中性位且莊家壓盤，但市場買爆莊家。若莊家被迫停損，引發多頭海嘯。` 
+                    text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-wait">警戒，準備做多</span><br>價格低於中性位且莊家壓盤，但市場買爆莊家。若莊家被迫停損(Buy Call)，引發多頭海嘯。` 
                 }; break;
             case '[- 負 - -]': 
                 result = { 
-                    text: `⚠️ 逆勢殺莊(空方兵變) ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-wait">警戒中</span> <span class="override-badge">⚠️準備崩盤股災</span><br>價格高於中性位且莊家托底，但市場砸穿鐵板。若莊家被迫停損，引發崩盤級股災。` 
+                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-wait">警戒，準備做空</span><br>價格高於中性位且莊家托底，但市場砸穿鐵板。若莊家被迫停損(Buy Put)，引發崩盤級股災。` 
                 }; break;
             case '[+ 正 + -]': 
                 result = { 
-                    text: `👻 假撐誘多(虛假底) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">切勿做多</span> <span class="override-badge">⚠️警報</span><br>莊家壓盤，市價狂砸，下方掛假單(Spoofing)誘多，隨時抽單順著引力貫穿破底。` 
+                    text: `👻 假撐誘多 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">警報：虛假底，禁做多</span><br>莊家壓盤，市價狂砸，下方掛假單(Spoofing)誘多，隨時抽單順著引力貫穿破底。` 
                 }; break;
             case '[+ 正 - +]': 
                 result = { 
-                    text: `🐈 死貓反彈(接刀陷阱) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">空手觀望</span> <span class="override-badge">⚠️警報</span><br>超跌且莊家壓盤、上方賣壓沉重，散戶用市價單搶反彈。逆引力的接刀陷阱。` 
+                    text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-short">順勢做空</span><br>超跌且莊家壓盤、上方賣壓沉重，散戶用市價單搶反彈。逆引力的接刀陷阱。` 
                 }; break;
             case '[- 負 - +]': 
                 result = { 
-                    text: `🎆 逃命煙火波(極限真頂) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">多單停利</span> <span class="override-badge">⚠️警報</span><br>超漲且莊家托底，但上方賣壓沉重，散戶市價追高。逆引力的最後煙火秀。` 
+                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">警報：虛假頂，多單停利</span><br>超漲且莊家托底，但上方賣壓沉重，散戶市價追高。逆引力的最後煙火秀。` 
                 }; break;
             case '[- 負 + -]': 
                 result = { 
-                    text: `🤡 假摔誘空(虛假跌) ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">切勿追空</span> <span class="override-badge">⚠️警報</span><br>莊家托底，下方有防護，市價卻異常砸盤。刻意洗出多單浮額的假摔。` 
+                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">警報：誘空跌，禁做空</span><br>莊家托底，下方有防護，市價卻異常砸盤。刻意洗出多單浮額的假摔。` 
                 }; break;
         }
 
