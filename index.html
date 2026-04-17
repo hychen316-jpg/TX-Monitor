@@ -959,16 +959,40 @@
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
               
-              let tSkewLabel = (trueCallIV > 0 || truePutIV > 0) ? ` <span style="color:rgba(255,255,255,0.6); font-size:10px; margin-left:4px; font-weight:normal;">| T: ${trueSkewStr}%</span>` : "";
+              // ★ 1. 重新設計：True Skew vs OB Skew (高亮真理)
+              let obLabel = "表";
+              if (skew < -SKEW_THRESH) obLabel = "表(撐)";
+              if (skew > SKEW_THRESH) obLabel = "表(壓)";
 
+              let dualSkewHtml = `<span style="font-size:12px; font-weight:bold;">Skew ${skewStr}%</span>`;
+              if (trueCallIV > 0 || truePutIV > 0) {
+                  // 平均字體大小 (12px / 13px)，並給予 True Skew 燙金發光特效與底線
+                  dualSkewHtml = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <span style="color:rgba(255,255,255,0.85); font-size:12px; font-weight:600; letter-spacing:0.5px;">${obLabel}: ${skewStr}%</span>
+                        <span style="color:#ffd700; font-size:13px; font-weight:900; text-shadow: 0 0 8px rgba(212,175,55,0.9); border-bottom: 2px solid #ffd700; padding-bottom:1px; letter-spacing:0.5px;">真: ${trueSkewStr}%</span>
+                    </div>
+                  `;
+              }
+
+              // ★ 2. 套入背景與警報顏色 (改為 Flex 佈局以適應雙顯示)
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
-                  skewTag = `<div style="background:linear-gradient(90deg, rgba(255,69,58,0.8), var(--red)); color:#fff; font-weight:900; padding:2px 6px; border-radius:6px; text-align:center; box-shadow:0 0 10px rgba(255,69,58,0.5); animation:pulse-red 1.5s infinite; letter-spacing:0.5px; font-size:12px; margin: 4px 0;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (撐)${tSkewLabel}</div>`;
+                  skewTag = `<div style="background:linear-gradient(90deg, rgba(255,69,58,0.8), var(--red)); padding:6px 8px; border-radius:6px; box-shadow:0 0 10px rgba(255,69,58,0.5); animation:pulse-red 1.5s infinite; margin: 4px 0; display:flex; align-items:center;">
+                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
+                      <div style="flex:1;">${dualSkewHtml}</div>
+                  </div>`;
               } else if (skew > SKEW_THRESH) {
                   putColor = "var(--green)"; 
-                  skewTag = `<div style="background:linear-gradient(90deg, rgba(48,209,88,0.8), var(--green)); color:#fff; font-weight:900; padding:4px 8px; border-radius:6px; text-align:center; box-shadow:0 0 10px rgba(48,209,88,0.5); letter-spacing:0.5px; text-shadow:0 1px 2px rgba(0,0,0,0.8); font-size:12px; margin: 4px 0;"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% (壓)${tSkewLabel}</div>`;
+                  skewTag = `<div style="background:linear-gradient(90deg, rgba(48,209,88,0.8), var(--green)); padding:6px 8px; border-radius:6px; box-shadow:0 0 10px rgba(48,209,88,0.5); margin: 4px 0; display:flex; align-items:center;">
+                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
+                      <div style="flex:1;">${dualSkewHtml}</div>
+                  </div>`;
               } else {
-                  skewTag = `<div style="color:#ddd; font-weight:bold; text-align:center; padding:4px; font-size:11px; background:rgba(255,255,255,0.08); border-radius:6px; margin: 4px 0; border:1px solid rgba(255,255,255,0.1);"><span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}">${latestSkewSignalIcon}</span>Skew ${skewStr}% <span style="color:#888; font-weight:normal;">(±${SKEW_THRESH.toFixed(2)})</span>${tSkewLabel}</div>`;
+                  skewTag = `<div style="background:rgba(255,255,255,0.08); border-radius:6px; margin: 4px 0; padding:6px 8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center;">
+                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
+                      <div style="flex:1;">${dualSkewHtml}</div>
+                  </div>`;
               }
               
               ivEl.style.display = "flex";
@@ -978,10 +1002,11 @@
               ivEl.style.background = "transparent"; 
               ivEl.style.border = "none"; 
               
+              // ★ 3. 底下的 True IV 細節也同步改為黃金配色呼應 (原本是藍色)
               let trueIvHtml = "";
               if (trueCallIV > 0 || truePutIV > 0) {
-                  trueIvHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(10, 132, 255, 0.2);">
-                                  <span style="color:var(--blue); font-size:10px; font-weight:bold;">True IV</span>
+                  trueIvHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(212,175,55,0.3);">
+                                  <span style="color:#ffd700; font-size:10px; font-weight:bold;">True IV</span>
                                   <div style="display:flex; gap:12px; font-size:11px; color:#fff;">
                                       <span style="white-space:nowrap; color:#aaa;">C: <span style="font-weight:bold; color:#fff;">${trueCallIV.toFixed(1)}%</span></span>
                                       <span style="white-space:nowrap; color:#aaa;">P: <span style="font-weight:bold; color:#fff;">${truePutIV.toFixed(1)}%</span></span>
