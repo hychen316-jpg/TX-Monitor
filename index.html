@@ -335,6 +335,9 @@
                 <div class="p9-label" style="font-size:10px;">🛡️ 累積買賣差動態 (R7)</div>
                 <div id="r7-val" class="p9-val" style="font-size:16px; margin-top:2px;">--</div>
                 <div id="r7-delta-display" style="font-size:9px; color:#888; margin-top:2px;">(乖離: --)</div>
+                <div id="r7-thresholds-display" style="font-size:8px; color:#888; margin-top:2px; text-align:center; line-height:1; letter-spacing:0.5px;">
+                    門檻: <span id="r7-th-val">--</span>
+                </div>
             </div>
         </div>
         
@@ -1071,6 +1074,17 @@
           let deltaColor = r7Delta > 300 ? "var(--red)" : (r7Delta < -300 ? "var(--green)" : "#888");
           let deltaIcon = r7Delta > 300 ? "🔼" : (r7Delta < -300 ? "🔽" : "➖");
           r7DeltaEl.innerHTML = `(乖離: <span style="${deltaColor}; font-weight:bold;">${deltaIcon} ${deltaStr}</span>)`;
+      }
+      
+      // ★ 讀取 R7 動態門檻，並根據當下 R7 正負值決定顯示哪一個
+      let dyn_r7_p = data.r7_th_p !== undefined ? parseFloat(data.r7_th_p) : 1000;
+      let dyn_r7_n = data.r7_th_n !== undefined ? parseFloat(data.r7_th_n) : -1000;
+      
+      // 判斷當下是多方火力(>0)還是空方火力(<0)，顯示對應閾值
+      let display_r7_th = valP7 >= 0 ? dyn_r7_p : dyn_r7_n;
+      let r7ThEl = document.getElementById('r7-th-val');
+      if (r7ThEl) {
+          r7ThEl.innerText = (display_r7_th > 0 ? "+" : "") + display_r7_th.toLocaleString('en-US');
       }
 
       let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
