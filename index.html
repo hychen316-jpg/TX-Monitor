@@ -162,6 +162,21 @@
     /* ★★★ 新增：Skew 訊號呼吸燈特效 ★★★ */
     @keyframes skew-signal-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
     .skew-signal-active { display: inline-block; animation: skew-signal-pulse 1.5s infinite; }
+
+    /* ★★★ 新增：雷達跑馬燈特效 ★★★ */
+    @keyframes marquee {
+        0% { left: 100%; transform: translateX(0); }
+        100% { left: 0; transform: translateX(-100%); }
+    }
+    .radar-marquee-container {
+        overflow: hidden; width: 100%; position: relative; height: 18px; display: flex; align-items: center;
+    }
+    .radar-ticker {
+        white-space: nowrap; font-size: 11px; font-weight: 600; color: #ddd; 
+        position: absolute; width: max-content;
+        animation: marquee 12s linear infinite;
+    }
+    .radar-ticker:hover { animation-play-state: paused; /* 滑鼠移過去可以暫停看數據 */ }
   </style>
 </head>
 <body>
@@ -225,7 +240,22 @@
 
         <div id="update-time" style="position:absolute; bottom:8px; right:10px; color:#555; font-size:9px; text-align:right; line-height:1;">--:--:--</div>
       </div>
-      
+
+      <div class="box req-level-4-flex" style="padding:6px 12px; flex-direction:row; align-items:center; gap:8px; border: 1px solid rgba(10, 132, 255, 0.4); box-shadow: inset 0 0 10px rgba(10, 132, 255, 0.1); background: linear-gradient(90deg, rgba(10,132,255,0.05) 0%, transparent 100%);">
+          <div style="font-size:10px; font-weight:900; color:var(--blue); white-space:nowrap; padding-right:8px; border-right:1px solid #444; letter-spacing: 0.5px;">📡 雷達</div>
+          <div class="radar-marquee-container">
+              <div id="radar-ticker" class="radar-ticker">
+                  連線中，等待 TX_Radar 實時數據寫入... ⏳
+              </div>
+          </div>
+      </div>
+      <div class="box upgrade-prompt lock-lvl-4" style="padding:8px; flex-direction:row; gap:10px;">
+          <div style="font-size:16px;">📡</div>
+          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+              <div style="font-size:11px; font-weight:bold; color:#aaa;">TX-Radar 實時冰山偵測 (跑馬燈)</div>
+              <div class="upgrade-btn" style="font-size:9px; padding:3px 8px;">需 Level 4 解鎖</div>
+          </div>
+      </div>
       <div class="box req-level-2-flex" style="flex-direction:row; justify-content:space-between; align-items:center; padding:10px 12px;" id="pwr-box">
         <div style="display:flex; flex-direction:column; justify-content:center;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
@@ -449,6 +479,7 @@
     const NODE_REALTIME = 'monitor_realtime';
     const NODE_HISTORY  = 'monitor_history';
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
+    const NODE_RADAR    = 'radar_realtime'; // ★ 新增雷達監聽節點
 
     let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null; let chartSkew = null;
     let p9SlopeHistory = [];
@@ -627,6 +658,54 @@
           }
       });
       db.ref(NODE_ALPHA).on('value', (s) => { if(s.val()) updateAlphaUI(s.val()); });
+      // ★ 監聽雷達數據
+      db.ref(NODE_RADAR).on('value', (s) => { if(s.val()) updateRadarUI(s.val()); });
+    }
+
+    // ★★★ 新增：渲染雷達跑馬燈數據 ★★★
+    function updateRadarUI(data) {
+        const ticker = document.getElementById('radar-ticker');
+        if(!ticker) return;
+
+        // 判斷顏色與標籤
+        let actionColor = data.action.includes('外盤') ? 'var(--red)' : 'var(--green)';
+        let actionIcon = data.action.includes('外盤') ? '🔥' : '💀';
+        let netColor = data.net_whale > 0 ? 'var(--red)' : 'var(--green)';
+        
+        let statusBadge = data.is_trigger 
+            ? `<span style="background:var(--red); color:#fff; padding:1px 4px; border-radius:3px;">${data.status}</span>` 
+            : `<span style="color:#aaa;">[SCAN]</span>`;
+
+        // 組合跑馬燈 HTML
+        let tickerHtml = `
+            <span style="color:#888;">${data.t}</span> | 
+            ${statusBadge} | 
+            價: <span style="color:#fff">${data.price}</span> | 
+            均: <span style="color:#bf5af2">${data.vwap}</span> | 
+            高低距: <span style="color:var(--yellow)">-${data.high_dist}</span>/<span style="color:var(--blue)">+${data.low_dist}</span> | 
+            開盤: <span style="color:#fff">${data.day_open}</span> | 
+            <span style="color:${actionColor}">${actionIcon} ${data.action} ${data.vol}口</span> | 
+            淨力: <span style="color:${netColor}">${data.net_whale}口</span> <span style="color:#aaa;">(${data.retention}%)</span> | 
+            防線: <span style="color:var(--yellow)">${data.whale_cost}</span>
+        `;
+
+        ticker.innerHTML = tickerHtml;
+
+        // 強制重置 CSS 動畫，讓新數據進來時可以從右邊重新跑出來
+        ticker.style.animation = 'none';
+        ticker.offsetHeight; /* 觸發 Reflow */
+        ticker.style.animation = 'marquee 12s linear infinite';
+        
+        // 如果是觸發 Sniper，讓外框閃爍一下
+        if (data.is_trigger) {
+            const container = ticker.closest('.req-level-4-flex');
+            container.style.boxShadow = 'inset 0 0 20px rgba(255, 69, 58, 0.4)';
+            container.style.borderColor = 'rgba(255, 69, 58, 0.8)';
+            setTimeout(() => {
+                container.style.boxShadow = 'inset 0 0 10px rgba(10, 132, 255, 0.1)';
+                container.style.borderColor = 'rgba(10, 132, 255, 0.4)';
+            }, 1000);
+        }
     }
 
     function updateAlphaUI(data) {
@@ -958,14 +1037,12 @@
               let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
               let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
               
-              // ★ 1. 重新設計：True Skew vs OB Skew (高亮真理)
               let obLabel = "表";
               if (skew < -SKEW_THRESH) obLabel = "表(撐)";
               if (skew > SKEW_THRESH) obLabel = "表(壓)";
 
               let dualSkewHtml = `<span style="font-size:12px; font-weight:bold;">Skew ${skewStr}%</span>`;
               if (trueCallIV > 0 || truePutIV > 0) {
-                  // 平均字體大小 (12px / 13px)，並給予 True Skew 燙金發光特效與底線
                   dualSkewHtml = `
                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                         <span style="color:rgba(255,255,255,0.85); font-size:12px; font-weight:600; letter-spacing:0.5px;">${obLabel}: ${skewStr}%</span>
@@ -974,7 +1051,6 @@
                   `;
               }
 
-              // ★ 2. 套入背景與警報顏色 (改為 Flex 佈局以適應雙顯示)
               if (skew < -SKEW_THRESH) {
                   callColor = "var(--red)"; 
                   skewTag = `<div style="background:linear-gradient(90deg, rgba(255,69,58,0.8), var(--red)); padding:6px 8px; border-radius:6px; box-shadow:0 0 10px rgba(255,69,58,0.5); animation:pulse-red 1.5s infinite; margin: 4px 0; display:flex; align-items:center;">
@@ -1001,7 +1077,6 @@
               ivEl.style.background = "transparent"; 
               ivEl.style.border = "none"; 
               
-              // ★ 3. 底下的 True IV 細節也同步改為黃金配色呼應 (原本是藍色)
               let trueIvHtml = "";
               if (trueCallIV > 0 || truePutIV > 0) {
                   trueIvHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(212,175,55,0.3);">
@@ -1398,5 +1473,3 @@
   </script>
 </body>
 </html>
-
-
