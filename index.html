@@ -163,20 +163,13 @@
     @keyframes skew-signal-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
     .skew-signal-active { display: inline-block; animation: skew-signal-pulse 1.5s infinite; }
 
-    /* ★★★ 新增：雷達跑馬燈特效 ★★★ */
-    @keyframes marquee {
-        0% { left: 100%; transform: translateX(0); }
-        100% { left: 0; transform: translateX(-100%); }
-    }
-    .radar-marquee-container {
-        overflow: hidden; width: 100%; position: relative; height: 18px; display: flex; align-items: center;
+    /* ★★★ 修改：靜態雷達區塊樣式 ★★★ */
+    .radar-static-container {
+        width: 100%; display: flex; align-items: center; justify-content: space-between; height: 18px;
     }
     .radar-ticker {
-        white-space: nowrap; font-size: 11px; font-weight: 600; color: #ddd; 
-        position: absolute; width: max-content;
-        animation: marquee 12s linear infinite;
+        font-size: 11px; font-weight: 600; color: #ddd; display: flex; align-items: center; width: 100%;
     }
-    .radar-ticker:hover { animation-play-state: paused; /* 滑鼠移過去可以暫停看數據 */ }
   </style>
 </head>
 <body>
@@ -241,18 +234,18 @@
         <div id="update-time" style="position:absolute; bottom:8px; right:10px; color:#555; font-size:9px; text-align:right; line-height:1;">--:--:--</div>
       </div>
 
-      <div class="box req-level-4-flex" style="padding:6px 12px; flex-direction:row; align-items:center; gap:8px; border: 1px solid rgba(10, 132, 255, 0.4); box-shadow: inset 0 0 10px rgba(10, 132, 255, 0.1); background: linear-gradient(90deg, rgba(10,132,255,0.05) 0%, transparent 100%);">
-          <div style="font-size:10px; font-weight:900; color:var(--blue); white-space:nowrap; padding-right:8px; border-right:1px solid #444; letter-spacing: 0.5px;">📡 雷達</div>
-          <div class="radar-marquee-container">
+      <div class="box req-level-4-flex" style="padding:8px 12px; flex-direction:row; align-items:center; gap:10px; border: 1px solid rgba(10, 132, 255, 0.4); box-shadow: inset 0 0 10px rgba(10, 132, 255, 0.1); background: linear-gradient(90deg, rgba(10,132,255,0.05) 0%, transparent 100%);">
+          <div style="font-size:11px; font-weight:900; color:var(--blue); white-space:nowrap; padding-right:8px; border-right:1px solid #444; letter-spacing: 0.5px;">📡 雷達</div>
+          <div class="radar-static-container">
               <div id="radar-ticker" class="radar-ticker">
-                  連線中，等待 TX_Radar 實時數據寫入... ⏳
+                  <span style="color:#888;">連線中，等待 TX_Radar 實時數據... ⏳</span>
               </div>
           </div>
       </div>
       <div class="box upgrade-prompt lock-lvl-4" style="padding:8px; flex-direction:row; gap:10px;">
           <div style="font-size:16px;">📡</div>
           <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
-              <div style="font-size:11px; font-weight:bold; color:#aaa;">TX-Radar 實時冰山偵測 (跑馬燈)</div>
+              <div style="font-size:11px; font-weight:bold; color:#aaa;">TX-Radar 實時冰山偵測 (即時面板)</div>
               <div class="upgrade-btn" style="font-size:9px; padding:3px 8px;">需 Level 4 解鎖</div>
           </div>
       </div>
@@ -662,39 +655,37 @@
       db.ref(NODE_RADAR).on('value', (s) => { if(s.val()) updateRadarUI(s.val()); });
     }
 
-    // ★★★ 新增：渲染雷達跑馬燈數據 ★★★
+    // ★★★ 新增：渲染靜態雷達面板數據 ★★★
     function updateRadarUI(data) {
         const ticker = document.getElementById('radar-ticker');
         if(!ticker) return;
 
-        // 判斷顏色與標籤
-        let actionColor = data.action.includes('外盤') ? 'var(--red)' : 'var(--green)';
-        let actionIcon = data.action.includes('外盤') ? '🔥' : '💀';
-        let netColor = data.net_whale > 0 ? 'var(--red)' : 'var(--green)';
+        // 🛡️ 防呆機制：確保資料存在，避免 null 導致網頁白畫面
+        let actionStr = data.action || "計算中";
+        let actionColor = actionStr.includes('外盤') ? 'var(--red)' : (actionStr.includes('內盤') ? 'var(--green)' : '#aaa');
+        let actionIcon = actionStr.includes('外盤') ? '🔥' : (actionStr.includes('內盤') ? '💀' : '⏳');
+        let netColor = (data.net_whale && data.net_whale > 0) ? 'var(--red)' : 'var(--green)';
         
         let statusBadge = data.is_trigger 
-            ? `<span style="background:var(--red); color:#fff; padding:1px 4px; border-radius:3px;">${data.status}</span>` 
-            : `<span style="color:#aaa;">[SCAN]</span>`;
+            ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
+            : ``; // 如果只是一般 SCAN 則隱藏標籤，保持畫面乾淨
 
-        // 組合跑馬燈 HTML
+        // 組合靜態面板 HTML (左右對齊，放大關鍵數字)
         let tickerHtml = `
-            <span style="color:#888;">${data.t}</span> | 
-            ${statusBadge} | 
-            價: <span style="color:#fff">${data.price}</span> | 
-            均: <span style="color:#bf5af2">${data.vwap}</span> | 
-            高低距: <span style="color:var(--yellow)">-${data.high_dist}</span>/<span style="color:var(--blue)">+${data.low_dist}</span> | 
-            開盤: <span style="color:#fff">${data.day_open}</span> | 
-            <span style="color:${actionColor}">${actionIcon} ${data.action} ${data.vol}口</span> | 
-            淨力: <span style="color:${netColor}">${data.net_whale}口</span> <span style="color:#aaa;">(${data.retention}%)</span> | 
-            防線: <span style="color:var(--yellow)">${data.whale_cost}</span>
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span style="color:#888;">${data.t || "--:--"}</span>
+                    ${statusBadge}
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span style="color:${actionColor}">${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口</span>
+                    <span style="color:#aaa;">淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)</span>
+                    <span style="color:#aaa;">防線: <span style="color:var(--yellow); font-size:14px; font-weight:800;">${data.whale_cost || 0}</span></span>
+                </div>
+            </div>
         `;
 
         ticker.innerHTML = tickerHtml;
-
-        // 強制重置 CSS 動畫，讓新數據進來時可以從右邊重新跑出來
-        ticker.style.animation = 'none';
-        ticker.offsetHeight; /* 觸發 Reflow */
-        ticker.style.animation = 'marquee 12s linear infinite';
         
         // 如果是觸發 Sniper，讓外框閃爍一下
         if (data.is_trigger) {
