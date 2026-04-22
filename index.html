@@ -214,11 +214,6 @@
               </div>
               
               <div id="update-time" style="color:#555; font-size:9px; line-height:1; margin-top:4px; white-space:nowrap;">--:--:--</div>
-              
-              <div id="main-chip-display" style="margin-top:6px; font-size:11px; font-weight:bold; padding:3px 6px; border-radius:4px; display:inline-block; line-height:1; white-space:nowrap; transition: all 0.3s ease;">
-                  <span id="main-chip-label" style="color:#aaa; margin-right:4px;">籌碼:</span>
-                  <span id="main-chip-val">--</span>
-              </div>
             </div>
 
             <div class="req-level-4-flex" style="flex-direction:column; align-items:flex-end; gap:4px; background:linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%); padding:6px 10px; border-radius:10px; border: 1px solid rgba(212,175,55,0.4); box-shadow: inset 0 0 10px rgba(212,175,55,0.1); min-width: 120px; margin-left: 10px; margin-top: 28px;">
@@ -842,82 +837,82 @@
 
         // ★ v3.5 最終數據對齊版 Matrix 定義與 SOP 動作 (6小時未來展望)
         switch(matrixCode) {
-            case '[+ - - +]': 
+            case '[+ 負 - +]': 
                 result = { 
                     text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">積極做多 (黃金買點)</span><br>[🎯 狙擊陣型] 勝率 100%！散戶想買但主力壓盤，洗清後必井噴。` 
                 }; break;
-            case '[+ + - +]': 
+            case '[+ 正 - +]': 
                 result = { 
                     text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">放棄放空，改作多</span><br>[🎯 狙擊陣型] 🔄 強烈反轉：勝率 100%！強勢換手抵抗，後續動能極度狂暴。` 
                 }; break;
-            case '[- - - -]': 
+            case '[- 負 - -]': 
                 result = { 
                     text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">逢低買進 (作多)</span><br>[🎯 狙擊陣型] 🔄 強烈反轉：勝率 100%！殺莊後超跌，引發極端報復性反彈。` 
                 }; break;
-            case '[- - + +]': 
+            case '[- 負 + +]': 
                 result = { 
                     text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">順勢做多，空單逃命</span><br>[🎯 狙擊陣型] 勝率 87%！大戶狂買，強行軋空，動能無法阻擋。` 
                 }; break;
-            case '[- - + -]': 
+            case '[- 負 + -]': 
                 result = { 
                     text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-s", 
                     advice: `<span class="action-badge action-long">勇敢買進接刀</span><br>[🎯 狙擊陣型] 勝率 83.8%！市價異常砸盤，完美洗出多單浮額。` 
                 }; break;
-            case '[- - - +]': 
+            case '[- 負 - +]': 
                 result = { 
                     text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">多單死抱，禁空</span><br>[⭐ 核心陣型] 🔄 強烈反轉：勝率 71.5%！這是主升段的絕對噴出，絕非煙火波。` 
                 }; break;
-            case '[+ - + +]': 
+            case '[+ 負 + +]': 
                 result = { 
                     text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">重倉做多</span><br>[⭐ 核心陣型] 勝率 64.7%！價格深潛，莊家托底+市價總攻。` 
                 }; break;
-            case '[+ + + -]': 
+            case '[+ 正 + -]': 
                 result = { 
                     text: `👻 假撐誘多 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">逢低做多</span><br>[⭐ 核心陣型] 🔄 強烈反轉：假單轉為實質支撐，洗盤後發動上攻。` 
                 }; break;
-            case '[- + - +]': 
+            case '[- 正 - +]': 
                 result = { 
                     text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">無腦追多，禁空</span><br>[⭐ 核心陣型] 🔄 強烈反轉：賣牆被強力實單貫穿，軋空燃料極度充足。` 
                 }; break;
-            case '[- + + -]': 
+            case '[- 正 + -]': 
                 result = { 
                     text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">拉回做多</span><br>[👀 觀察陣型] 🔄 強烈反轉：護盤有效，籌碼沉澱後將引發反撲。` 
                 }; break;
-            case '[+ + - -]': 
+            case '[+ 正 - -]': 
                 result = { 
                     text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-a-bear", 
                     advice: `<span class="action-badge action-short">短線順勢做空</span><br>[👀 觀察陣型] 勝率 80%但肉水極少。超跌且主力放棄防守。` 
                 }; break;
-            case '[+ - - -]': 
+            case '[+ 負 - -]': 
                 result = { 
                     text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-a-bear", 
                     advice: `<span class="action-badge action-wait">觀望，破底追空</span><br>[👀 觀察陣型] 散戶瘋狂砸盤，莊家單兵死撐。` 
                 }; break;
-            case '[- + - -]': 
+            case '[- 正 - -]': 
                 result = { 
                     text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">放棄做空，反手做多</span><br>[⚠️ 強烈翻轉] 原論做空必遭血洗(-383點)！此為超級誘空，順勢做多。` 
                 }; break;
-            case '[+ - + -]': 
+            case '[+ 負 + -]': 
                 result = { 
                     text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">放棄追空，改作多</span><br>[⚠️ 強烈翻轉] 實測做空動能極弱，反向做多反而具備爆發潛力。` 
                 }; break;
-            case '[- + + +]': 
+            case '[- 正 + +]': 
                 result = { 
                     text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", 
                     advice: `<span class="action-badge action-long">放棄放空，改作多</span><br>[⚠️ 強烈翻轉] 散戶衝高撞牆，實測放空會被反向軋空(-99點)。` 
                 }; break;
-            case '[+ + + +]': 
+            case '[+ 正 + +]': 
                 result = { 
                     text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-n", 
                     advice: `<span class="action-badge action-wait">順勢追多 (防雙巴)</span><br>[⚠️ 強烈翻轉] 價格低於中性位，買盤極強。放空易遭雙巴，順勢做多為佳。` 
@@ -1104,50 +1099,11 @@
 
       document.getElementById('update-time').innerText = "Update: " + data.t;
       
-      let tHour = parseInt((data.t || "00:00").split(':')[0], 10);
-      let isDaySession = (tHour >= 8 && tHour < 15);
-
-      // ★ 新增：動態顯示日/夜盤大戶籌碼
-      let mainChipLabel = document.getElementById('main-chip-label');
-      let mainChipVal = document.getElementById('main-chip-val');
-      let mainChipDisplay = document.getElementById('main-chip-display');
-
-      if (mainChipLabel && mainChipVal) {
-          let chipDataStr = isDaySession ? data.c2 : data.c1;
-          let sessionName = isDaySession ? "日盤(E6)" : "夜盤(E5)";
-          mainChipLabel.innerText = sessionName + ":";
-
-          if (chipDataStr) {
-              let parts = chipDataStr.split('|');
-              let v = parseFloat(parts[0].replace('%', ''));
-              mainChipVal.innerText = chipDataStr;
-
-              // 根據數值自動上色與發光
-              if (v > 0) {
-                  mainChipVal.style.color = "var(--red)";
-                  mainChipDisplay.style.backgroundColor = "rgba(255, 69, 58, 0.15)";
-                  mainChipDisplay.style.border = "1px solid rgba(255, 69, 58, 0.3)";
-              } else if (v < 0) {
-                  mainChipVal.style.color = "var(--green)";
-                  mainChipDisplay.style.backgroundColor = "rgba(48, 209, 88, 0.15)";
-                  mainChipDisplay.style.border = "1px solid rgba(48, 209, 88, 0.3)";
-              } else {
-                  mainChipVal.style.color = "#fff";
-                  mainChipDisplay.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                  mainChipDisplay.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-              }
-          } else {
-              mainChipVal.innerText = "--";
-              mainChipVal.style.color = "#aaa";
-              mainChipDisplay.style.backgroundColor = "transparent";
-              mainChipDisplay.style.border = "none";
-          }
-      }
-      // ★ 新增結束
-
       document.getElementById('vwap-day').innerText = data.vwap_day ? Math.round(parseFloat(data.vwap_day)) : "--";
       document.getElementById('vwap-night').innerText = data.vwap_night ? Math.round(parseFloat(data.vwap_night)) : "--";
       
+      let tHour = parseInt((data.t || "00:00").split(':')[0], 10);
+      let isDaySession = (tHour >= 8 && tHour < 15);
       if (isDaySession) {
           if (data.vwap_day && data.vwap_night && parseFloat(data.vwap_day) > 0 && parseFloat(data.vwap_night) > 0) {
               lastCrossVwap = Math.round((parseFloat(data.vwap_day) + parseFloat(data.vwap_night)) / 2);
@@ -1354,7 +1310,7 @@
             }
             dataSkew.push(currentSkew);
 
-            let ptRadius = 0;            
+            let ptRadius = 0;           
             let ptColor = '#bf5af2';    
             let ptStyle = 'circle';     
 
@@ -1512,3 +1468,4 @@
   </script>
 </body>
 </html>
+
