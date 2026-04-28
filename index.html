@@ -163,9 +163,9 @@
     @keyframes skew-signal-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
     .skew-signal-active { display: inline-block; animation: skew-signal-pulse 1.5s infinite; }
 
-    /* ★★★ 修改：靜態雷達區塊樣式 ★★★ */
+    /* ★★★ 修改：靜態雷達區塊樣式 (允許彈性換行防止跑版) ★★★ */
     .radar-static-container {
-        width: 100%; display: flex; align-items: center; justify-content: space-between; height: 18px;
+        width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 18px; flex-wrap: wrap; gap: 4px;
     }
     .radar-ticker {
         font-size: 11px; font-weight: 600; color: #ddd; display: flex; align-items: center; width: 100%;
@@ -674,17 +674,17 @@
             ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
             : ``; // 如果只是一般 SCAN 則隱藏標籤，保持畫面乾淨
 
-        // 組合靜態面板 HTML (左右對齊，放大關鍵數字)
+        // 組合靜態面板 HTML (左右對齊，放大關鍵數字，加入自動換行防跑版，並列單雙軌成本)
         let tickerHtml = `
-            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div style="display:flex; gap:8px; align-items:center;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:4px;">
+                <div style="display:flex; gap:8px; align-items:center; white-space:nowrap;">
                     <span style="color:#888;">${data.t || "--:--"}</span>
                     ${statusBadge}
                 </div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <span style="color:${actionColor}">${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口</span>
-                    <span style="color:#aaa;">淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)</span>
-                    <span style="color:#aaa;">防線: <span style="color:var(--yellow); font-size:14px; font-weight:800;">${data.whale_cost || 0}</span></span>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                    <span style="color:${actionColor}; white-space:nowrap;">${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口</span>
+                    <span style="color:#aaa; white-space:nowrap;">淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)</span>
+                    <span style="color:#aaa; white-space:nowrap;">防線(舊/新): <span style="color:#888; font-size:11px;">${data.whale_cost_single || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--yellow); font-size:14px; font-weight:800;">${data.whale_cost || 0}</span></span>
                 </div>
             </div>
         `;
@@ -1468,4 +1468,3 @@
   </script>
 </body>
 </html>
-
