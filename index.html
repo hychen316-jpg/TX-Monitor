@@ -674,19 +674,36 @@
             ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
             : ``; // 如果只是一般 SCAN 則隱藏標籤，保持畫面乾淨
 
-        // 組合靜態面板 HTML (左右對齊，放大關鍵數字，加入自動換行防跑版，並列單雙軌成本與買賣總量)
+        // 組合靜態面板 HTML (優化排版：分為上下兩排，增強視覺層次)
         let tickerHtml = `
-            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:4px;">
-                <div style="display:flex; gap:8px; align-items:center; white-space:nowrap;">
-                    <span style="color:#888;">${data.t || "--:--"}</span>
-                    ${statusBadge}
+            <div style="display:flex; flex-direction:column; width:100%; gap:6px;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                    <div style="display:flex; gap:6px; align-items:center; white-space:nowrap;">
+                        <span style="color:#888; font-size:11px;">${data.t || "--:--"}</span>
+                        ${statusBadge}
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                        <span style="color:${actionColor}; white-space:nowrap; font-size:11px;">
+                            ${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口
+                        </span>
+                        <span style="color:#aaa; white-space:nowrap; font-size:11px;">
+                            淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)
+                        </span>
+                    </div>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                    <span style="color:${actionColor}; white-space:nowrap;">${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口</span>
-                    <span style="color:#aaa; white-space:nowrap;">淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)</span>
-                    <span style="color:#aaa; white-space:nowrap;">防線(舊/新): <span style="color:#888; font-size:11px;">${data.whale_cost_single || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--yellow); font-size:14px; font-weight:800;">${data.whale_cost || 0}</span></span>
-                    <span style="color:#aaa; white-space:nowrap;">總量(多/空): <span style="color:var(--red); font-weight:800;">${data.whale_buy_vol || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--green); font-weight:800;">${data.whale_sell_vol || 0}</span></span>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:6px; flex-wrap:wrap; gap:4px;">
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        🛡️防線(舊/新): 
+                        <span style="color:#888; font-size:10px;">${data.whale_cost_single || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--yellow); font-size:12px; font-weight:800;">${data.whale_cost || 0}</span>
+                    </span>
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        📊總量(多/空): 
+                        <span style="color:var(--red); font-size:12px; font-weight:800;">${data.whale_buy_vol || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--green); font-size:12px; font-weight:800;">${data.whale_sell_vol || 0}</span>
+                    </span>
                 </div>
+
             </div>
         `;
 
