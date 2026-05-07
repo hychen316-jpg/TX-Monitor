@@ -684,7 +684,7 @@
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
                     <span style="color:${actionColor}; white-space:nowrap;">${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口</span>
                     <span style="color:#aaa; white-space:nowrap;">淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)</span>
-                    <span style="color:#aaa; white-space:nowrap;">防線(舊/新): <span style="color:#888; font-size:11px;">${data.whale_cost_single || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--yellow); font-size:14px; font-weight:800;">${data.whale_cost || 0}</span></span>
+                    <span style="color:#aaa; white-space:nowrap;">總量(多/空): <span style="color:var(--red); font-weight:800;">${data.whale_buy_vol || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--green); font-weight:800;">${data.whale_sell_vol || 0}</span></span>
                 </div>
             </div>
         `;
