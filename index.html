@@ -674,7 +674,28 @@
             ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
             : ``; // 如果只是一般 SCAN 則隱藏標籤，保持畫面乾淨
 
-        // 組合靜態面板 HTML (優化排版：分為上下兩排，增強視覺層次)
+        // 🌟 新增：計算淨力斜率 (與上一次的淨力相減)
+        let currentNetWhale = data.net_whale || 0;
+        let netWhaleDiff = 0;
+        
+        // 判斷如果已經有舊資料，就計算差額
+        if (window.lastNetWhaleRadar !== undefined && window.lastNetWhaleRadar !== null) {
+            netWhaleDiff = currentNetWhale - window.lastNetWhaleRadar;
+        }
+        window.lastNetWhaleRadar = currentNetWhale; // 存下這次的數據供下次使用
+
+        // 🌟 新增：決定箭頭圖示與顏色
+        let netSlopeIcon = "➖";
+        let netSlopeColor = "#888";
+        if (netWhaleDiff > 0) {
+            netSlopeIcon = "🔼";
+            netSlopeColor = "var(--red)";
+        } else if (netWhaleDiff < 0) {
+            netSlopeIcon = "🔽";
+            netSlopeColor = "var(--green)";
+        }
+
+        // 組合靜態面板 HTML (優化排版：分為上下兩排，並加入淨力斜率箭頭)
         let tickerHtml = `
             <div style="display:flex; flex-direction:column; width:100%; gap:6px;">
                 
@@ -688,7 +709,9 @@
                             ${actionIcon} ${actionStr} <span style="font-size:14px; font-weight:800;">${data.vol || 0}</span>口
                         </span>
                         <span style="color:#aaa; white-space:nowrap; font-size:11px;">
-                            淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${data.net_whale || 0}</span>口 (${data.retention || 0}%)
+                            淨力: <span style="color:${netColor}; font-size:14px; font-weight:800;">${currentNetWhale}</span>口
+                            <span style="color:${netSlopeColor}; font-size:11px; margin-left:2px; font-weight:bold;">${netSlopeIcon}${Math.abs(netWhaleDiff)}</span> 
+                            (${data.retention || 0}%)
                         </span>
                     </div>
                 </div>
