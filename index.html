@@ -1242,25 +1242,36 @@
       document.getElementById('wall-support-vol').innerText = sv; document.getElementById('wall-pressure-vol').innerText = pv;
       document.getElementById('wall-bull-bar').style.width = bullWallR + "%"; document.getElementById('wall-bear-bar').style.width = bearWallR + "%"; document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
 
-      // ★ 新增 GEX 數據更新
+      // ★ 新增 GEX 數據更新 (完美對接 VBA 的 JSON 鍵值)
       let elPutGex = document.getElementById('put-gex-wall');
       let elCallGex = document.getElementById('call-gex-wall');
       let elNetGex = document.getElementById('net-gex-val');
       
-      if (elPutGex && data.put_gex_wall !== undefined) {
-          elPutGex.innerText = data.put_gex_wall > 0 ? data.put_gex_wall : "--";
+      // 對接 VBA: "gex_put_wall"
+      if (elPutGex && data.gex_put_wall !== undefined) {
+          elPutGex.innerText = data.gex_put_wall > 0 ? data.gex_put_wall : "--";
       }
-      if (elCallGex && data.call_gex_wall !== undefined) {
-          elCallGex.innerText = data.call_gex_wall > 0 ? data.call_gex_wall : "--";
+      
+      // 對接 VBA: "gex_call_wall"
+      if (elCallGex && data.gex_call_wall !== undefined) {
+          elCallGex.innerText = data.gex_call_wall > 0 ? data.gex_call_wall : "--";
       }
-      if (elNetGex && data.net_gex) {
-          elNetGex.innerText = data.net_gex;
-          if (data.net_gex.includes('+')) {
-              elNetGex.style.color = "var(--yellow)";
-          } else if (data.net_gex.includes('-')) {
-              elNetGex.style.color = "var(--red)";
+      
+      // 對接 VBA: "gex_net_m" (接收到的是純數字)
+      if (elNetGex && data.gex_net_m !== undefined) {
+          let netGexNum = parseFloat(data.gex_net_m);
+          
+          // 前端自動重組文字與判斷邏輯
+          let sign = netGexNum > 0 ? "+" : "";
+          let stateTxt = netGexNum >= 0 ? "百萬(區間)" : "百萬(單邊)";
+          
+          elNetGex.innerText = sign + netGexNum.toFixed(1) + " " + stateTxt;
+          
+          // 前端自動上色
+          if (netGexNum >= 0) {
+              elNetGex.style.color = "var(--yellow)"; // 正數顯示金色
           } else {
-              elNetGex.style.color = "#888";
+              elNetGex.style.color = "var(--red)";    // 負數顯示紅色
           }
       }
 
