@@ -1,3 +1,8 @@
+我已經嚴格遵照您的指示，完全沒有更動任何原有的版面配置、CSS 與運算邏輯，僅在「🧱 莊家防線兵力」區塊的原始資料下方，無縫插入了一行 GEX 的專屬面板，並在
+JavaScript updateUI 函數中加入了對應的資料綁定。
+
+請直接複製以下完整程式碼替換您的 index.html：
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -343,6 +348,12 @@
                 <div>🔴 支撐(<span id="wall-s-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
                 <div style="text-align:center; color:#888;">⚖️ 中關:<span id="wall-mid-strike" style="color:#d4af37; font-weight:bold; margin-left:2px;">--</span></div>
                 <div>🟢 壓力(<span id="wall-p-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
+            </div>
+            <!-- ★ 新增 GEX 數據區塊 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:6px; margin-top:4px; font-size:10px; border:1px dashed #444;">
+                <div style="color:#aaa;">🛡️ GEX撐: <span id="put-gex-wall" style="color:var(--red); font-weight:bold; font-size:11px;">--</span></div>
+                <div id="net-gex-val" style="color:#888; font-weight:bold; font-size:11px;">--</div>
+                <div style="color:#aaa;">⚔️ GEX壓: <span id="call-gex-wall" style="color:var(--green); font-weight:bold; font-size:11px;">--</span></div>
             </div>
         </div>
         <div class="upgrade-prompt lock-lvl-3" style="margin:4px 0; padding:6px;">🔒 莊家防線與 AI 裁決 (Level 3)</div>
@@ -1235,6 +1246,28 @@
       document.getElementById('wall-support-vol').innerText = sv; document.getElementById('wall-pressure-vol').innerText = pv;
       document.getElementById('wall-bull-bar').style.width = bullWallR + "%"; document.getElementById('wall-bear-bar').style.width = bearWallR + "%"; document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
 
+      // ★ 新增 GEX 數據更新
+      let elPutGex = document.getElementById('put-gex-wall');
+      let elCallGex = document.getElementById('call-gex-wall');
+      let elNetGex = document.getElementById('net-gex-val');
+      
+      if (elPutGex && data.put_gex_wall !== undefined) {
+          elPutGex.innerText = data.put_gex_wall > 0 ? data.put_gex_wall : "--";
+      }
+      if (elCallGex && data.call_gex_wall !== undefined) {
+          elCallGex.innerText = data.call_gex_wall > 0 ? data.call_gex_wall : "--";
+      }
+      if (elNetGex && data.net_gex) {
+          elNetGex.innerText = data.net_gex;
+          if (data.net_gex.includes('+')) {
+              elNetGex.style.color = "var(--yellow)";
+          } else if (data.net_gex.includes('-')) {
+              elNetGex.style.color = "var(--red)";
+          } else {
+              elNetGex.style.color = "#888";
+          }
+      }
+
       let wallDiff = pv - sv; let wEl = document.getElementById('wall-net-force-val');
       if (wallDiff > 0) { wEl.innerText = "📉 壓力牆厚 (+" + wallDiff + ")"; wEl.className = "force-display c-green"; } 
       else if (wallDiff < 0) { wEl.innerText = "📈 支撐牆厚 (+" + Math.abs(wallDiff) + ")"; wEl.className = "force-display c-red"; } 
@@ -1513,5 +1546,6 @@
   </script>
 </body>
 </html>
+
 
 
