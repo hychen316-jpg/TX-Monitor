@@ -887,7 +887,7 @@
         let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
         let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
 
-        // ★ v3.5 最終數據對齊版 Matrix 定義與 SOP 動作 (6小時未來展望)
+        // ★ v3.6 最新校準版 Matrix 定義與 SOP 動作 (6小時未來展望 - 2026/05數據)
         switch(matrixCode) {
             case '[+ 負 - +]': 
                 result = { 
@@ -897,77 +897,77 @@
             case '[+ 正 - +]': 
                 result = { 
                     text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">放棄放空，改作多</span><br>[🎯 狙擊陣型] 🔄 強烈反轉：勝率 100%！強勢換手抵抗，後續動能極度狂暴。` 
+                    advice: `<span class="action-badge action-long">作多</span><br>[🎯 狙擊陣型] 勝率 86.0%！強勢換手抵抗，後續動能極度狂暴。` 
                 }; break;
             case '[- 負 - -]': 
                 result = { 
-                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">逢低買進 (作多)</span><br>[🎯 狙擊陣型] 🔄 強烈反轉：勝率 100%！殺莊後超跌，引發極端報復性反彈。` 
+                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-short">改作空</span><br>[⚠️ 數據翻轉] 實測勝率驟降，最佳期望值已轉為作空！` 
                 }; break;
             case '[- 負 + +]': 
                 result = { 
                     text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">順勢做多，空單逃命</span><br>[🎯 狙擊陣型] 勝率 87%！大戶狂買，強行軋空，動能無法阻擋。` 
+                    advice: `<span class="action-badge action-long">順勢做多，空單逃命</span><br>[🎯 狙擊陣型] 勝率 78.2%！大戶狂買，強行軋空，動能無法阻擋。` 
                 }; break;
             case '[- 負 + -]': 
                 result = { 
-                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">勇敢買進接刀</span><br>[🎯 狙擊陣型] 勝率 83.8%！市價異常砸盤，完美洗出多單浮額。` 
+                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">勇敢買進接刀</span><br>[⭐ 核心陣型] 勝率 78.6%！市價異常砸盤，完美洗出多單浮額。` 
                 }; break;
             case '[- 負 - +]': 
                 result = { 
-                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">多單死抱，禁空</span><br>[⭐ 核心陣型] 🔄 強烈反轉：勝率 71.5%！這是主升段的絕對噴出，絕非煙火波。` 
+                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">多單死抱，禁空</span><br>[🎯 狙擊陣型] 勝率 84.6%！主升段的絕對噴出，絕非煙火波。` 
                 }; break;
             case '[+ 負 + +]': 
                 result = { 
-                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">重倉做多</span><br>[⭐ 核心陣型] 勝率 64.7%！價格深潛，莊家托底+市價總攻。` 
+                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">減少部位，謹慎觀望</span><br>[👀 觀察陣型] 勝率 57.9%！動能較預期弱，主力托底意圖不明顯。` 
                 }; break;
             case '[+ 正 + -]': 
                 result = { 
                     text: `👻 假撐誘多 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">逢低做多</span><br>[⭐ 核心陣型] 🔄 強烈反轉：假單轉為實質支撐，洗盤後發動上攻。` 
+                    advice: `<span class="action-badge action-long">逢低做多</span><br>[⭐ 核心陣型] 勝率 73.6%！假單轉為實質支撐，洗盤後發動上攻。` 
                 }; break;
             case '[- 正 - +]': 
                 result = { 
-                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">無腦追多，禁空</span><br>[⭐ 核心陣型] 🔄 強烈反轉：賣牆被強力實單貫穿，軋空燃料極度充足。` 
+                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-s", 
+                    advice: `<span class="action-badge action-long">無腦追多，禁空</span><br>[🎯 狙擊陣型] 勝率 70.4%！賣牆被強力實單貫穿，軋空燃料極度充足。` 
                 }; break;
             case '[- 正 + -]': 
                 result = { 
-                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">拉回做多</span><br>[👀 觀察陣型] 🔄 強烈反轉：護盤有效，籌碼沉澱後將引發反撲。` 
+                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">拉回做多 (縮小部位)</span><br>[👀 觀察陣型] 勝率 63.2%！護盤有效，籌碼沉澱後將引發反撲。` 
                 }; break;
             case '[+ 正 - -]': 
                 result = { 
-                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">短線順勢做空</span><br>[👀 觀察陣型] 勝率 80%但肉水極少。超跌且主力放棄防守。` 
+                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">改作多</span><br>[⚠️ 數據翻轉] 實測最佳期望值為作多，不宜再殺低！` 
                 }; break;
             case '[+ 負 - -]': 
                 result = { 
-                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-wait">觀望，破底追空</span><br>[👀 觀察陣型] 散戶瘋狂砸盤，莊家單兵死撐。` 
+                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-a-bull", 
+                    advice: `<span class="action-badge action-long">改作多</span><br>[⚠️ 數據翻轉] 實測最佳期望值為作多！` 
                 }; break;
             case '[- 正 - -]': 
                 result = { 
-                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">放棄做空，反手做多</span><br>[⚠️ 強烈翻轉] 原論做空必遭血洗(-383點)！此為超級誘空，順勢做多。` 
+                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">作多或觀望</span><br>[👀 觀察陣型] 勝率 50.5%！極度危險的超級誘空。` 
                 }; break;
             case '[+ 負 + -]': 
                 result = { 
-                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">放棄追空，改作多</span><br>[⚠️ 強烈翻轉] 實測做空動能極弱，反向做多反而具備爆發潛力。` 
+                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bear", 
+                    advice: `<span class="action-badge action-short">改作空</span><br>[⚠️ 數據翻轉] 實測最佳期望值為作空，動能發生極端變化！` 
                 }; break;
             case '[- 正 + +]': 
                 result = { 
-                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">放棄放空，改作多</span><br>[⚠️ 強烈翻轉] 散戶衝高撞牆，實測放空會被反向軋空(-99點)。` 
+                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-n", 
+                    advice: `<span class="action-badge action-wait">空手觀望</span><br>[🛑 警示陣型] 期望值為負 (-44.3點)，極度洗盤區間，雙向皆虧。` 
                 }; break;
             case '[+ 正 + +]': 
                 result = { 
                     text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">順勢追多 (防雙巴)</span><br>[⚠️ 強烈翻轉] 價格低於中性位，買盤極強。放空易遭雙巴，順勢做多為佳。` 
+                    advice: `<span class="action-badge action-wait">空手觀望</span><br>[🛑 警示陣型] 期望值為負 (-10.7點)，雙向皆虧，容易被雙巴。` 
                 }; break;
         }
 
