@@ -327,6 +327,25 @@
         <div class="upgrade-btn">需要 Level 4 解鎖</div>
     </div>
 
+    <div class="box req-level-4-flex" style="margin-top:6px; margin-bottom:6px; padding:10px 12px; border: 1px solid #444; background: linear-gradient(180deg, #1c1c1e 0%, #111 100%);">
+        <div class="box-header" style="margin-bottom:8px; color:#fff;">🎯 主力實彈狙擊重鎮 (Whale Targeting)</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:flex-start; align-items:center; background:rgba(255,69,58,0.1); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,69,58,0.3);">
+                <span id="bull-target-val" style="color:var(--red); font-size:14px; font-weight:bold; letter-spacing:0.5px;">等待數據...</span>
+            </div>
+            <div style="display:flex; justify-content:flex-start; align-items:center; background:rgba(48,209,88,0.1); padding:8px 10px; border-radius:8px; border:1px solid rgba(48,209,88,0.3);">
+                <span id="bear-target-val" style="color:var(--green); font-size:14px; font-weight:bold; letter-spacing:0.5px;">等待數據...</span>
+            </div>
+        </div>
+    </div>
+    <div class="box upgrade-prompt lock-lvl-4" style="margin-top:6px; margin-bottom:6px; padding:12px; flex-direction:row; gap:10px;">
+        <div style="font-size:20px;">🎯</div>
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+            <div style="font-size:11px; font-weight:bold; color:#aaa;">主力實彈狙擊重鎮</div>
+            <div class="upgrade-btn" style="font-size:9px; padding:3px 8px;">需要 Level 4 解鎖</div>
+        </div>
+    </div>
+    
     <div class="battle-box req-level-2-flex" id="battle-card">
         <div class="box-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
             <span>🧱 莊家防線兵力 (壓力 vs 支撐)</span>
@@ -1275,6 +1294,21 @@
           }
       }
 
+      // =================================================================
+      // ★ 新增：接收並渲染主力狙擊重鎮 (P28, P29)
+      // =================================================================
+      let bullTargetEl = document.getElementById('bull-target-val');
+      if (bullTargetEl && data.bull_target !== undefined) {
+          // 使用 innerHTML 確保 VBA 傳來的 🔥 符號與文字能正確解析
+          bullTargetEl.innerHTML = data.bull_target !== "" ? data.bull_target : "--";
+      }
+      
+      let bearTargetEl = document.getElementById('bear-target-val');
+      if (bearTargetEl && data.bear_target !== undefined) {
+          bearTargetEl.innerHTML = data.bear_target !== "" ? data.bear_target : "--";
+      }
+      // =================================================================
+      
       let wallDiff = pv - sv; let wEl = document.getElementById('wall-net-force-val');
       if (wallDiff > 0) { wEl.innerText = "📉 壓力牆厚 (+" + wallDiff + ")"; wEl.className = "force-display c-green"; } 
       else if (wallDiff < 0) { wEl.innerText = "📈 支撐牆厚 (+" + Math.abs(wallDiff) + ")"; wEl.className = "force-display c-red"; } 
