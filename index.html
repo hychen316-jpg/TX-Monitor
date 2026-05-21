@@ -1,3 +1,6 @@
+沒問題！我已嚴格遵守你的規定，完全保留原本的所有程式碼、版面配置與邏輯，僅在指定的位子加入新圖表所需的 HTML 與 JavaScript 程式碼。
+
+請將以下完整的 index.html 直接覆蓋你原本的檔案：
 
 <!DOCTYPE html>
 <html>
@@ -410,6 +413,14 @@
       <div class="chip-card" id="c4-card"><span class="box-header" style="margin-bottom:2px; font-size:9px; text-align:center; width:100%; letter-spacing:0;">次月日</span><span id="c4-val" class="big-val" style="font-size:15px; margin:auto;">--</span><span id="c4-tag" class="chip-tag" style="margin:2px auto 0; font-size:9px; padding:2px 4px;">--</span></div>
     </div>
     
+    <!-- ★ 新增：主力狙擊重鎮推移 (Level 4 專屬) -->
+    <div class="section-title req-level-4-flex" style="margin-top:6px;">🎯 歷史狙擊重鎮推移 (履約價 vs 力道)</div>
+    <div class="split-chart-box req-level-4-block" style="margin-bottom:6px; height:150px;"><canvas id="chartSniper"></canvas></div>
+    <div class="split-chart-box upgrade-prompt lock-lvl-4" style="margin-bottom:6px; height:80px;">
+        <div>🔒 歷史狙擊重鎮推移圖表</div>
+        <div class="upgrade-btn">需要 Level 4</div>
+    </div>
+    
     <div class="section-title req-level-3-flex" style="margin-top:6px;">🧱 莊家防線推移 (履約價 vs 掛單量)</div>
     <div class="split-chart-box req-level-3-block" style="margin-bottom:6px; height:130px;"><canvas id="chartWall"></canvas></div>
     <div class="split-chart-box upgrade-prompt lock-lvl-3" style="margin-bottom:6px; height:80px;">
@@ -504,7 +515,7 @@
     const NODE_ALPHA    = 'monitor_realtime/alpha_data';
     const NODE_RADAR    = 'radar_realtime'; // ★ 新增雷達監聽節點
 
-    let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null; let chartSkew = null;
+    let chartPrice = null; let chartChip = null; let chartP6 = null; let chartWall = null; let chartHeat = null; let chartSkew = null; let chartSniper = null;
     let p9SlopeHistory = [];
     let lastCrossVwap = "--";
     
@@ -1390,6 +1401,7 @@
         let labels=[], dataP=[], dataC=[], dataR7=[], dataP9=[];
         let dataWallPS=[], dataWallSS=[], dataWallPV=[], dataWallSV=[];
         let dataSkew=[]; 
+        let dataBullStrike=[], dataBearStrike=[], dataBullForce=[], dataBearForce=[]; // ★ 新增
         
         let skewRadii = [];
         let skewColors = [];
@@ -1428,6 +1440,14 @@
                 currentSkew = skewValRaw - currentSkewOffset;
             }
             dataSkew.push(currentSkew);
+
+            // ★ 新增：讀取多空重鎮歷史數據 (濾除 0 或是 null 以免圖表下垂)
+            let b_strike = d.bull_strike ? parseFloat(d.bull_strike) : null;
+            let br_strike = d.bear_strike ? parseFloat(d.bear_strike) : null;
+            dataBullStrike.push(b_strike > 0 ? b_strike : null);
+            dataBearStrike.push(br_strike > 0 ? br_strike : null);
+            dataBullForce.push(d.bull_force !== undefined ? parseFloat(d.bull_force) : null);
+            dataBearForce.push(d.bear_force !== undefined ? parseFloat(d.bear_force) : null);
 
             let ptRadius = 0;           
             let ptColor = '#bf5af2';    
@@ -1499,6 +1519,16 @@
             chartSkew.data.datasets[0].pointBorderWidth = 1;
             chartSkew.data.datasets[0].pointStyle = skewStyles;
             chartSkew.update();
+        }
+
+        // ★ 新增
+        if(chartSniper) {
+            chartSniper.data.labels = labels;
+            chartSniper.data.datasets[0].data = dataBullStrike;
+            chartSniper.data.datasets[1].data = dataBearStrike;
+            chartSniper.data.datasets[2].data = dataBullForce;
+            chartSniper.data.datasets[3].data = dataBearForce;
+            chartSniper.update();
         }
     }
     
@@ -1583,10 +1613,29 @@
                 } 
             } 
         });
+
+        // ★ 新增：狙擊重鎮圖表初始化 (左軸點位、右軸力道)
+        chartSniper = new Chart(document.getElementById('chartSniper').getContext('2d'), { 
+            type: 'line', 
+            data: { 
+                labels: [], 
+                datasets: [ 
+                    { label: '多軍目標(左軸)', data: [], borderColor: '#ff453a', borderWidth: 2, pointRadius: 2, stepped: true, fill: false, yAxisID: 'y' }, 
+                    { label: '空軍目標(左軸)', data: [], borderColor: '#30d158', borderWidth: 2, pointRadius: 2, stepped: true, fill: false, yAxisID: 'y' }, 
+                    { label: '多軍力道(右軸)', data: [], backgroundColor: 'rgba(255, 69, 58, 0.2)', borderColor: 'rgba(255, 69, 58, 0.6)', borderWidth: 1, pointRadius: 0, fill: true, tension: 0.3, yAxisID: 'y1' }, 
+                    { label: '空軍力道(右軸)', data: [], backgroundColor: 'rgba(48, 209, 88, 0.2)', borderColor: 'rgba(48, 209, 88, 0.6)', borderWidth: 1, pointRadius: 0, fill: true, tension: 0.3, yAxisID: 'y1' } 
+                ] 
+            }, 
+            options: { 
+                ...commonOptions, 
+                scales: { 
+                    x: { ticks: { color: '#666', maxTicksLimit: 6 }, grid: { display: false } }, 
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: '#333' }, ticks: { color: '#ddd' } }, 
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888' } } 
+                } 
+            } 
+        });
     }
   </script>
 </body>
 </html>
-
-
-
