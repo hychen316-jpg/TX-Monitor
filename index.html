@@ -327,7 +327,10 @@
     </div>
 
     <div class="box req-level-4-flex" style="margin-top:4px; margin-bottom:4px; padding:6px 8px; border: 1px dashed #444; background: rgba(0,0,0,0.5);">
-        <div class="box-header" style="margin-bottom:4px; color:#888; font-size:9px;">🎯 主力實彈狙擊重鎮</div>
+        <div class="box-header" style="margin-bottom:4px; color:#888; font-size:9px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🎯 主力實彈狙擊重鎮</span>
+          <span style="font-size:10px; color:#aaa;">力道差: <span id="target-net-force" style="font-weight:bold; font-size:12px;">--</span></span>
+        </div>
         <div style="display:flex; justify-content:space-between; gap:4px;">
             <div style="flex:1; display:flex; justify-content:center; align-items:center; background:rgba(255,69,58,0.1); padding:4px 0; border-radius:4px; border:1px solid rgba(255,69,58,0.2);">
                 <span id="bull-target-val" style="color:var(--red); font-size:11px; font-weight:bold; letter-spacing:0.3px;">--</span>
@@ -1302,17 +1305,30 @@
       }
 
       // =================================================================
-      // ★ 新增：接收並渲染主力狙擊重鎮 (P28, P29)
+      // ★ 新增：接收並渲染主力狙擊重鎮 (P28, P29) 與 多空力道差
       // =================================================================
       let bullTargetEl = document.getElementById('bull-target-val');
       if (bullTargetEl && data.bull_target !== undefined) {
-          // 使用 innerHTML 確保 VBA 傳來的 🔥 符號與文字能正確解析
           bullTargetEl.innerHTML = data.bull_target !== "" ? data.bull_target : "--";
       }
       
       let bearTargetEl = document.getElementById('bear-target-val');
       if (bearTargetEl && data.bear_target !== undefined) {
           bearTargetEl.innerHTML = data.bear_target !== "" ? data.bear_target : "--";
+      }
+
+      // 讀取並計算多空力道差
+      let targetNetForceEl = document.getElementById('target-net-force');
+      if (targetNetForceEl && data.bull_target_force !== undefined && data.bear_target_force !== undefined) {
+          let bullForce = parseFloat(data.bull_target_force) || 0;
+          let bearForce = parseFloat(data.bear_target_force) || 0;
+          let netForce = bullForce + bearForce; // 依照您定義的加總公式
+          
+          let sign = netForce > 0 ? "+" : "";
+          let color = netForce > 0 ? "var(--red)" : (netForce < 0 ? "var(--green)" : "#888");
+          
+          // 更新數值並加入千分位與顏色
+          targetNetForceEl.innerHTML = `<span style="color:${color}; text-shadow: 0 0 5px ${color}80;">${sign}${netForce.toLocaleString('en-US')}</span>`;
       }
       // =================================================================
       
