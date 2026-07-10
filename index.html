@@ -224,7 +224,10 @@
                 <div id="oi-iv-val" style="width:100%; box-sizing:border-box;">
                     <div style="text-align:center; color:#888; font-size:10px; margin-top:2px;">IV 數據等待中...</div>
                 </div>
-                <div id="mdi-advice-val" style="width:100%; text-align:center; font-size:11px; font-weight:900; margin-top:2px; border-top:1px dashed rgba(212,175,55,0.3); padding-top:4px; display:none;"></div>
+                <div id="mdi-advice-container" style="width:100%; display:none; justify-content:space-between; align-items:center; margin-top:2px; border-top:1px dashed rgba(212,175,55,0.3); padding-top:4px;">
+                    <span id="mdi-advice-val" style="font-size:11px; font-weight:900;"></span>
+                    <span id="mdi-quality-val" style="font-size:9px; color:#aaa; font-weight:bold; background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:4px;">--</span>
+                </div>
             </div>
         </div>
 
@@ -1400,16 +1403,21 @@
         let tag = document.getElementById(id+'-tag'); tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
       });
       
+      let mdiContainerEl = document.getElementById('mdi-advice-container');
       let mdiAdviceEl = document.getElementById('mdi-advice-val');
-      if (mdiAdviceEl && data.mdi_execution_advice !== undefined && data.mdi_execution_advice !== "") {
+      let mdiQualityEl = document.getElementById('mdi-quality-val');
+      if (mdiContainerEl && data.mdi_execution_advice !== undefined && data.mdi_execution_advice !== "") {
+          mdiContainerEl.style.display = "flex";
           let adviceText = data.mdi_execution_advice;
-          mdiAdviceEl.style.display = "block";
           mdiAdviceEl.innerText = "⚡ " + adviceText;
           if (adviceText.includes("多")) mdiAdviceEl.style.color = "var(--red)";
           else if (adviceText.includes("空")) mdiAdviceEl.style.color = "var(--green)";
           else mdiAdviceEl.style.color = "var(--yellow)";
-      } else if (mdiAdviceEl) {
-          mdiAdviceEl.style.display = "none";
+          if (mdiQualityEl && data.mdi_data_quality !== undefined) {
+              mdiQualityEl.innerText = "Q:" + data.mdi_data_quality;
+          }
+      } else if (mdiContainerEl) {
+          mdiContainerEl.style.display = "none";
       }
     }
 
