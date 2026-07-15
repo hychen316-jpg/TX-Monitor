@@ -1426,7 +1426,11 @@
               mdiQualityEl.innerText = "Q:" + data.mdi_data_quality;
           }
           if (mdiActivationScoreEl && data.omi_score !== undefined) {
-              mdiActivationScoreEl.innerText = "AH2: " + data.omi_score;
+              let scoreText = data.omi_score;
+              if (data.mdi_phase) {
+                  scoreText += " | " + data.mdi_phase;
+              }
+              mdiActivationScoreEl.innerText = "AH2: " + scoreText;
           }
           if (mdiIntentEl && data.mdi_intent !== undefined) {
               mdiIntentEl.innerText = data.mdi_intent.replace('|', ' ');
