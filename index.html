@@ -1366,11 +1366,10 @@
       }
 
       let strategy = analyzeStrategy(data); 
-      let logicEl = document.getElementById('logic-text'); 
       let battleCard = document.getElementById('battle-card');
-      
-      logicEl.innerHTML = `<span style="font-size:13px;">${strategy.text}</span><br><span style="font-size:11px; color:#ffd60a; font-weight:600; text-shadow:0 1px 2px #000;">${strategy.advice}</span>`; 
-      battleCard.className = "battle-box req-level-2-flex " + strategy.class;
+      if (battleCard) {
+          battleCard.className = "battle-box req-level-2-flex " + strategy.class;
+      }
       
       updateStrategyBox(data, strategy);
 
