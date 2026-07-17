@@ -378,12 +378,7 @@
                 <div style="text-align:center; color:#888;">⚖️ 中關:<span id="wall-mid-strike" style="color:#d4af37; font-weight:bold; margin-left:2px;">--</span></div>
                 <div>🟢 壓力(<span id="wall-p-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
             </div>
-            <!-- ★ 新增 GEX 數據區塊 -->
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:6px; margin-top:4px; font-size:10px; border:1px dashed #444;">
-                <div style="color:#aaa;">🛡️ GEX撐: <span id="put-gex-wall" style="color:var(--red); font-weight:bold; font-size:11px;">--</span></div>
-                <div id="net-gex-val" style="color:#888; font-weight:bold; font-size:11px;">--</div>
-                <div style="color:#aaa;">⚔️ GEX壓: <span id="call-gex-wall" style="color:var(--green); font-weight:bold; font-size:11px;">--</span></div>
-            </div>
+
         </div>
         <div class="upgrade-prompt lock-lvl-3" style="margin:4px 0; padding:6px;">🔒 莊家防線與 AI 裁決 (Level 3)</div>
 
@@ -1283,38 +1278,7 @@
       document.getElementById('wall-support-vol').innerText = sv; document.getElementById('wall-pressure-vol').innerText = pv;
       document.getElementById('wall-bull-bar').style.width = bullWallR + "%"; document.getElementById('wall-bear-bar').style.width = bearWallR + "%"; document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
 
-      // ★ 新增 GEX 數據更新 (完美對接 VBA 的 JSON 鍵值)
-      let elPutGex = document.getElementById('put-gex-wall');
-      let elCallGex = document.getElementById('call-gex-wall');
-      let elNetGex = document.getElementById('net-gex-val');
-      
-      // 對接 VBA: "gex_put_wall"
-      if (elPutGex && data.gex_put_wall !== undefined) {
-          elPutGex.innerText = data.gex_put_wall > 0 ? data.gex_put_wall : "--";
-      }
-      
-      // 對接 VBA: "gex_call_wall"
-      if (elCallGex && data.gex_call_wall !== undefined) {
-          elCallGex.innerText = data.gex_call_wall > 0 ? data.gex_call_wall : "--";
-      }
-      
-      // 對接 VBA: "gex_net_m" (接收到的是純數字)
-      if (elNetGex && data.gex_net_m !== undefined) {
-          let netGexNum = parseFloat(data.gex_net_m);
-          
-          // 前端自動重組文字與判斷邏輯
-          let sign = netGexNum > 0 ? "+" : "";
-          let stateTxt = netGexNum >= 0 ? "百萬(區間)" : "百萬(單邊)";
-          
-          elNetGex.innerText = sign + netGexNum.toFixed(1) + " " + stateTxt;
-          
-          // 前端自動上色
-          if (netGexNum >= 0) {
-              elNetGex.style.color = "var(--yellow)"; // 正數顯示金色
-          } else {
-              elNetGex.style.color = "var(--red)";    // 負數顯示紅色
-          }
-      }
+
 
       // =================================================================
       // ★ 新增：接收並渲染主力狙擊重鎮 (P28, P29) 與 多空力道差
