@@ -383,21 +383,19 @@
             <span id="wall-intent-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold; border:1px solid #444; color:#aaa; transition: all 0.3s ease;">意圖分析中...</span>
         </div>
         
-        <div class="req-level-3-block">
-            <div class="tug-container">
-                <div id="wall-bull-bar" class="bull-bar" style="width: 50%;"></div>
-                <div id="wall-bear-bar" class="bear-bar" style="width: 50%;"></div>
-                <div id="wall-ratio-text" class="percent-text">50% vs 50%</div>
+        <div class="req-level-4-block">
+            <div style="display:flex; justify-content:space-around; align-items:center; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin:4px 0; border:1px solid #444;">
+                <div style="text-align:center; flex:1; border-right:1px solid #333;">
+                    <div style="font-size:10px; color:#aaa; margin-bottom:4px;">盤中動態支撐 (AL2)</div>
+                    <div id="dyn-omi-support" style="font-size:18px; font-weight:bold; color:var(--red);">--</div>
+                </div>
+                <div style="text-align:center; flex:1;">
+                    <div style="font-size:10px; color:#aaa; margin-bottom:4px;">盤中動態壓力 (AM2)</div>
+                    <div id="dyn-omi-pressure" style="font-size:18px; font-weight:bold; color:var(--green);">--</div>
+                </div>
             </div>
-            <div id="wall-net-force-val" class="force-display">-- 淨力道</div>
-            <div class="army-stats">
-                <div>🔴 支撐(<span id="wall-s-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-support-vol" style="color:var(--red); font-weight:bold;">--</span></div>
-                <div style="text-align:center; color:#888;">⚖️ 中關:<span id="wall-mid-strike" style="color:#d4af37; font-weight:bold; margin-left:2px;">--</span></div>
-                <div>🟢 壓力(<span id="wall-p-strike" style="color:#fff; font-size:12px; font-weight:bold;">--</span>): <span id="wall-pressure-vol" style="color:var(--green); font-weight:bold;">--</span></div>
-            </div>
-
         </div>
-        <div class="upgrade-prompt lock-lvl-3" style="margin:4px 0; padding:6px;">🔒 莊家防線與 AI 裁決 (Level 3)</div>
+        <div class="upgrade-prompt lock-lvl-4" style="margin:4px 0; padding:6px;">🔒 莊家防線與盤中動態藍圖 (Level 4)</div>
 
         <div style="display:flex; gap:4px; margin-top:4px;" class="req-level-2-flex">
             <div class="p9-container" style="flex:1; flex-direction:column; padding:4px 2px; margin-top:0;">
@@ -1277,14 +1275,14 @@
           r7ThEl.innerText = (display_r7_th > 0 ? "+" : "") + display_r7_th.toLocaleString('en-US');
       }
 
-      let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
-      let ss = parseInt(data.now_s_s || 0); let old_ss = parseInt(data.old_s_s || 0); let sv = parseInt(data.now_s_v || 0);
-      let totalWall = pv + sv; let bullWallR = 50; let bearWallR = 50; if (totalWall > 0) { bullWallR = (sv / totalWall) * 100; bearWallR = (pv / totalWall) * 100; }
-
-      document.getElementById('wall-s-strike').innerText = ss > 0 ? ss : "--"; document.getElementById('wall-p-strike').innerText = ps > 0 ? ps : "--";
-      document.getElementById('wall-mid-strike').innerText = (ps > 0 && ss > 0) ? (ps + ss) / 2 : "--";
-      document.getElementById('wall-support-vol').innerText = sv; document.getElementById('wall-pressure-vol').innerText = pv;
-      document.getElementById('wall-bull-bar').style.width = bullWallR + "%"; document.getElementById('wall-bear-bar').style.width = bearWallR + "%"; document.getElementById('wall-ratio-text').innerText = Math.round(bullWallR) + "% vs " + Math.round(bearWallR) + "%";
+      let dynSupportEl = document.getElementById('dyn-omi-support');
+      if (dynSupportEl && data.omi_support !== undefined) {
+          dynSupportEl.innerText = data.omi_support > 0 ? data.omi_support : "--";
+      }
+      let dynPressureEl = document.getElementById('dyn-omi-pressure');
+      if (dynPressureEl && data.omi_pressure !== undefined) {
+          dynPressureEl.innerText = data.omi_pressure > 0 ? data.omi_pressure : "--";
+      }
 
 
 
