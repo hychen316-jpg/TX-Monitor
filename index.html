@@ -1314,10 +1314,9 @@
       }
       // =================================================================
       
-      let wallDiff = pv - sv; let wEl = document.getElementById('wall-net-force-val');
-      if (wallDiff > 0) { wEl.innerText = "📉 壓力牆厚 (+" + wallDiff + ")"; wEl.className = "force-display c-green"; } 
-      else if (wallDiff < 0) { wEl.innerText = "📈 支撐牆厚 (+" + Math.abs(wallDiff) + ")"; wEl.className = "force-display c-red"; } 
-      else { wEl.innerText = "⚖️ 勢均力敵 (0)"; wEl.className = "force-display"; wEl.style.color = "#aaa"; }
+      let ps = parseInt(data.now_p_s || 0); let old_ps = parseInt(data.old_p_s || 0); let pv = parseInt(data.now_p_v || 0);
+      let ss = parseInt(data.now_s_s || 0); let old_ss = parseInt(data.old_s_s || 0); let sv = parseInt(data.now_s_v || 0);
+      let totalWall = pv + sv;
 
       let intentBadge = document.getElementById('wall-intent-badge'); let isMoving = false;
       if (old_ps > 0 && ps > 0 && ps !== old_ps) { isMoving = true; if (ps > old_ps && valP9 > th_at_p) { intentBadge.innerText = "🏳️ 空軍退守 (軋空預備)"; intentBadge.style.color = "#000"; intentBadge.style.background = "var(--red)"; } else if (ps < old_ps && valP9 < th_at_n) { intentBadge.innerText = "📉 泰山壓頂 (壓力下逼)"; intentBadge.style.color = "#fff"; intentBadge.style.background = "var(--green)"; } else { isMoving = false; } } 
