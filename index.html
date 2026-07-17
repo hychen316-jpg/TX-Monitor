@@ -1375,10 +1375,7 @@
       
       updateStrategyBox(data, strategy);
 
-      document.getElementById('p-strike').innerText = ps > 0 ? ps : "--"; document.getElementById('p-vol').innerText = ps > 0 ? "(" + pv + ")" : "";
-      if (old_ps > 0 && old_ps !== ps) { document.getElementById('p-old').innerText = old_ps; document.getElementById('p-old-box').style.display = "inline-flex"; } else { document.getElementById('p-old-box').style.display = "none"; }
-      document.getElementById('s-strike').innerText = ss > 0 ? ss : "--"; document.getElementById('s-vol').innerText = ss > 0 ? "(" + sv + ")" : "";
-      if (old_ss > 0 && old_ss !== ss) { document.getElementById('s-old').innerText = old_ss; document.getElementById('s-old-box').style.display = "inline-flex"; } else { document.getElementById('s-old-box').style.display = "none"; }
+      // Legacy p-strike/s-strike DOM elements removed in UI update.
       
       const chipLabels = { 'c1': '近月夜', 'c2': '近月日', 'c3': '次月夜', 'c4': '次月日' };
       ['c1','c2','c3','c4'].forEach(id => {
