@@ -247,7 +247,28 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:14px;">--</span></div>
         </div>
 
-        
+        <div class="range-box req-level-4-grid" style="margin-top:10px; padding-bottom:8px; border:1px solid rgba(191,90,242,0.4); box-shadow:inset 0 0 10px rgba(191,90,242,0.1);">
+            <div class="box-header" style="position:absolute; top:8px; left:14px; color:#bf5af2;">🚧 固定戰場藍圖</div>
+            <div style="position:absolute; top:8px; right:14px; font-size:12px; font-weight:bold;">
+                <span id="fixed-dir-bm2" style="color:#d4af37;">--</span>
+            </div>
+            <div class="range-row" style="margin-top:16px;">
+                <div class="range-title c-green">🟢 固定壓力</div>
+                <div class="range-val c-green">
+                    <span id="fixed-p-bp2">--</span>
+                </div>
+            </div>
+            <div class="range-row">
+                <div class="range-title c-red">🔴 固定支撐</div>
+                <div class="range-val c-red">
+                    <span id="fixed-s-bo2">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="range-box upgrade-prompt lock-lvl-4" style="margin-top:10px; display:flex; height:60px; border:1px solid rgba(191,90,242,0.4);">
+            <div>🔒 戰場固定藍圖</div>
+            <div class="upgrade-btn">需要 Level 4</div>
+        </div>
       </div>
 
       <div class="box req-level-4-flex" style="padding:8px 12px; flex-direction:row; align-items:center; gap:10px; border: 1px solid rgba(10, 132, 255, 0.4); box-shadow: inset 0 0 10px rgba(10, 132, 255, 0.1); background: linear-gradient(90deg, rgba(10,132,255,0.05) 0%, transparent 100%);">
@@ -448,29 +469,7 @@
         <div class="upgrade-btn">需要 Level 4 解鎖</div>
     </div>
 
-    <div class="range-box req-level-3-grid" style="margin-top:6px;">
-        <div class="box-header" style="position:absolute; top:8px; left:14px;">🚧 戰場邊界</div>
-        <div class="range-row" style="margin-top:14px;">
-            <div class="range-title c-green">🟢 壓力牆</div>
-            <div class="range-val c-green">
-                <span id="p-strike">--</span>
-                <span class="range-old" id="p-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="p-old">--</span></span>
-                <span id="p-vol" class="range-vol">(--)</span>
-            </div>
-        </div>
-        <div class="range-row">
-            <div class="range-title c-red">🔴 支撐牆</div>
-            <div class="range-val c-red">
-                <span id="s-strike">--</span>
-                <span class="range-old" id="s-old-box" style="display:none;"><span class="arrow-icon">⬅</span><span id="s-old">--</span></span>
-                <span id="s-vol" class="range-vol">(--)</span>
-            </div>
-        </div>
-    </div>
-    <div class="range-box upgrade-prompt lock-lvl-3" style="margin-top:6px; display:flex; height:60px;">
-        <div>🔒 戰場掛單邊界</div>
-        <div class="upgrade-btn">需要 Level 3</div>
-    </div>
+
 
     <div class="section-title">📈 期貨現價 (Price)</div>
     <div class="split-chart-box"><canvas id="chartPrice"></canvas></div>
@@ -1198,6 +1197,20 @@
           }
       }
       document.getElementById('vwap-cross').innerText = lastCrossVwap;
+
+      // Populate fixed blueprint
+      if (data.omi3_blueprint_direction !== undefined) {
+          let fixedDirEl = document.getElementById('fixed-dir-bm2');
+          if(fixedDirEl) fixedDirEl.innerText = data.omi3_blueprint_direction;
+      }
+      if (data.omi3_blueprint_support_low !== undefined) {
+          let fixedSupEl = document.getElementById('fixed-s-bo2');
+          if(fixedSupEl) fixedSupEl.innerText = data.omi3_blueprint_support_low > 0 ? data.omi3_blueprint_support_low : "--";
+      }
+      if (data.omi3_blueprint_resistance_low !== undefined) {
+          let fixedResEl = document.getElementById('fixed-p-bp2');
+          if(fixedResEl) fixedResEl.innerText = data.omi3_blueprint_resistance_low > 0 ? data.omi3_blueprint_resistance_low : "--";
+      }
 
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
