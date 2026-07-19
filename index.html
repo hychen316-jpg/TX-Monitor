@@ -699,6 +699,25 @@
         let actionColor = actionStr.includes('外盤') ? 'var(--red)' : (actionStr.includes('內盤') ? 'var(--green)' : '#aaa');
         let actionIcon = actionStr.includes('外盤') ? '🔥' : (actionStr.includes('內盤') ? '💀' : '⏳');
         let netColor = (data.net_whale && data.net_whale > 0) ? 'var(--red)' : 'var(--green)';
+
+        // V2 主力成本診斷。direction 由 Python 上傳 1 / -1 / 0。
+        const mainCostState = data.main_cost_state || "WAITING";
+        const mainCostDirectionValue = Number(data.main_cost_direction || 0);
+        const mainCostDirection = mainCostDirectionValue > 0 ? "多方" : (mainCostDirectionValue < 0 ? "空方" : "中性");
+        const mainCostDirectionColor = mainCostDirectionValue > 0 ? 'var(--red)' : (mainCostDirectionValue < 0 ? 'var(--green)' : '#aaa');
+        const mainCostStateColor = mainCostState === "ACCUMULATING_LONG"
+            ? 'var(--red)'
+            : (mainCostState === "DISTRIBUTING_SHORT"
+                ? 'var(--green)'
+                : (mainCostState === "CONFLICT" ? 'var(--yellow)' : '#aaa'));
+        const mainCostLow = data.main_cost_low !== undefined && data.main_cost_low !== null ? data.main_cost_low : 0;
+        const mainCostHigh = data.main_cost_high !== undefined && data.main_cost_high !== null ? data.main_cost_high : 0;
+        const mainCostRange = Number(mainCostLow) > 0 && Number(mainCostHigh) > 0
+            ? `${mainCostLow}～${mainCostHigh}`
+            : "--";
+        const mainCostAcceptedEvents = data.main_cost_accepted_events !== undefined && data.main_cost_accepted_events !== null
+            ? data.main_cost_accepted_events
+            : 0;
         
         let statusBadge = data.is_trigger 
             ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
@@ -758,6 +777,21 @@
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
                         📊證據(多/空): 
                         <span style="color:var(--red); font-size:12px; font-weight:800;">${data.whale_buy_vol || 0}</span><span style="color:#555; margin:0 2px;">/</span><span style="color:var(--green); font-size:12px; font-weight:800;">${data.whale_sell_vol || 0}</span>
+                    </span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 6px; flex-wrap:wrap; gap:4px 10px;">
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        狀態: <span style="color:${mainCostStateColor}; font-size:11px; font-weight:800;">${mainCostState}</span>
+                    </span>
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        方向: <span style="color:${mainCostDirectionColor}; font-size:11px; font-weight:800;">${mainCostDirection}</span>
+                    </span>
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        成本區間: <span style="color:var(--yellow); font-size:11px; font-weight:800;">${mainCostRange}</span>
+                    </span>
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        有效事件: <span style="color:#fff; font-size:11px; font-weight:800;">${mainCostAcceptedEvents}</span>
                     </span>
                 </div>
 
