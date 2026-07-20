@@ -1237,11 +1237,17 @@
       }
       if (data.omi3_blueprint_support_low !== undefined) {
           let fixedSupEl = document.getElementById('fixed-s-bo2');
-          if(fixedSupEl) fixedSupEl.innerText = data.omi3_blueprint_support_low > 0 ? data.omi3_blueprint_support_low : "--";
+          let fixedSupLow = Number(data.omi3_blueprint_support_low);
+          let fixedSupHigh = Number(data.omi3_blueprint_support_high);
+          if(fixedSupEl) fixedSupEl.innerText = fixedSupLow > 0 ?
+              (fixedSupHigh > 0 && fixedSupHigh !== fixedSupLow ? fixedSupLow + "-" + fixedSupHigh : fixedSupLow) : "--";
       }
       if (data.omi3_blueprint_resistance_low !== undefined) {
           let fixedResEl = document.getElementById('fixed-p-bp2');
-          if(fixedResEl) fixedResEl.innerText = data.omi3_blueprint_resistance_low > 0 ? data.omi3_blueprint_resistance_low : "--";
+          let fixedResLow = Number(data.omi3_blueprint_resistance_low);
+          let fixedResHigh = Number(data.omi3_blueprint_resistance_high);
+          if(fixedResEl) fixedResEl.innerText = fixedResLow > 0 ?
+              (fixedResHigh > 0 && fixedResHigh !== fixedResLow ? fixedResLow + "-" + fixedResHigh : fixedResLow) : "--";
       }
       if (data.omi3_blueprint_trigger !== undefined) {
           let fixedTriggerEl = document.getElementById('fixed-trigger-bq2');
