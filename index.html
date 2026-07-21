@@ -1440,12 +1440,16 @@
           }
           
           // AH2
-          if (mdiActivationScoreEl && data.omi_score !== undefined) {
-              let scoreText = data.omi_score;
-              if (data.mdi_phase) {
-                  scoreText += " | " + data.mdi_phase;
+          if (mdiActivationScoreEl) {
+              if (data.mdi_live_campaign_display !== undefined && data.mdi_live_campaign_display !== "") {
+                  mdiActivationScoreEl.innerText = "AH2: " + data.mdi_live_campaign_display;
+              } else if (data.omi_score !== undefined) {
+                  let scoreText = data.omi_score;
+                  if (data.mdi_phase) {
+                      scoreText += " | " + data.mdi_phase;
+                  }
+                  mdiActivationScoreEl.innerText = "AH2: " + scoreText;
               }
-              mdiActivationScoreEl.innerText = "AH2: " + scoreText;
           }
           
           // AJ2 (Confidence & Styling)
