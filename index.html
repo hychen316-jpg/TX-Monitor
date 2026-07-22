@@ -1313,7 +1313,26 @@
       let bu2 = "--";
       if (data.futures_force_score !== undefined && data.futures_force_phase !== undefined) {
           let scoreSign = data.futures_force_score > 0 ? "+" : "";
-          bu2 = scoreSign + data.futures_force_score + "|" + data.futures_force_phase;
+          let rawPhase = data.futures_force_phase;
+          const phaseMap = {
+              "ACCUMULATION_LONG_CANDIDATE": "多方佈局",
+              "DISTRIBUTION_SHORT_CANDIDATE": "空方佈局",
+              "ACCUMULATION_LONG": "多方發起",
+              "DISTRIBUTION_SHORT": "空方發起",
+              "ATTACK_LONG_PENDING": "多方準備",
+              "ATTACK_SHORT_PENDING": "空方準備",
+              "ATTACK_LONG": "多方發動",
+              "ATTACK_SHORT": "空方發動",
+              "EXHAUSTION_LONG": "多方竭盡",
+              "EXHAUSTION_SHORT": "空方竭盡",
+              "CONFLICT": "多空分歧",
+              "STALE": "連線中斷",
+              "WARMUP": "系統暖機",
+              "NEUTRAL": "中立"
+          };
+          let phaseZh = phaseMap[rawPhase] || rawPhase;
+          let scoreStr = parseFloat(data.futures_force_score).toFixed(1);
+          bu2 = scoreSign + scoreStr + " | " + phaseZh;
       }
       let elBU2 = document.getElementById('fixed-fmf-bu2');
       if(elBU2) elBU2.innerText = bu2;
