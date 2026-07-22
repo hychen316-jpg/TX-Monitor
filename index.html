@@ -245,6 +245,201 @@
 
         <div class="req-level-4-flex" style="margin-top:6px; padding: 18px 12px 8px 12px; position:relative; background:var(--card); border-radius:10px; border:1px solid rgba(191,90,242,0.4); box-shadow:inset 0 0 10px rgba(191,90,242,0.1); flex-direction:column; align-items:stretch; gap:6px;">
             <div class="box-header" style="position:absolute; top:4px; left:10px; color:#bf5af2; font-size:9px; margin:0;">🚧 固定戰場藍圖</div>
+    .c-red { color:var(--red); } .c-green { color:var(--green); }
+    .bg-red { background:rgba(255, 69, 58, 0.15); color:var(--red); } 
+    .bg-green { background:rgba(48, 209, 88, 0.15); color:var(--green); }
+    .alert-red { border: 1px solid var(--red) !important; box-shadow: 0 0 10px rgba(255, 69, 58, 0.2); }
+    .alert-green { border: 1px solid var(--green) !important; box-shadow: 0 0 10px rgba(48, 209, 88, 0.2); }
+
+    .alpha-box { background: var(--card); border-radius: 10px; padding: 6px 8px; border: 1px solid #333; }
+    .alpha-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;}
+    .prob-badge { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; }
+    .prob-high { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); animation: pulse-red 1.5s infinite; }
+    .prob-neutral { background: rgba(255, 214, 10, 0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .prob-low { background: rgba(48, 209, 88, 0.15); color: var(--green); border: 1px solid var(--green); }
+    
+    .targets-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+    .target-card-sm { background: #2c2c2e; border-radius: 4px; padding: 4px 2px; text-align: center; border-left: 4px solid #555; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease; }
+    .target-name-sm { font-size: 10px; color: #ddd; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .target-data-row { display: flex; justify-content: center; align-items: baseline; gap: 3px; }
+    .target-price-sm { font-size: 12px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .target-diff-sm { font-size: 9px; font-weight: bold; line-height: 1; }
+    
+    .st-STRONG { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255, 69, 58, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(255, 69, 58, 0.25); }
+    .st-CRASH { border-left-color: var(--green); background: linear-gradient(90deg, rgba(48, 209, 88, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(48, 209, 88, 0.25); }
+    .st-DEFENSE { border-left-color: var(--blue); background: linear-gradient(90deg, rgba(10, 132, 255, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    .st-TRAP { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255, 214, 10, 0.35) 0%, rgba(44, 44, 46, 1) 90%); }
+    .st-RECOVER { border-left-color: var(--purple); background: linear-gradient(90deg, rgba(191, 90, 242, 0.35) 0%, rgba(44, 44, 46, 1) 90%); box-shadow: inset 2px 0 8px rgba(191, 90, 242, 0.25); }
+    .st-WAIT { border-left-color: #555; background: #2c2c2e; }
+
+    .alpha-legend { display: flex; justify-content: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 3px; font-size: 9px; color: #aaa; font-weight: 600; }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-red { background: var(--red); box-shadow: 0 0 4px var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
+    .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+    .dot-blue { background: var(--blue); }
+    .dot-gray { background: #555; }
+
+    .battle-box { background: var(--card); border-radius: 12px; padding: 6px 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 2px; }
+    .tug-container { height: 14px; background: #111; border-radius: 7px; position: relative; overflow: hidden; display: flex; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 0; }
+    .bull-bar { height: 100%; background: var(--red); transition: width 0.5s; }
+    .bear-bar { height: 100%; background: var(--green); transition: width 0.5s; }
+    .percent-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px #000; z-index: 5; }
+    .force-display { text-align: center; font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+    .army-stats { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 0; padding: 0 5px; }
+    .logic-text { text-align: left; font-size: 12px; font-weight: 400; color: #ccc; margin-top: 0; letter-spacing: 0.3px; line-height: 1.4; }
+    .action-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; margin-right: 4px; }
+    .action-long { background: rgba(255, 69, 58, 0.2); color: var(--red); border: 1px solid var(--red); }
+    .action-short { background: rgba(48, 209, 88, 0.2); color: var(--green); border: 1px solid var(--green); }
+    .action-wait { background: rgba(255, 214, 10, 0.2); color: var(--yellow); border: 1px solid var(--yellow); }
+    .override-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; background: rgba(10, 132, 255, 0.2); color: var(--blue); border: 1px solid var(--blue); margin-top: 4px;}
+    
+    .p9-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 2px; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 6px; }
+    .p9-label { font-size: 11px; color: #ccc; font-weight: 700; }
+    
+    /* ★ 放大 P9 字體 */
+    .p9-val { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s ease; }
+    /* ★ 放大 R7 字體 */
+    #r7-val { font-size: 20px; }
+    
+    .slope-label { font-size:10px; margin-left:2px; padding:2px 6px; border-radius:6px; font-weight:800; transition:all 0.3s ease; display:inline-block; border: 1px solid transparent; white-space:nowrap; }
+
+    .strategy-card { background: #2c2c2e; border-radius: 14px; padding: 10px; border: 1px solid #444; position: relative; overflow: hidden; }
+    .strategy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #444; padding-bottom: 6px; }
+    .phase-badge { background: #0a84ff; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .s-advice { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; color: #ddd; line-height: 1.4; border-left: 3px solid #888; font-size: 12px; }
+    
+    .range-box { background: var(--card); border-radius: 14px; padding: 10px 14px; border: 1px solid #333; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; position: relative; overflow: hidden; }
+    .range-box::after { content: ""; position: absolute; top: 50%; left: 16px; right: 16px; height: 1px; background: #333; }
+    .range-row { display: flex; justify-content: space-between; align-items: center; }
+    .range-title { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .range-val { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .range-vol { font-size: 10px; color: #666; font-weight: normal; margin-left: 2px; }
+    .range-old { font-size: 11px; color: #666; font-weight: normal; display: flex; align-items: center; }
+    .arrow-icon { font-size: 9px; margin: 0 3px; color: #444; }
+
+    .chip-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
+    .chip-card { background:var(--card); padding:6px 2px; border-radius:10px; border: 1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    
+    .split-chart-box { background: var(--card); border-radius: 14px; padding: 8px; border: 1px solid #333; height: 200px; position: relative; }
+    .section-title { margin-top: 10px; margin-bottom: 2px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+    #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .auth-box { text-align: center; width: 85%; max-width: 320px; background: #1c1c1e; padding: 30px 20px; border-radius: 20px; border: 1px solid #333; }
+    .auth-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+    .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: #2c2c2e; color: #fff; font-size: 16px; box-sizing: border-box; }
+    .auth-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--blue); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .auth-btn.secondary { background: #3a3a3c; margin-top: 10px; }
+    .error-msg { color: var(--red); font-size: 13px; margin-top: 15px; }
+    .toggle-link { margin-top: 20px; font-size: 14px; color: var(--blue); cursor: pointer; text-decoration: underline; }
+    #logout-btn { position: fixed; top: 10px; right: 10px; z-index: 1000; display: none; padding: 4px 10px; background: rgba(28,28,30,0.8); border: 1px solid #444; color: #aaa; border-radius: 20px; font-size: 11px; cursor: pointer; backdrop-filter: blur(5px); }
+
+    .rank-s { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); animation: pulse-gold 1.5s infinite; border: 1px solid #d4af37 !important; }
+    .rank-a-bull { color: var(--red) !important; border: 1px solid var(--red) !important; }
+    .rank-a-bear { color: var(--green) !important; border: 1px solid var(--green) !important; }
+    .rank-b { color: var(--yellow) !important; border: 1px solid var(--yellow) !important; }
+    .rank-n { color: #888 !important; border: 1px solid #444 !important; }
+
+    @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+    @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5); } 70% { box-shadow: 0 0 0 8px rgba(255, 69, 58, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 58, 0); } }
+
+    /* ★★★ P9 動態視覺特效 ★★★ */
+    @keyframes p9-exhaust-red { 0% { text-shadow: 0 0 5px var(--red); transform: scale(1); } 50% { text-shadow: 0 0 15px var(--red), 0 0 25px var(--red); transform: scale(1.05); } 100% { text-shadow: 0 0 5px var(--red); transform: scale(1); } }
+    @keyframes p9-exhaust-green { 0% { text-shadow: 0 0 5px var(--green); transform: scale(1); } 50% { text-shadow: 0 0 15px var(--green), 0 0 25px var(--green); transform: scale(1.05); } 100% { text-shadow: 0 0 5px var(--green); transform: scale(1); } }
+    
+    .p9-attack-red { text-shadow: 0 0 8px var(--red); font-weight: 900; }
+    .p9-attack-green { text-shadow: 0 0 8px var(--green); font-weight: 900; }
+    .p9-exhaust-red { animation: p9-exhaust-red 1s infinite; font-weight: 900; color: #fff !important; }
+    .p9-exhaust-green { animation: p9-exhaust-green 1s infinite; font-weight: 900; color: #fff !important; }
+
+    /* ★★★ 新增：Skew 訊號呼吸燈特效 ★★★ */
+    @keyframes skew-signal-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+    .skew-signal-active { display: inline-block; animation: skew-signal-pulse 1.5s infinite; }
+
+    /* ★★★ 修改：靜態雷達區塊樣式 (允許彈性換行防止跑版) ★★★ */
+    .radar-static-container {
+        width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 18px; flex-wrap: wrap; gap: 4px;
+    }
+    .radar-ticker {
+        font-size: 11px; font-weight: 600; color: #ddd; display: flex; align-items: center; width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="auth-overlay">
+    <div id="login-form" class="auth-box">
+      <div class="auth-title">🔐 會員登入</div>
+      <input type="email" id="login-email" class="auth-input" placeholder="Email 信箱">
+      <input type="password" id="login-pass" class="auth-input" placeholder="密碼">
+      <button onclick="doLogin()" class="auth-btn">進入戰情室</button>
+      <div class="error-msg" id="login-msg"></div>
+      <div class="toggle-link" onclick="showRegister()">沒有帳號？點此註冊</div>
+    </div>
+    <div id="register-form" class="auth-box" style="display:none;">
+      <div class="auth-title">📝 註冊新帳號</div>
+      <div style="font-size:12px; color:#aaa; margin-bottom:15px;">註冊後請至信箱點擊驗證連結<br>並等待管理員審核</div>
+      <input type="email" id="reg-email" class="auth-input" placeholder="輸入您的 Email">
+      <input type="password" id="reg-pass" class="auth-input" placeholder="設定密碼 (至少6位)">
+      <button onclick="doRegister()" class="auth-btn secondary">註冊並發送驗證信</button>
+      <div class="error-msg" id="reg-msg" style="color:var(--yellow)"></div>
+      <div class="toggle-link" onclick="showLogin()">已有帳號？返回登入</div>
+    </div>
+  </div>
+
+  <button id="logout-btn" onclick="doLogout()">登出</button>
+
+  <div class="dashboard-container" id="dashboard">
+    <div class="top-section">
+      <div class="box" style="padding:10px 12px; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1; min-width:0;">
+              <div class="box-header" style="margin-bottom:0; display:flex; flex-wrap:nowrap; align-items:flex-end; line-height:1; white-space:nowrap;">
+                <span style="font-size:11px;">TX 台指期</span>
+                <span style="font-size:9px; font-weight:normal; color:#888; margin-left:6px;">次月: <span id="price-next" style="color:#ccc; font-weight:bold;">--</span></span>
+              </div>
+              
+              <div id="price" class="big-val" style="font-size:32px; margin-top:4px; margin-bottom:4px; line-height:1; white-space:nowrap;">---</div>
+              
+              <div style="display:flex; flex-wrap:nowrap; gap:8px; margin-top:2px; font-size:11px; color:#aaa; font-weight:500; line-height:1; white-space:nowrap;">
+                <div>🌞 <span id="vwap-day" style="color:#fff; font-weight:600;">--</span></div>
+                <div>🌙 <span id="vwap-night" style="color:#fff; font-weight:600;">--</span></div>
+              </div>
+              
+              <div id="update-time" style="color:#fff; font-size:9px; line-height:1; margin-top:4px; white-space:nowrap;">--:--:--</div>
+            </div>
+
+            <div class="req-level-4-flex" style="flex-direction:column; align-items:flex-end; gap:4px; background:linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%); padding:6px 10px; border-radius:10px; border: 1px solid rgba(212,175,55,0.4); box-shadow: inset 0 0 10px rgba(212,175,55,0.1); min-width: 120px; margin-left: 10px; margin-top: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom:4px;">
+                    <span style="font-size:10px; color:#d4af37; font-weight:800; letter-spacing:0.5px;">⚖️ 中性值</span>
+                    <span id="oi-dn-price" style="font-size:20px; font-weight:900; color:#ffd700; text-shadow: 0 0 6px rgba(212,175,55,0.6); line-height:1;">--</span>
+                </div>
+                <div id="oi-iv-val" style="width:100%; box-sizing:border-box;">
+                    <div style="text-align:center; color:#888; font-size:10px; margin-top:2px;">IV 數據等待中...</div>
+                </div>
+                <div id="mdi-advice-container" style="width:100%; display:none; flex-direction:column; align-items:flex-end; margin-top:4px; border-top:1px dashed rgba(212,175,55,0.3); padding-top:4px; gap:4px;">
+                    <div style="display:flex; gap:4px;">
+                        <span id="mdi-quality-val" style="font-size:9px; color:#aaa; font-weight:bold; background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:4px;">--</span>
+                        <span id="mdi-activation-score-val" style="font-size:10px; color:#fff; font-weight:bold; background:rgba(10,132,255,0.2); border:1px solid #0a84ff; padding:1px 6px; border-radius:4px;">AH2: --</span>
+                    </div>
+                    <span id="mdi-layout-confidence-val" style="font-size:10px; color:#ffd60a; font-weight:bold; background:rgba(255,214,10,0.15); border:1px solid #ffd60a; padding:1px 6px; border-radius:4px;">AJ2: --</span>
+                    <span id="mdi-advice-val" style="font-size:11px; font-weight:900; line-height:1.4; text-align:right; width:100%;"></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:11px; color:#aaa; font-weight:500; line-height:1; align-items:center;">
+            <div>跨盤均價: <span id="vwap-cross" style="color:#fff; font-weight:800; font-size:15px; text-shadow:0 0 4px rgba(255,255,255,0.3);">--</span></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:#aaa; font-weight:500; line-height:1; background:rgba(255,255,255,0.05); padding:6px; border-radius:6px;">
+            <div>期現差: <span id="spread-spot" style="color:#fff; font-weight:800; font-size:14px;">--</span></div>
+            <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:14px;">--</span></div>
+        </div>
+
+        <div class="req-level-4-flex" style="margin-top:6px; padding: 18px 12px 8px 12px; position:relative; background:var(--card); border-radius:10px; border:1px solid rgba(191,90,242,0.4); box-shadow:inset 0 0 10px rgba(191,90,242,0.1); flex-direction:column; align-items:stretch; gap:6px;">
+            <div class="box-header" style="position:absolute; top:4px; left:10px; color:#bf5af2; font-size:9px; margin:0;">🚧 固定戰場藍圖</div>
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%; font-weight:bold;">
                 <div style="display:flex; align-items:center; gap:4px; color:var(--green);">
                     <span style="font-size:9px;">🟢 壓</span>
@@ -264,6 +459,20 @@
                 <div style="display:flex; align-items:center; gap:4px; color:#64d2ff;">
                     <span style="font-size:9px;">防守</span>
                     <span id="fixed-defense-br2" style="font-size:14px;">--</span>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding-top:6px; border-top:1px dashed rgba(191,90,242,0.3); font-weight:bold;">
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">力道(BU2)</span>
+                    <span id="fixed-fmf-bu2" style="font-size:14px;">--</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">BV2</span>
+                    <span id="fixed-fmf-bv2" style="font-size:14px;">--</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">CB2</span>
+                    <span id="fixed-fmf-cb2" style="font-size:14px;">--</span>
                 </div>
             </div>
         </div>
@@ -833,409 +1042,6 @@
                         模型信心: <span style="color:#fff; font-size:11px; font-weight:800;">${mainCostConfidence}%</span>
                     </span>
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
-                        成本區間: <span style="color:var(--yellow); font-size:11px; font-weight:800;">${mainCostRange}</span>
-                    </span>
-                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
-                        有效事件: <span style="color:#fff; font-size:11px; font-weight:800;">${mainCostAcceptedEvents}</span>
-                    </span>
-                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
-                        事件類型: <span style="color:#00d2ff; font-size:11px; font-weight:800;">${mainCostLastEvent}</span>
-                    </span>
-                </div>
-
-            </div>
-        `;
-
-        ticker.innerHTML = tickerHtml;
-        
-        // 如果是觸發 Sniper，讓外框閃爍一下
-        if (data.is_trigger) {
-            const container = ticker.closest('.req-level-4-flex');
-            container.style.boxShadow = 'inset 0 0 20px rgba(255, 69, 58, 0.4)';
-            container.style.borderColor = 'rgba(255, 69, 58, 0.8)';
-            setTimeout(() => {
-                container.style.boxShadow = 'inset 0 0 10px rgba(10, 132, 255, 0.1)';
-                container.style.borderColor = 'rgba(10, 132, 255, 0.4)';
-            }, 1000);
-        }
-    }
-
-    function updateAlphaUI(data) {
-        const heatVal = parseFloat(data.heat || 50);
-        const heatExVal = data.heat_ex !== undefined ? parseFloat(data.heat_ex) : 50;
-        const finHeatVal = data.fin_heat !== undefined ? parseFloat(data.fin_heat) : 50;
-
-        let heatEl = document.getElementById('alpha-heat-val');
-        if(heatEl) {
-            heatEl.innerText = heatVal.toFixed(1) + '%';
-            if (heatVal > 60) heatEl.style.color = 'var(--red)';
-            else if (heatVal < 40) heatEl.style.color = 'var(--green)';
-            else heatEl.style.color = 'var(--yellow)';
-        }
-
-        const exBox = document.getElementById('alpha-heat-ex-box');
-        const exValEl = document.getElementById('alpha-heat-ex-val');
-        if(exBox && exValEl) {
-            exBox.style.display = 'inline';
-            if (heatVal - heatExVal >= 15) {
-                exBox.style.color = '#ff9f0a'; 
-                if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️空頭掩護'; } 
-                else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷出'; } 
-                else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️拉積出貨'; }
-            } else if (heatExVal - heatVal >= 15) {
-                exBox.style.color = '#30d158'; 
-                if (heatVal < 40) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️錯殺抵抗'; } 
-                else if (heatVal >= 40 && heatVal <= 60) { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️震盪偷買'; } 
-                else { exValEl.innerText = heatExVal.toFixed(1) + '% ⚠️壓積進貨'; }
-            } else {
-                exBox.style.color = '#aaa'; 
-                exValEl.innerText = heatExVal.toFixed(1) + '%';
-            }
-        }
-        
-        const finBox = document.getElementById('alpha-fin-heat-box');
-        const finValEl = document.getElementById('alpha-fin-heat-val');
-        if(finBox && finValEl) {
-            finBox.style.display = 'inline';
-            finValEl.innerText = finHeatVal.toFixed(1) + '%';
-            if (finHeatVal > 60) finValEl.style.color = 'var(--red)';
-            else if (finHeatVal < 40) finValEl.style.color = 'var(--green)';
-            else finValEl.style.color = '#aaa';
-        }
-
-        const probBadge = document.getElementById('alpha-prob-badge');
-        if(probBadge) {
-            const prob = data.lift_prob || 'NEUTRAL';
-            if (prob === 'HIGH') { probBadge.innerText = '🔥 易拉抬'; probBadge.className = 'prob-badge prob-high'; } 
-            else if (prob === 'LOW') { probBadge.innerText = '📉 易壓制'; probBadge.className = 'prob-badge prob-low'; } 
-            else { probBadge.innerText = '⚖️ 震盪'; probBadge.className = 'prob-badge prob-neutral'; }
-        }
-
-        const strongCount = isNaN(data.strong_count) ? '-' : data.strong_count;
-        if(document.getElementById('alpha-strong-count')) document.getElementById('alpha-strong-count').innerText = strongCount;
-        
-        let timeStr = data.last_update ? data.last_update.split(' ')[1] : '--:--:--';
-        if(document.getElementById('alpha-update-time')) document.getElementById('alpha-update-time').innerText = timeStr;
-
-        const targetsContainer = document.getElementById('alpha-targets');
-        if(targetsContainer) {
-            targetsContainer.innerHTML = ''; 
-            if (data.core_targets && Object.keys(data.core_targets).length > 0) {
-                for (const [name, info] of Object.entries(data.core_targets)) {
-                    const diffValue = parseFloat(info.d || 0);
-                    const diffColor = diffValue > 0 ? 'c-red' : (diffValue < 0 ? 'c-green' : '');
-                    const diffSign = diffValue > 0 ? '+' : '';
-                    const statusClass = 'st-' + (info.s || 'WAIT');
-                    let odHtml = '';
-                    if (info.o_d !== undefined) {
-                        let odColor = info.o_d > 0 ? 'color:#bf5af2;' : (info.o_d < 0 ? 'color:#30d158;' : 'color:#888;');
-                        let odSign = info.o_d > 0 ? '+' : '';
-                        odHtml = `<div style="font-size:8px; color:#aaa; margin-top:2px; line-height:1;">開 <span style="${odColor}">${odSign}${info.o_d}%</span></div>`;
-                    }
-                    const card = document.createElement('div');
-                    card.className = `target-card-sm ${statusClass}`;
-                    card.innerHTML = `<div class="target-name-sm">${name}</div><div class="target-data-row"><span class="target-price-sm">${info.p === 0 ? '--' : info.p}</span><span class="target-diff-sm ${diffColor}">(${diffSign}${info.d}%)</span></div>${odHtml}`;
-                    targetsContainer.appendChild(card);
-                }
-            } else {
-                 targetsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; font-size: 11px; padding: 10px; border: 1px dashed #333; border-radius: 6px;">盤前時段，等待核心指標報價中... ⏳</div>';
-            }
-        }
-
-        let rawTime = data.last_update ? data.last_update.split(' ')[1] : new Date().toLocaleTimeString('en-GB');
-        let minTimeStr = rawTime.substring(0, 5); 
-
-        if (frontEndHeatLabels.length === 0 || frontEndHeatLabels[frontEndHeatLabels.length - 1] !== minTimeStr) {
-            frontEndHeatLabels.push(minTimeStr);
-            frontEndHeatData.push(heatVal);
-            frontEndHeatExData.push(heatExVal);
-            frontEndFinHeatData.push(finHeatVal);
-            
-            if (frontEndHeatLabels.length > 120) {
-                frontEndHeatLabels.shift();
-                frontEndHeatData.shift();
-                frontEndHeatExData.shift();
-                frontEndFinHeatData.shift();
-            }
-        } else {
-            frontEndHeatData[frontEndHeatData.length - 1] = heatVal;
-            frontEndHeatExData[frontEndHeatExData.length - 1] = heatExVal;
-            frontEndFinHeatData[frontEndFinHeatData.length - 1] = finHeatVal;
-        }
-
-        if (chartHeat) {
-            chartHeat.data.labels = frontEndHeatLabels;
-            chartHeat.data.datasets[0].data = frontEndHeatData;
-            chartHeat.data.datasets[1].data = frontEndHeatExData;
-            chartHeat.data.datasets[2].data = frontEndFinHeatData;
-            chartHeat.update();
-        }
-    }
-
-    function analyzeStrategy(data) {
-        let price = parseFloat(data.p || 0);
-        let oi_dn = parseFloat(data.oi_dn || price);
-        let diffSign = (oi_dn > price) ? '+' : '-'; 
-
-        let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
-        let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
-        let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0;
-        let skewVal = (putIV - callIV) - skewOffset;
-        let skewSign = (skewVal > 0) ? '正' : '負';
-
-        let valForce = parseFloat(data.force || 0);
-        let forceSign = (valForce >= 0) ? '+' : '-'; 
-
-        let p9Val = parseFloat(data.p9 || 0);
-        let p9Sign = (p9Val > 0) ? '+' : '-';
-
-        let matrixCode = `[${diffSign} ${skewSign} ${forceSign} ${p9Sign}]`;
-        let result = { text: `☕ [N級] ${matrixCode} 冰封觀望`, class: "rank-n", advice: "無明顯方向，等待更明確訊號" };
-
-        // ★ v3.7 最新校準版 Matrix 定義與 SOP 動作 (6小時未來展望 - 2026/05數據)
-        switch(matrixCode) {
-            case '[+ 負 - +]': 
-                result = { 
-                    text: `🌊 壓盤洗籌碼 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">積極做多 (黃金買點)</span><br>[🎯 狙擊陣型] 勝率 95.8%！散戶瘋狂追價但主力壓盤，洗清後必井噴。` 
-                }; break;
-            case '[+ 正 - +]': 
-                result = { 
-                    text: `🐈 死貓反彈 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">作多 (主升段確認)</span><br>[🎯 狙擊陣型] 勝率 90.4%！強勢換手抵抗，後續動能極度狂暴。` 
-                }; break;
-            case '[- 負 - -]': 
-                result = { 
-                    text: `⚠️ 逆勢殺莊 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">全面改作空</span><br>[⚠️ 數據翻轉] 勝率 54.7%！原論作多，實測最佳期望值已轉為「作空」且空間極大！` 
-                }; break;
-            case '[- 負 + +]': 
-                result = { 
-                    text: `🌋 噴出軋空 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">順勢做多，空單逃命</span><br>[🎯 狙擊陣型] 勝率 75.5%！大戶市價狂掃，強行軋空，動能不可阻擋。` 
-                }; break;
-            case '[- 負 + -]': 
-                result = { 
-                    text: `🤡 假摔誘空 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">勇敢買進接刀 (偏多)</span><br>[⭐ 核心陣型] 勝率 78.6%！市價異常砸盤，完美洗出多單浮額。` 
-                }; break;
-            case '[- 負 - +]': 
-                result = { 
-                    text: `🎆 逃命煙火波 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">多單死抱，全場禁空</span><br>[🎯 狙擊陣型] 勝率 84.6%！主力動能極純的單邊噴出，絕非煙火。` 
-                }; break;
-            case '[+ 負 + +]': 
-                result = { 
-                    text: `🚀 S級必殺做多 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">減少部位，謹慎觀望</span><br>[👀 觀察陣型] 勝率 57.9%！動能較預期弱，主力托底意圖不明顯。` 
-                }; break;
-            case '[+ 正 + -]': 
-                result = { 
-                    text: `👻 假撐誘多 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">逢低做多</span><br>[⭐ 核心陣型] 勝率 66.2%！假單轉為實質支撐，洗盤後再度發動上攻。` 
-                }; break;
-            case '[- 正 - +]': 
-                result = { 
-                    text: `🪤 完美誘多陷阱 ${matrixCode}`, class: "rank-s", 
-                    advice: `<span class="action-badge action-long">無腦追多，禁空</span><br>[🎯 狙擊陣型] 勝率 70.4%！賣牆被強力實單貫穿，軋空燃料極度充足。` 
-                }; break;
-            case '[- 正 + -]': 
-                result = { 
-                    text: `🎣 撐盤緩跌 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">拉回做多 (縮小部位)</span><br>[👀 觀察陣型] 勝率 63.2%！護盤有效，籌碼沉澱後將引發反撲。` 
-                }; break;
-            case '[+ 正 - -]': 
-                result = { 
-                    text: `☠️ 破底殺多 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">全面改作多</span><br>[⚠️ 數據翻轉] 勝率 61.8%！原論作空，實測最佳期望值為「作多」，此處為跌勢衰竭點。` 
-                }; break;
-            case '[+ 負 - -]': 
-                result = { 
-                    text: `🛡️ 莊家底線測試 ${matrixCode}`, class: "rank-a-bull", 
-                    advice: `<span class="action-badge action-long">全面改作多</span><br>[⚠️ 數據翻轉] 勝率 65.1%！原論作空，實測顯示此為極佳大戶托底起漲點。` 
-                }; break;
-            case '[- 正 - -]': 
-                result = { 
-                    text: `📉 S級必殺做空 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">做空危險，反手作多或觀望</span><br>[👀 觀察陣型] 勝率 50.5%！實測做空勝率慘烈，極度危險之超級誘空。` 
-                }; break;
-            case '[+ 負 + -]': 
-                result = { 
-                    text: `🪤 完美誘空陷阱 ${matrixCode}`, class: "rank-a-bear", 
-                    advice: `<span class="action-badge action-short">全面改作空</span><br>[⚠️ 數據翻轉] 勝率 63.8%！原論作多，實測最佳期望值為「作空」，動能極端反轉！` 
-                }; break;
-            case '[- 正 + +]': 
-                result = { 
-                    text: `⚔️ 莊家火鍋測試 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">空手觀望，禁止進場</span><br>[🛑 警示陣型] 期望值為負 (-44.3點)，極度洗盤區間，雙向皆虧。` 
-                }; break;
-            case '[+ 正 + +]': 
-                result = { 
-                    text: `⚠️ 逆勢軋莊 ${matrixCode}`, class: "rank-n", 
-                    advice: `<span class="action-badge action-wait">空手觀望，禁止進場</span><br>[🛑 警示陣型] 期望值為負 (-10.7點)，雙向皆虧，容易被來回雙巴。` 
-                }; break;
-        }
-
-        let timeHour = parseInt((data.t || "00:00").split(':')[0]);
-        let timeMin = parseInt((data.t || "00:00").split(':')[1]);
-        let isWednesday = new Date().getDay() === 3;
-        
-        let isSettlementDangerZone = (timeHour === 12 && timeMin >= 30);
-        
-        if (isWednesday && isSettlementDangerZone && Math.abs(price - oi_dn) > 150) {
-             result.text = `🛑 [結算保護] ${matrixCode} 引力奇點覆寫`;
-             result.class = "rank-n";
-             result.advice = `<span class="action-badge action-wait">強制觀望</span><br>Override: 結算強制收斂期，封鎖所有順勢突破操作，僅限空手觀望！`;
-        }
-
-        return result;
-    }
-
-    function updateStrategyBox(data, strategyResult) {
-        let hour = parseInt((data.t || "00:00").split(':')[0]);
-        let min = parseInt((data.t || "00:00").split(':')[1]);
-        let phaseName = "";
-        if ((hour === 8 && min >= 45) || (hour === 9)) phaseName = "🕒 早盤衝鋒期";
-        else if (hour >= 10 && hour < 13) phaseName = "🕒 中盤趨勢期";
-        else if (hour === 13) phaseName = "🕒 尾盤決策期";
-        else phaseName = "🌙 夜盤時段";
-
-        let finalAdvice = "";
-        let stCard = document.getElementById('strategy-box');
-        let dayDNA = data.day_advice || "等待結算中...";
-        finalAdvice += `<div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;"><span style="color:#ffd60a; font-weight:700; font-size:11px;">🌞 日盤結算 DNA (13:45)：</span><br><span style="color:#ccc; font-size:12px; font-weight:bold;">${dayDNA}</span></div>`;
-
-        finalAdvice += `<div style="margin-bottom:8px; background:rgba(255,255,255,0.05); padding:8px; border-radius:6px; border:1px solid #444;">
-            <div style="color:#64d2ff; font-weight:800; font-size:13px; margin-bottom:4px;">${strategyResult.text}</div>
-            <div style="color:#fff; font-size:12px; line-height:1.4;">${strategyResult.advice}</div>
-        </div>`;
-
-        if (data.four_pillars_advice) {
-            let fpParts = data.four_pillars_advice.split('|');
-            let fpMain = fpParts[0] ? fpParts[0].trim() : "";
-            let fpTrigger = fpParts[1] ? fpParts[1].trim() : "";
-            let fpExtra = fpParts[2] ? fpParts[2].trim() : "";
-            let extraHtml = fpExtra ? `<span style="color:#64d2ff; font-size:11px; margin-top:4px; display:inline-block; padding:2px 6px; background:rgba(10,132,255,0.2); border-radius:4px; font-weight:600;">${fpExtra}</span>` : "";
-            finalAdvice += `<div><span style="color:#0a84ff; font-weight:700;">🏛️ 即時四票裁決：</span><br><span style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:0.5px;">${fpMain}</span><span style="color:#ff9f0a; font-size:11px; margin-left:4px;">${fpTrigger}</span><br>${extraHtml}</div>`;
-        } 
-        
-        if(stCard) {
-            if (strategyResult.text.includes("做多") || strategyResult.text.includes("軋莊") || strategyResult.text.includes("軋空")) stCard.style.borderLeft = "5px solid var(--red)";
-            else if (strategyResult.text.includes("做空") || strategyResult.text.includes("殺莊") || strategyResult.text.includes("殺多")) stCard.style.borderLeft = "5px solid var(--green)";
-            else if (strategyResult.text.includes("警戒") || strategyResult.text.includes("陷阱") || strategyResult.text.includes("洗盤")) stCard.style.borderLeft = "5px solid var(--yellow)";
-            else stCard.style.borderLeft = "5px solid #555";
-        }
-
-        if (data.ai_advice && data.ai_advice !== "" && !data.ai_advice.includes("AI 指揮官連線中")) {
-            finalAdvice += `<div style="padding-top:8px; margin-top:6px; border-top:1px dashed #555;"><span style="color:#ffd60a; font-weight:600;">🤖 Gemini 戰略解析 (5分更新)：</span><br><span style="color:#ddd; font-size:11px; line-height:1.4;">${data.ai_advice.replace(/<br>/g, '<br>')}</span></div>`;
-        }
-        if(document.getElementById('st-phase')) document.getElementById('st-phase').innerText = phaseName;
-        if(document.getElementById('st-advice')) document.getElementById('st-advice').innerHTML = finalAdvice;
-    }
-
-    function updateUI(data) {
-      document.getElementById('price').innerText = data.p;
-      if(document.getElementById('price-next')) { document.getElementById('price-next').innerText = data.p_next ? data.p_next : "--"; }
-      if (document.getElementById('spread-spot')) {
-          if (data.p && data.spot && parseFloat(data.spot) > 0) {
-              let diffSpot = Math.round(parseFloat(data.p) - parseFloat(data.spot));
-              let elSpot = document.getElementById('spread-spot');
-              elSpot.innerText = (diffSpot > 0 ? "+" : "") + diffSpot;
-              elSpot.style.color = diffSpot > 0 ? "var(--red)" : (diffSpot < 0 ? "var(--green)" : "#fff");
-          }
-      }
-      if (document.getElementById('spread-next')) {
-          if (data.p && data.p_next && parseFloat(data.p_next) > 0) {
-              let diffNext = Math.round(parseFloat(data.p) - parseFloat(data.p_next));
-              let elNext = document.getElementById('spread-next');
-              elNext.innerText = (diffNext > 0 ? "+" : "") + diffNext;
-              elNext.style.color = diffNext > 0 ? "var(--red)" : (diffNext < 0 ? "var(--green)" : "#fff");
-          }
-      }
-
-      let dnEl = document.getElementById('oi-dn-price');
-      if (dnEl) {
-          if (data.oi_dn && data.oi_dn !== "NULL" && data.oi_dn !== "") {
-              dnEl.innerText = data.oi_dn;
-          } else {
-              dnEl.innerText = "--";
-          }
-      }
-      
-      let ivEl = document.getElementById('oi-iv-val');
-      if (ivEl) {
-          let callIV = data.call_iv ? parseFloat(data.call_iv) : 0;
-          let putIV = data.put_iv ? parseFloat(data.put_iv) : 0;
-          
-          let trueCallIV = data.true_call_iv !== undefined ? parseFloat(data.true_call_iv) : 0;
-          let truePutIV = data.true_put_iv !== undefined ? parseFloat(data.true_put_iv) : 0;
-          
-          if (callIV > 0 || putIV > 0) {
-              let callColor = "#e5c05c"; 
-              let putColor = "#e5c05c";  
-              let skewTag = "";
-              
-              let skewOffset = data.skew_offset !== undefined ? parseFloat(data.skew_offset) : 0; 
-              
-              if (currentSkewOffset !== skewOffset) {
-                  currentSkewOffset = skewOffset;
-                  if (lastHistoryData) loadChartHistory(lastHistoryData); 
-              }
-
-              let skew = (putIV - callIV) - skewOffset; 
-              let trueSkew = (truePutIV - trueCallIV) - skewOffset;
-              
-              let SKEW_THRESH = data.skew_thresh !== undefined ? parseFloat(data.skew_thresh) : 0.2;
-              let skewStr = (skew > 0 ? "+" : "") + skew.toFixed(2);
-              let trueSkewStr = (trueSkew > 0 ? "+" : "") + trueSkew.toFixed(2);
-              
-              let obLabel = "表";
-              if (skew < -SKEW_THRESH) obLabel = "表(撐)";
-              if (skew > SKEW_THRESH) obLabel = "表(壓)";
-
-              let dualSkewHtml = `<span style="font-size:12px; font-weight:bold;">Skew ${skewStr}%</span>`;
-              if (trueCallIV > 0 || truePutIV > 0) {
-                  dualSkewHtml = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                        <span style="color:rgba(255,255,255,0.85); font-size:12px; font-weight:600; letter-spacing:0.5px;">${obLabel}: ${skewStr}%</span>
-                        <span style="color:#ffd700; font-size:13px; font-weight:900; text-shadow: 0 0 8px rgba(212,175,55,0.9); border-bottom: 2px solid #ffd700; padding-bottom:1px; letter-spacing:0.5px;">真: ${trueSkewStr}%</span>
-                    </div>
-                  `;
-              }
-
-              if (skew < -SKEW_THRESH) {
-                  callColor = "var(--red)"; 
-                  skewTag = `<div style="background:linear-gradient(90deg, rgba(255,69,58,0.8), var(--red)); padding:6px 8px; border-radius:6px; box-shadow:0 0 10px rgba(255,69,58,0.5); animation:pulse-red 1.5s infinite; margin: 4px 0; display:flex; align-items:center;">
-                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
-                      <div style="flex:1;">${dualSkewHtml}</div>
-                  </div>`;
-              } else if (skew > SKEW_THRESH) {
-                  putColor = "var(--green)"; 
-                  skewTag = `<div style="background:linear-gradient(90deg, rgba(48,209,88,0.8), var(--green)); padding:6px 8px; border-radius:6px; box-shadow:0 0 10px rgba(48,209,88,0.5); margin: 4px 0; display:flex; align-items:center;">
-                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
-                      <div style="flex:1;">${dualSkewHtml}</div>
-                  </div>`;
-              } else {
-                  skewTag = `<div style="background:rgba(255,255,255,0.08); border-radius:6px; margin: 4px 0; padding:6px 8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center;">
-                      <span class="${latestSkewSignalIcon ? 'skew-signal-active' : ''}" style="margin-right:6px;">${latestSkewSignalIcon}</span>
-                      <div style="flex:1;">${dualSkewHtml}</div>
-                  </div>`;
-              }
-              
-              ivEl.style.display = "flex";
-              ivEl.style.flexDirection = "column";
-              ivEl.style.gap = "4px"; 
-              ivEl.style.padding = "2px 0 0 0";
-              ivEl.style.background = "transparent"; 
-              ivEl.style.border = "none"; 
-              
-              let trueIvHtml = "";
-              if (trueCallIV > 0 || truePutIV > 0) {
-                  trueIvHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(212,175,55,0.3);">
-                                  <span style="color:#ffd700; font-size:10px; font-weight:bold;">True IV</span>
-                                  <div style="display:flex; gap:12px; font-size:11px; color:#fff;">
-                                      <span style="white-space:nowrap; color:#aaa;">C: <span style="font-weight:bold; color:#fff;">${trueCallIV.toFixed(1)}%</span></span>
-                                      <span style="white-space:nowrap; color:#aaa;">P: <span style="font-weight:bold; color:#fff;">${truePutIV.toFixed(1)}%</span></span>
                                   </div>
                                 </div>`;
               }
@@ -1295,6 +1101,25 @@
           let fixedDefenseEl = document.getElementById('fixed-defense-br2');
           if(fixedDefenseEl) fixedDefenseEl.innerText = data.omi3_blueprint_defense > 0 ? data.omi3_blueprint_defense : "--";
       }
+
+      let bu2 = "--";
+      if (data.futures_force_score !== undefined && data.futures_force_phase !== undefined) {
+          let scoreSign = data.futures_force_score > 0 ? "+" : "";
+          bu2 = scoreSign + data.futures_force_score + "|" + data.futures_force_phase;
+      }
+      let elBU2 = document.getElementById('fixed-fmf-bu2');
+      if(elBU2) elBU2.innerText = bu2;
+
+      let bv2 = "--";
+      if (data.futures_force_confidence !== undefined && data.futures_force_quality !== undefined) {
+          bv2 = Math.round(data.futures_force_confidence) + "/" + Math.round(data.futures_force_quality);
+      }
+      let elBV2 = document.getElementById('fixed-fmf-bv2');
+      if(elBV2) elBV2.innerText = bv2;
+
+      let cb2 = data.futures_force_advice !== undefined ? data.futures_force_advice : "--";
+      let elCB2 = document.getElementById('fixed-fmf-cb2');
+      if(elCB2) elCB2.innerText = cb2 !== "" ? cb2 : "--";
 
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
