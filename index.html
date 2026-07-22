@@ -266,6 +266,20 @@
                     <span id="fixed-defense-br2" style="font-size:14px;">--</span>
                 </div>
             </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding-top:6px; border-top:1px dashed rgba(191,90,242,0.3); font-weight:bold;">
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">力道(BU2)</span>
+                    <span id="fixed-fmf-bu2" style="font-size:14px;">--</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">BV2</span>
+                    <span id="fixed-fmf-bv2" style="font-size:14px;">--</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
+                    <span style="font-size:9px;">CB2</span>
+                    <span id="fixed-fmf-cb2" style="font-size:14px;">--</span>
+                </div>
+            </div>
         </div>
         <div class="range-box upgrade-prompt lock-lvl-4" style="margin-top:10px; display:flex; height:60px; border:1px solid rgba(191,90,242,0.4);">
             <div>🔒 戰場固定藍圖</div>
@@ -1295,6 +1309,25 @@
           let fixedDefenseEl = document.getElementById('fixed-defense-br2');
           if(fixedDefenseEl) fixedDefenseEl.innerText = data.omi3_blueprint_defense > 0 ? data.omi3_blueprint_defense : "--";
       }
+
+      let bu2 = "--";
+      if (data.futures_force_score !== undefined && data.futures_force_phase !== undefined) {
+          let scoreSign = data.futures_force_score > 0 ? "+" : "";
+          bu2 = scoreSign + data.futures_force_score + "|" + data.futures_force_phase;
+      }
+      let elBU2 = document.getElementById('fixed-fmf-bu2');
+      if(elBU2) elBU2.innerText = bu2;
+
+      let bv2 = "--";
+      if (data.futures_force_confidence !== undefined && data.futures_force_quality !== undefined) {
+          bv2 = Math.round(data.futures_force_confidence) + "/" + Math.round(data.futures_force_quality);
+      }
+      let elBV2 = document.getElementById('fixed-fmf-bv2');
+      if(elBV2) elBV2.innerText = bv2;
+
+      let cb2 = data.futures_force_advice !== undefined ? data.futures_force_advice : "--";
+      let elCB2 = document.getElementById('fixed-fmf-cb2');
+      if(elCB2) elCB2.innerText = cb2 !== "" ? cb2 : "--";
 
       let nsfBadge = document.getElementById('nsf-status-badge');
       if (nsfBadge && data.nsf_data) {
