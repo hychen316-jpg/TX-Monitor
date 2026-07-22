@@ -708,7 +708,19 @@
         let actionStr = data.action || "計算中";
         let actionColor = actionStr.includes('外盤') ? 'var(--red)' : (actionStr.includes('內盤') ? 'var(--green)' : '#aaa');
         let actionIcon = actionStr.includes('外盤') ? '🔥' : (actionStr.includes('內盤') ? '💀' : '⏳');
-        let netColor = (data.net_whale && data.net_whale > 0) ? 'var(--red)' : 'var(--green)';
+        const legacyNetWhaleRaw = data.legacy_net_whale !== undefined && data.legacy_net_whale !== null
+            ? data.legacy_net_whale
+            : data.net_whale;
+        const legacyNetWhaleValue = Number(legacyNetWhaleRaw);
+        const legacyNetWhale = Number.isFinite(legacyNetWhaleValue) ? legacyNetWhaleValue : 0;
+        const legacyRetentionRaw = data.legacy_retention !== undefined && data.legacy_retention !== null
+            ? data.legacy_retention
+            : data.retention;
+        const legacyRetentionValue = Number(legacyRetentionRaw);
+        const legacyRetention = Number.isFinite(legacyRetentionValue)
+            ? Math.max(0, Math.min(100, legacyRetentionValue)).toFixed(1)
+            : "0.0";
+        let netColor = legacyNetWhale > 0 ? 'var(--red)' : 'var(--green)';
 
         // 主力成本診斷。direction 由 Python 上傳 1 / -1 / 0。
         const mainCostState = data.main_cost_state || "WAITING";
@@ -739,7 +751,7 @@
             : ``; // 如果只是一般 SCAN 則隱藏標籤，保持畫面乾淨
 
         // 🌟 新增：計算淨力斜率 (與上一次的淨力相減)
-        let currentNetWhale = data.net_whale || 0;
+        let currentNetWhale = legacyNetWhale;
         let netWhaleDiff = 0;
         
         // 判斷如果已經有舊資料，就計算差額
@@ -775,7 +787,7 @@
                         <span style="color:#aaa; white-space:nowrap; font-size:11px;">
                             大戶淨單: <span style="color:${netColor}; font-size:14px; font-weight:800;">${currentNetWhale}</span>
                             <span style="color:${netSlopeColor}; font-size:11px; margin-left:2px; font-weight:bold;">${netSlopeIcon}${Math.abs(netWhaleDiff)}</span> 
-                            (保留率${data.retention || 0}%)
+                            (保留率${legacyRetention}%)
                         </span>
                     </div>
                 </div>
