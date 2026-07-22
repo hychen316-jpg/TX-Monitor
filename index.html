@@ -710,11 +710,15 @@
         let actionIcon = actionStr.includes('外盤') ? '🔥' : (actionStr.includes('內盤') ? '💀' : '⏳');
         let netColor = (data.net_whale && data.net_whale > 0) ? 'var(--red)' : 'var(--green)';
 
-        // V2 主力成本診斷。direction 由 Python 上傳 1 / -1 / 0。
+        // 主力成本診斷。direction 由 Python 上傳 1 / -1 / 0。
         const mainCostState = data.main_cost_state || "WAITING";
         const mainCostDirectionValue = Number(data.main_cost_direction || 0);
         const mainCostDirection = mainCostDirectionValue > 0 ? "多方" : (mainCostDirectionValue < 0 ? "空方" : "中性");
         const mainCostDirectionColor = mainCostDirectionValue > 0 ? 'var(--red)' : (mainCostDirectionValue < 0 ? 'var(--green)' : '#aaa');
+        const mainCostConfidenceValue = Number(data.main_cost_confidence || 0);
+        const mainCostConfidence = Number.isFinite(mainCostConfidenceValue)
+            ? Math.max(0, Math.min(100, mainCostConfidenceValue)).toFixed(1)
+            : "0.0";
         const mainCostStateColor = mainCostState === "ACCUMULATING_LONG"
             ? 'var(--red)'
             : (mainCostState === "DISTRIBUTING_SHORT"
@@ -771,7 +775,7 @@
                         <span style="color:#aaa; white-space:nowrap; font-size:11px;">
                             大戶淨單: <span style="color:${netColor}; font-size:14px; font-weight:800;">${currentNetWhale}</span>
                             <span style="color:${netSlopeColor}; font-size:11px; margin-left:2px; font-weight:bold;">${netSlopeIcon}${Math.abs(netWhaleDiff)}</span> 
-                            (信心${data.retention || 0}%)
+                            (保留率${data.retention || 0}%)
                         </span>
                     </div>
                 </div>
@@ -797,6 +801,9 @@
                     </span>
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
                         方向: <span style="color:${mainCostDirectionColor}; font-size:11px; font-weight:800;">${mainCostDirection}</span>
+                    </span>
+                    <span style="color:#aaa; white-space:nowrap; font-size:10px;">
+                        模型信心: <span style="color:#fff; font-size:11px; font-weight:800;">${mainCostConfidence}%</span>
                     </span>
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
                         成本區間: <span style="color:var(--yellow); font-size:11px; font-weight:800;">${mainCostRange}</span>
