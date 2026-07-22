@@ -725,8 +725,21 @@
         // 主力成本診斷。direction 由 Python 上傳 1 / -1 / 0。
         const mainCostState = data.main_cost_state || "WAITING";
         const mainCostDirectionValue = Number(data.main_cost_direction || 0);
-        const mainCostDirection = mainCostDirectionValue > 0 ? "多方" : (mainCostDirectionValue < 0 ? "空方" : "中性");
-        const mainCostDirectionColor = mainCostDirectionValue > 0 ? 'var(--red)' : (mainCostDirectionValue < 0 ? 'var(--green)' : '#aaa');
+        const mainCostCandidateDirectionValue = Number(data.main_cost_candidate_direction || 0);
+        const hasCandidateDirection = mainCostDirectionValue === 0 && mainCostCandidateDirectionValue !== 0;
+        const mainCostDisplayDirectionValue = hasCandidateDirection
+            ? mainCostCandidateDirectionValue
+            : mainCostDirectionValue;
+        const mainCostDirection = mainCostDirectionValue > 0
+            ? "多方"
+            : (mainCostDirectionValue < 0
+                ? "空方"
+                : (mainCostCandidateDirectionValue > 0
+                    ? "候選多方"
+                    : (mainCostCandidateDirectionValue < 0 ? "候選空方" : "中性")));
+        const mainCostDirectionColor = mainCostDisplayDirectionValue > 0
+            ? 'var(--red)'
+            : (mainCostDisplayDirectionValue < 0 ? 'var(--green)' : '#aaa');
         const mainCostConfidenceValue = Number(data.main_cost_confidence || 0);
         const mainCostConfidence = Number.isFinite(mainCostConfidenceValue)
             ? Math.max(0, Math.min(100, mainCostConfidenceValue)).toFixed(1)
@@ -735,7 +748,9 @@
             ? 'var(--red)'
             : (mainCostState === "DISTRIBUTING_SHORT"
                 ? 'var(--green)'
-                : (mainCostState === "CONFLICT" ? 'var(--yellow)' : '#aaa'));
+                : ((mainCostState === "CONFLICT"
+                    || mainCostState === "OPENING_PROVISIONAL"
+                    || mainCostState === "DIRECTION_PENDING") ? 'var(--yellow)' : '#aaa'));
         const mainCostLow = data.main_cost_low !== undefined && data.main_cost_low !== null ? data.main_cost_low : 0;
         const mainCostHigh = data.main_cost_high !== undefined && data.main_cost_high !== null ? data.main_cost_high : 0;
         const mainCostRange = Number(mainCostLow) > 0 && Number(mainCostHigh) > 0
