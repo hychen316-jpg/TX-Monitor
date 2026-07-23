@@ -758,6 +758,24 @@
         const mainCostConfidence = Number.isFinite(mainCostConfidenceValue)
             ? Math.max(0, Math.min(100, mainCostConfidenceValue)).toFixed(1)
             : "0.0";
+        // === 狀態中文映射 (考慮多空) ===
+        let mainCostStateZH = "中性觀望";
+        if (mainCostState === "ACCUMULATING_LONG") {
+            mainCostStateZH = "多方吸籌建倉";
+        } else if (mainCostState === "DISTRIBUTING_SHORT") {
+            mainCostStateZH = "空方派發倒貨";
+        } else if (mainCostState === "CONFLICT") {
+            mainCostStateZH = "多空強烈拉鋸";
+        } else if (mainCostState === "DIRECTION_PENDING") {
+            mainCostStateZH = "方向確認中";
+        } else if (mainCostState === "OPENING_PROVISIONAL") {
+            mainCostStateZH = "開盤暫定過渡";
+        } else if (mainCostState === "WARMUP" || mainCostState === "WAITING") {
+            mainCostStateZH = "系統暖機中";
+        } else {
+            mainCostStateZH = mainCostState;
+        }
+
         const mainCostStateColor = mainCostState === "ACCUMULATING_LONG"
             ? 'var(--red)'
             : (mainCostState === "DISTRIBUTING_SHORT"
@@ -773,7 +791,40 @@
         const mainCostAcceptedEvents = data.main_cost_accepted_events !== undefined && data.main_cost_accepted_events !== null
             ? data.main_cost_accepted_events
             : 0;
-        const mainCostLastEvent = data.main_cost_last_event || "--";
+
+        // === 事件類別中文映射 (考慮多空) ===
+        const rawEventKind = data.main_cost_last_event || "--";
+        let mainCostLastEventZH = "--";
+        
+        if (rawEventKind.includes("ACTIVE_ACCEPTED")) {
+            if (mainCostDisplayDirectionValue > 0) {
+                mainCostLastEventZH = "🔴 主動拉抬攻勢";
+            } else if (mainCostDisplayDirectionValue < 0) {
+                mainCostLastEventZH = "🟢 主動灌壓攻勢";
+            } else {
+                mainCostLastEventZH = "⚡ 主動突破攻勢";
+            }
+        } else if (rawEventKind.includes("PASSIVE_ABSORPTION")) {
+            if (mainCostDisplayDirectionValue < 0) {
+                mainCostLastEventZH = "🟢 高檔掛賣倒貨";
+            } else if (mainCostDisplayDirectionValue > 0) {
+                mainCostLastEventZH = "🔴 低檔掛買吸籌";
+            } else {
+                mainCostLastEventZH = "🛡️ 被動限價吸收";
+            }
+        } else if (rawEventKind.includes("PASSIVE_HOLD")) {
+            if (mainCostDisplayDirectionValue < 0) {
+                mainCostLastEventZH = "🟢 頂層防衛牆";
+            } else if (mainCostDisplayDirectionValue > 0) {
+                mainCostLastEventZH = "🔴 底層防護牆";
+            } else {
+                mainCostLastEventZH = "🧱 防衛牆成立";
+            }
+        } else if (rawEventKind.includes("AMBIGUOUS")) {
+            mainCostLastEventZH = "⏳ 模糊雜訊";
+        } else {
+            mainCostLastEventZH = rawEventKind;
+        }
         
         let statusBadge = data.is_trigger 
             ? `<span style="background:var(--red); color:#fff; padding:2px 4px; border-radius:4px; font-size:10px;">${data.status}</span>` 
@@ -838,7 +889,7 @@
 
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 6px; flex-wrap:wrap; gap:4px 10px;">
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
-                        狀態: <span style="color:${mainCostStateColor}; font-size:11px; font-weight:800;">${mainCostState}</span>
+                        狀態: <span style="color:${mainCostStateColor}; font-size:11px; font-weight:800;">${mainCostStateZH}</span>
                     </span>
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
                         方向: <span style="color:${mainCostDirectionColor}; font-size:11px; font-weight:800;">${mainCostDirection}</span>
@@ -853,7 +904,7 @@
                         有效事件: <span style="color:#fff; font-size:11px; font-weight:800;">${mainCostAcceptedEvents}</span>
                     </span>
                     <span style="color:#aaa; white-space:nowrap; font-size:10px;">
-                        事件類型: <span style="color:#00d2ff; font-size:11px; font-weight:800;">${mainCostLastEvent}</span>
+                        事件類型: <span style="color:#00d2ff; font-size:11px; font-weight:800;">${mainCostLastEventZH}</span>
                     </span>
                 </div>
 
