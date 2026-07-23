@@ -901,6 +901,21 @@
         const center = band.center !== null && band.center > 0 ? band.center.toFixed(1) : "--";
         const range = band.low !== null && band.high !== null && band.low > 0 && band.high > 0
             ? `${band.low.toFixed(1)}～${band.high.toFixed(1)}` : "--";
+            
+        let essDisplay = band.effectiveEvents === null ? "--" : band.effectiveEvents.toFixed(2);
+        if (band.effectiveEvents !== null) {
+            if (band.effectiveEvents >= 2.0) essDisplay = `<span style="color:var(--green);font-weight:900;text-shadow:0 0 4px var(--green);">${essDisplay}</span>`;
+            else if (band.effectiveEvents < 1.0) essDisplay = `<span style="color:var(--red);font-weight:900;">${essDisplay}</span>`;
+            else essDisplay = `<span style="color:#fff;">${essDisplay}</span>`;
+        }
+        
+        let ageDisplay = formatRadarAge(band.age);
+        if (band.age !== null) {
+            if (band.age > 1800) ageDisplay = `<span style="color:var(--red);font-weight:900;">${ageDisplay}⚠️</span>`;
+            else if (band.age > 600) ageDisplay = `<span style="color:var(--yellow);font-weight:900;">${ageDisplay}</span>`;
+            else ageDisplay = `<span style="color:#fff;">${ageDisplay}</span>`;
+        }
+
         return `
             <div class="radar-band-card ${band.side}">
                 <div class="radar-band-title">
@@ -911,9 +926,9 @@
                 <div class="radar-band-range">區間 ${range}</div>
                 <div class="radar-band-meta">
                     <span>事件：${Math.round(band.eventCount)}筆</span>
-                    <span>ESS：${band.effectiveEvents === null ? "--" : band.effectiveEvents.toFixed(2)}</span>
+                    <span>ESS：${essDisplay}</span>
                     <span>權重：${band.weight === null ? "--" : band.weight.toFixed(1)}</span>
-                    <span>時效：${formatRadarAge(band.age)}</span>
+                    <span>時效：${ageDisplay}</span>
                 </div>
             </div>`;
     }
