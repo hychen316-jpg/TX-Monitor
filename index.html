@@ -259,14 +259,6 @@
                 <div id="oi-iv-val" style="width:100%; box-sizing:border-box;">
                     <div style="text-align:center; color:#888; font-size:10px; margin-top:2px;">IV 數據等待中...</div>
                 </div>
-                <div id="mdi-advice-container" style="width:100%; display:none; flex-direction:column; align-items:flex-end; margin-top:4px; border-top:1px dashed rgba(212,175,55,0.3); padding-top:4px; gap:4px;">
-                    <div style="display:flex; gap:4px;">
-                        <span id="mdi-quality-val" style="font-size:9px; color:#aaa; font-weight:bold; background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:4px;">--</span>
-                        <span id="mdi-activation-score-val" style="font-size:10px; color:#fff; font-weight:bold; background:rgba(10,132,255,0.2); border:1px solid #0a84ff; padding:1px 6px; border-radius:4px;">AH2: --</span>
-                    </div>
-                    <span id="mdi-layout-confidence-val" style="font-size:10px; color:#ffd60a; font-weight:bold; background:rgba(255,214,10,0.15); border:1px solid #ffd60a; padding:1px 6px; border-radius:4px;">AJ2: --</span>
-                    <span id="mdi-advice-val" style="font-size:11px; font-weight:900; line-height:1.4; text-align:right; width:100%;"></span>
-                </div>
             </div>
         </div>
 
@@ -1728,76 +1720,6 @@
         let el = document.getElementById(id+'-val'); el.innerText = parts[0]; el.className = "big-val " + (v>0?"c-red":(v<0?"c-green":"")); 
         let tag = document.getElementById(id+'-tag'); tag.innerText = parts[1]; tag.className = "chip-tag " + (parts[1].includes("多")?"bg-red":(parts[1].includes("空")?"bg-green":""));
       });
-      
-      let mdiContainerEl = document.getElementById('mdi-advice-container');
-      let mdiAdviceEl = document.getElementById('mdi-advice-val');
-      let mdiQualityEl = document.getElementById('mdi-quality-val');
-      let mdiActivationScoreEl = document.getElementById('mdi-activation-score-val');
-      let mdiLayoutConfidenceEl = document.getElementById('mdi-layout-confidence-val');
-      
-      if (mdiContainerEl && data.mdi_execution_advice !== undefined && data.mdi_execution_advice !== "") {
-          mdiContainerEl.style.display = "flex";
-          
-          // BK2 (Advice)
-          let adviceText = data.mdi_execution_advice;
-          let parts = adviceText.split('|').filter(p => p !== '1' && p !== '-1' && p !== '0');
-          let combinedText = parts.join('');
-          let color = "var(--yellow)";
-          if (combinedText.includes("多")) color = "var(--red)";
-          else if (combinedText.includes("空")) color = "var(--green)";
-          mdiAdviceEl.innerHTML = "⚡ " + parts.join('<br>⚡ ');
-          mdiAdviceEl.style.color = color;
-          
-          // Quality
-          if (mdiQualityEl && data.mdi_data_quality !== undefined) {
-              mdiQualityEl.innerText = "Q:" + data.mdi_data_quality;
-          }
-          
-          // AH2
-          if (mdiActivationScoreEl) {
-              if (data.mdi_live_campaign_display !== undefined && data.mdi_live_campaign_display !== "") {
-                  mdiActivationScoreEl.innerText = "AH2: " + data.mdi_live_campaign_display;
-              } else if (data.omi_score !== undefined) {
-                  let scoreText = data.omi_score;
-                  if (data.mdi_phase) {
-                      scoreText += " | " + data.mdi_phase;
-                  }
-                  mdiActivationScoreEl.innerText = "AH2: " + scoreText;
-              }
-          }
-          
-          // AJ2 (Confidence & Styling)
-          let aj2_val = data.mdi_layout_confidence !== undefined ? data.mdi_layout_confidence : data.omi_confidence;
-          if (mdiLayoutConfidenceEl && aj2_val !== undefined) {
-              let aj2 = parseFloat(aj2_val);
-              let aj2Text = "AJ2: " + aj2_val;
-              let bg = "rgba(255,214,10,0.15)";
-              let fontColor = "#ffd60a";
-              let border = "1px solid #ffd60a";
-              
-              if (!isNaN(aj2)) {
-                  if (aj2 >= 75) {
-                      bg = "rgba(255,69,58,0.3)"; fontColor = "#ff453a"; border = "2px solid #ff453a";
-                      aj2Text += " 🔥 (較強一致)";
-                  } else if (aj2 >= 65) {
-                      bg = "rgba(255,69,58,0.15)"; fontColor = "#ff453a"; border = "1px solid #ff453a";
-                      aj2Text += " 🔴 (相對完整)";
-                  } else if (aj2 >= 55) {
-                      bg = "rgba(255,159,10,0.15)"; fontColor = "#ff9f0a"; border = "1px solid #ff9f0a";
-                      aj2Text += " 🟡 (達參考門檻)";
-                  } else {
-                      bg = "rgba(48,209,88,0.15)"; fontColor = "#30d158"; border = "1px dotted #30d158";
-                      aj2Text += " 🟢 (未滿門檻)";
-                  }
-              }
-              mdiLayoutConfidenceEl.innerText = aj2Text;
-              mdiLayoutConfidenceEl.style.background = bg;
-              mdiLayoutConfidenceEl.style.color = fontColor;
-              mdiLayoutConfidenceEl.style.border = border;
-          }
-      } else if (mdiContainerEl) {
-          mdiContainerEl.style.display = "none";
-      }
     }
 
     function getChipValueForArray(d) {
