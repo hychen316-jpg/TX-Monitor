@@ -904,15 +904,18 @@
             
         let essDisplay = band.effectiveEvents === null ? "--" : band.effectiveEvents.toFixed(2);
         if (band.effectiveEvents !== null) {
-            if (band.effectiveEvents >= 2.0) essDisplay = `<span style="color:var(--green);font-weight:900;text-shadow:0 0 4px var(--green);">${essDisplay}</span>`;
-            else if (band.effectiveEvents < 1.0) essDisplay = `<span style="color:var(--red);font-weight:900;">${essDisplay}</span>`;
+            if (band.effectiveEvents >= 2.0) {
+                const strongColor = band.isLong ? 'var(--red)' : 'var(--green)';
+                essDisplay = `<span style="color:${strongColor};font-weight:900;text-shadow:0 0 4px ${strongColor};">${essDisplay}</span>`;
+            }
+            else if (band.effectiveEvents < 1.0) essDisplay = `<span style="color:#888;font-weight:900;">${essDisplay}</span>`;
             else essDisplay = `<span style="color:#fff;">${essDisplay}</span>`;
         }
         
         let ageDisplay = formatRadarAge(band.age);
         if (band.age !== null) {
-            if (band.age > 1800) ageDisplay = `<span style="color:var(--red);font-weight:900;">${ageDisplay}⚠️</span>`;
-            else if (band.age > 600) ageDisplay = `<span style="color:var(--yellow);font-weight:900;">${ageDisplay}</span>`;
+            if (band.age > 1800) ageDisplay = `<span style="color:var(--yellow);font-weight:900;">${ageDisplay}⚠️</span>`;
+            else if (band.age > 600) ageDisplay = `<span style="color:#aaa;font-weight:900;">${ageDisplay}</span>`;
             else ageDisplay = `<span style="color:#fff;">${ageDisplay}</span>`;
         }
 
