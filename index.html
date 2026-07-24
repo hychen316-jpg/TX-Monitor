@@ -742,6 +742,12 @@
 
 
     // === TX Radar V19.3 Phase 1：中文與資料防呆 ===
+    const DIRECTION_CONFIRMATION_MODE_ZH = {
+        INITIAL: "初始方向確認",
+        NORMAL: "一般方向反轉",
+        FAST_BREAKOUT: "成本帶強突破快速反轉",
+        HOLD: "維持正式方向"
+    };
     const MAIN_COST_STATE_ZH = {
         OPENING_PROVISIONAL: "開盤觀察期",
         WARMUP: "證據累積中",
@@ -758,6 +764,7 @@
         FRESH_START: "全新啟動",
         PENDING_FIRST_TICK: "等待首筆行情核對",
         RECOVERED_GUARD: "快速恢復保護期",
+        RECOVERED: "快速恢復完成",
         NEW_SESSION: "新盤重置"
     };
 
@@ -956,6 +963,36 @@
             const candidateDirectionValue = Number(data.main_cost_candidate_direction || 0);
             const mainCostDirection = translateDirection(mainCostDirectionValue, false);
             const candidateDirection = translateDirection(candidateDirectionValue, true);
+            const fastReversalActive = toRadarBoolean(data.fast_reversal_active);
+            const breakoutActive = toRadarBoolean(data.breakout_active);
+            const breakoutDirectionValue = Number(data.breakout_direction || 0);
+            const breakoutDirection = translateDirection(breakoutDirectionValue, false).replace('尚未確認', '無');
+            const confirmationMode = String(data.direction_confirmation_mode || "HOLD");
+            const confirmationModeZH = DIRECTION_CONFIRMATION_MODE_ZH[confirmationMode] || confirmationMode;
+            
+            const breakoutRequiredSeconds = toFiniteNumberOrNull(data.breakout_required_seconds) ?? 0;
+            const breakoutStableSeconds = toFiniteNumberOrNull(data.breakout_stable_seconds) ?? 0;
+            const directionConfirmationRequired = toFiniteNumberOrNull(data.direction_confirmation_required_seconds) ?? 0;
+            const directionConfirmationRemaining = toFiniteNumberOrNull(data.direction_confirmation_remaining_seconds) ?? 0;
+            const fastBalance = toFiniteNumberOrNull(data.fast_balance) ?? 0;
+            const mainCostVersion = String(data.main_cost_version || '3.2');
+            const modelRevision = String(data.model_revision || '');
+            const costVersionLabel = modelRevision && modelRevision !== mainCostVersion
+                ? `${mainCostVersion} / ${modelRevision}`
+                : mainCostVersion;
+            
+            let statusDisplayHtml = '';
+            if (breakoutDirectionValue !== 0 && !breakoutActive) {
+                statusDisplayHtml = `<span style="color:#aaa;white-space:nowrap;font-size:10px;">突破狀態: <span style="color:var(--yellow);font-size:11px;font-weight:800;">突破觀察中 ${breakoutStableSeconds.toFixed(1)} / ${breakoutRequiredSeconds.toFixed(1)}秒</span></span>`;
+            } else if (breakoutActive && !fastReversalActive) {
+                statusDisplayHtml = `<span style="color:#aaa;white-space:nowrap;font-size:10px;">突破狀態: <span style="color:var(--yellow);font-size:11px;font-weight:800;">價格突破成立，反向籌碼條件尚未完全滿足</span></span>`;
+            } else if (fastReversalActive) {
+                const confirmedSeconds = Math.max(0, directionConfirmationRequired - directionConfirmationRemaining);
+                statusDisplayHtml = `<span style="color:#aaa;white-space:nowrap;font-size:10px;">突破狀態: <span style="color:var(--purple);font-size:11px;font-weight:800;">強突破快速反轉確認中 (確認進度：已確認 ${confirmedSeconds.toFixed(1)} / 所需 ${directionConfirmationRequired.toFixed(1)}秒)</span></span>`;
+            } else if (candidateDirectionValue !== 0) {
+                const confirmedSeconds = Math.max(0, directionConfirmationRequired - directionConfirmationRemaining);
+                statusDisplayHtml = `<span style="color:#aaa;white-space:nowrap;font-size:10px;">候選方向: <span style="color:${candidateDirectionValue > 0 ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:800;">${escapeRadarHtml(candidateDirection)}</span> (確認進度：已確認 ${confirmedSeconds.toFixed(1)} / 所需 ${directionConfirmationRequired.toFixed(1)}秒)</span>`;
+            }
             const mainCostDirectionColor = mainCostDirectionValue > 0
                 ? 'var(--red)' : (mainCostDirectionValue < 0 ? 'var(--green)' : '#aaa');
             const mainCostStateColor = mainCostState === "ACCUMULATING_LONG"
@@ -1029,6 +1066,9 @@
                         <span style="color:#aaa;white-space:nowrap;font-size:10px;">狀態: <span style="color:${mainCostStateColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostStateZH)}</span></span>
                         <span style="color:#aaa;white-space:nowrap;font-size:10px;">正式方向: <span style="color:${mainCostDirectionColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostDirection)}</span>${conflictWarning}</span>
                         ${candidateDirectionValue !== 0 ? `<span style="color:#aaa;white-space:nowrap;font-size:10px;">候選方向: <span style="color:${candidateDirectionValue > 0 ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:800;">${escapeRadarHtml(candidateDirection)}</span></span>` : ''}
+                        ${statusDisplayHtml !== '' ? statusDisplayHtml : ''}
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">翻轉模式: <span style="color:${fastReversalActive ? 'var(--purple)' : '#aaa'};font-size:11px;font-weight:800;">${escapeRadarHtml(confirmationModeZH)}</span></span>
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">快速Balance: <span style="color:${fastBalance > 0 ? 'var(--red)' : (fastBalance < 0 ? 'var(--green)' : '#aaa')};font-size:11px;font-weight:800;">${fastBalance.toFixed(3)}</span></span>
                         <span style="color:#aaa;white-space:nowrap;font-size:10px;">模型信心: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostConfidence}%</span></span>
                         <span style="color:#aaa;white-space:nowrap;font-size:10px;">成本區間: <span style="color:var(--yellow);font-size:11px;font-weight:800;">${mainCostRange}</span></span>
                         <span style="color:#aaa;white-space:nowrap;font-size:10px;">有效事件: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostAcceptedEvents}</span></span>
@@ -1041,7 +1081,7 @@
                 <div class="radar-phase-panel">
                     <div class="radar-phase-header">
                         <span class="radar-phase-title">📡 TX Radar V19.3 Phase 1</span>
-                        <span class="radar-version-badge">Radar ${escapeRadarHtml(data.radar_version || '19.3')} ／ Cost ${escapeRadarHtml(data.main_cost_version || data.main_cost_version === 0 ? data.main_cost_version : '3.1')}</span>
+                <span class="radar-version-badge">Radar ${escapeRadarHtml(data.radar_version || '19.3')} | Cost ${escapeRadarHtml(costVersionLabel)}</span>
                     </div>
                     <div class="radar-model-grid">
                         <div class="radar-model-item"><div class="radar-model-label">恢復狀態</div><div class="radar-model-value">${escapeRadarHtml(recoveryStatus)}</div></div>
