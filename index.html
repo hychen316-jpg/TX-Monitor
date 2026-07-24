@@ -1019,15 +1019,22 @@
                 ? `<span style="background:var(--red);color:#fff;padding:2px 4px;border-radius:4px;font-size:10px;">${escapeRadarHtml(data.status || '觸發')}</span>` : '';
 
             // 原 V19 的模型摘要必須永遠顯示；Phase 1 只額外增加雙軌成本帶。
+            const isConflict = mainCostState === 'CONFLICT';
+            const conflictWarning = isConflict ? `<span style="color:var(--yellow);font-size:10px;margin-left:4px;">(⚠️ 判定可能延遲)</span>` : '';
+            const strategyHint = isConflict ? `<div style="padding:0 6px 4px 6px;color:#bbb;font-size:10px;text-align:right;">💡 Phase 1 策略：<span style="color:#fff;">請以跌破成本帶或重回區間作為進場參考</span></div>` : '';
+
             const legacyModelHtml = `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px;flex-wrap:wrap;gap:4px 10px;">
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">狀態: <span style="color:${mainCostStateColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostStateZH)}</span></span>
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">正式方向: <span style="color:${mainCostDirectionColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostDirection)}</span></span>
-                    ${candidateDirectionValue !== 0 ? `<span style="color:#aaa;white-space:nowrap;font-size:10px;">候選方向: <span style="color:${candidateDirectionValue > 0 ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:800;">${escapeRadarHtml(candidateDirection)}</span></span>` : ''}
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">模型信心: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostConfidence}%</span></span>
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">成本區間: <span style="color:var(--yellow);font-size:11px;font-weight:800;">${mainCostRange}</span></span>
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">有效事件: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostAcceptedEvents}</span></span>
-                    <span style="color:#aaa;white-space:nowrap;font-size:10px;">事件類型: <span style="color:#00d2ff;font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostLastEventZH)}</span></span>
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px;flex-wrap:wrap;gap:4px 10px;">
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">狀態: <span style="color:${mainCostStateColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostStateZH)}</span></span>
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">正式方向: <span style="color:${mainCostDirectionColor};font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostDirection)}</span>${conflictWarning}</span>
+                        ${candidateDirectionValue !== 0 ? `<span style="color:#aaa;white-space:nowrap;font-size:10px;">候選方向: <span style="color:${candidateDirectionValue > 0 ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:800;">${escapeRadarHtml(candidateDirection)}</span></span>` : ''}
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">模型信心: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostConfidence}%</span></span>
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">成本區間: <span style="color:var(--yellow);font-size:11px;font-weight:800;">${mainCostRange}</span></span>
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">有效事件: <span style="color:#fff;font-size:11px;font-weight:800;">${mainCostAcceptedEvents}</span></span>
+                        <span style="color:#aaa;white-space:nowrap;font-size:10px;">事件類型: <span style="color:#00d2ff;font-size:11px;font-weight:800;">${escapeRadarHtml(mainCostLastEventZH)}</span></span>
+                    </div>
+                    ${strategyHint}
                 </div>`;
 
             const phase1Html = isPhase1 ? `
