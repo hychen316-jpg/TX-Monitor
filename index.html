@@ -197,12 +197,73 @@
     .radar-event-row { grid-column:1/-1; border-top:1px dashed #444; padding-top:5px; margin-top:1px; font-size:9px; line-height:1.45; color:#bbb; }
     .radar-position-row { grid-column:1/-1; color:#64d2ff; font-size:9px; text-align:center; padding-top:2px; }
     .radar-legacy-note { color:#777; font-size:9px; text-align:center; padding:6px; border:1px dashed #3a3a3c; border-radius:6px; }
+
+    /* === OCF 2.1 固定藍圖與盤中防守面板（Level 4） === */
+    .ocf-battle-panel { margin-top:8px; padding:10px 0 0; border-top:1px solid #3a3a3c; }
+    .ocf-battle-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:7px; }
+    .ocf-battle-kicker { color:#64d2ff; font-size:8px; font-weight:800; }
+    .ocf-battle-title { color:#f2f2f7; font-size:12px; font-weight:800; margin-top:2px; }
+    .ocf-model-badge { flex:0 0 auto; color:#8e8e93; background:#252527; border:1px solid #444; border-radius:4px; padding:3px 6px; font-size:8px; font-weight:800; }
+    .ocf-model-badge.is-live { color:#64d2ff; border-color:rgba(100,210,255,.65); background:rgba(10,132,255,.12); }
+    .ocf-model-badge.is-warn { color:var(--yellow); border-color:rgba(255,214,10,.55); background:rgba(255,214,10,.10); }
+    .ocf-model-badge.is-stale { color:#aaa; border-color:#555; background:#29292b; }
+    .ocf-command-grid { display:grid; grid-template-columns:minmax(0,1.8fr) repeat(2,minmax(0,1fr)); gap:4px; }
+    .ocf-command-item { min-width:0; background:#242426; border:1px solid #353538; border-radius:6px; padding:6px 7px; }
+    .ocf-command-label { display:block; color:#85858a; font-size:8px; line-height:1.2; }
+    .ocf-command-value { display:block; color:#f2f2f7; font-size:12px; font-weight:900; line-height:1.3; margin-top:2px; overflow-wrap:anywhere; }
+    .ocf-command-sub { display:block; color:#9a9aa0; font-size:8px; line-height:1.35; margin-top:2px; overflow-wrap:anywhere; }
+    .ocf-tone-bull { color:var(--red) !important; }
+    .ocf-tone-bear { color:var(--green) !important; }
+    .ocf-tone-wait { color:var(--yellow) !important; }
+    .ocf-tone-neutral { color:#d1d1d6 !important; }
+    .ocf-defense-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; margin-top:5px; }
+    .ocf-defense-card { min-width:0; border:1px solid #3a3a3c; border-radius:6px; padding:7px; background:#202022; }
+    .ocf-defense-card.support { border-left:3px solid var(--red); }
+    .ocf-defense-card.resistance { border-left:3px solid var(--green); }
+    .ocf-defense-head { display:flex; align-items:center; justify-content:space-between; gap:5px; }
+    .ocf-defense-name { color:#d1d1d6; font-size:9px; font-weight:800; }
+    .ocf-defense-state { flex:0 0 auto; color:#8e8e93; background:#2c2c2e; border:1px solid #48484a; border-radius:4px; padding:2px 5px; font-size:8px; font-weight:900; white-space:nowrap; }
+    .ocf-defense-state.state-active,
+    .ocf-defense-state.state-confirming { color:var(--yellow); border-color:rgba(255,214,10,.6); background:rgba(255,214,10,.10); }
+    .ocf-defense-card.support .ocf-defense-state.state-valid { color:var(--red); border-color:rgba(255,69,58,.65); background:rgba(255,69,58,.12); }
+    .ocf-defense-card.resistance .ocf-defense-state.state-valid { color:var(--green); border-color:rgba(48,209,88,.65); background:rgba(48,209,88,.12); }
+    .ocf-defense-state.state-failed { color:#ff9f0a; border-color:rgba(255,159,10,.65); background:rgba(255,159,10,.12); }
+    .ocf-defense-state.state-stale { color:#aaa; border-color:#555; background:#29292b; }
+    .ocf-defense-zone { color:#fff; font-size:17px; font-weight:900; line-height:1.2; margin-top:5px; overflow-wrap:anywhere; }
+    .ocf-defense-detail { color:#9a9aa0; font-size:8px; line-height:1.35; min-height:11px; margin-top:2px; overflow-wrap:anywhere; }
+    .ocf-meter { height:3px; background:#111; overflow:hidden; margin-top:6px; }
+    .ocf-meter-fill { display:block; width:0; height:100%; transition:width .35s ease; }
+    .ocf-defense-card.support .ocf-meter-fill { background:var(--red); }
+    .ocf-defense-card.resistance .ocf-meter-fill { background:var(--green); }
+    .ocf-defense-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; margin-top:5px; }
+    .ocf-defense-stat { color:#85858a; font-size:7px; line-height:1.25; }
+    .ocf-defense-stat strong { display:block; color:#e5e5ea; font-size:9px; margin-top:1px; overflow-wrap:anywhere; }
+    .ocf-defense-action { color:#d1d1d6; border-top:1px dashed #3a3a3c; font-size:8px; font-weight:700; line-height:1.4; margin-top:6px; padding-top:5px; min-height:22px; }
+    .ocf-action-band { border:1px solid #3a3a3c; border-left:3px solid var(--yellow); border-radius:6px; background:#232325; margin-top:5px; padding:7px 8px; }
+    .ocf-action-band.action-bull { border-left-color:var(--red); }
+    .ocf-action-band.action-bear { border-left-color:var(--green); }
+    .ocf-action-band.action-wait { border-left-color:var(--yellow); }
+    .ocf-action-label { color:#85858a; font-size:8px; font-weight:800; }
+    .ocf-action-text { color:var(--yellow); font-size:12px; font-weight:900; line-height:1.4; margin-top:2px; overflow-wrap:anywhere; }
+    .ocf-action-context { color:#9a9aa0; font-size:8px; line-height:1.4; margin-top:2px; overflow-wrap:anywhere; }
+    .ocf-prior-band { border-top:1px dashed #3a3a3c; margin-top:7px; padding-top:6px; }
+    .ocf-prior-head { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:5px; }
+    .ocf-prior-title { color:#8e8e93; font-size:8px; font-weight:800; }
+    .ocf-prior-status { color:#d4af37; border:1px solid rgba(212,175,55,.45); background:rgba(212,175,55,.08); border-radius:4px; padding:2px 5px; font-size:8px; font-weight:900; }
+    .ocf-prior-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; }
+    .ocf-prior-item { min-width:0; }
+    .ocf-prior-label { color:#777; font-size:7px; }
+    .ocf-prior-value { color:#ddd; font-size:10px; font-weight:800; line-height:1.3; margin-top:1px; overflow-wrap:anywhere; }
     @media (max-width:430px) {
       .radar-model-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .radar-band-meta { grid-template-columns:1fr; }
+      .ocf-command-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .ocf-command-item.direction { grid-column:1/-1; }
+      .ocf-prior-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
     @media (max-width:350px) {
       .radar-band-grid { grid-template-columns:1fr; }
+      .ocf-defense-grid { grid-template-columns:1fr; }
     }
 
   </style>
@@ -270,44 +331,99 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:14px;">--</span></div>
         </div>
 
-        <div class="req-level-4-flex" style="margin-top:6px; padding: 18px 12px 8px 12px; position:relative; background:var(--card); border-radius:10px; border:1px solid rgba(191,90,242,0.4); box-shadow:inset 0 0 10px rgba(191,90,242,0.1); flex-direction:column; align-items:stretch; gap:6px;">
-            <div class="box-header" style="position:absolute; top:4px; left:10px; color:#bf5af2; font-size:9px; margin:0;">🚧 固定戰場藍圖</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; font-weight:bold;">
-                <div style="display:flex; align-items:center; gap:4px; color:var(--green);">
-                    <span style="font-size:9px;">🟢 壓</span>
-                    <span id="fixed-p-bp2" style="font-size:14px;">--</span>
+        <section id="ocf-battle-panel" class="ocf-battle-panel req-level-4-block" aria-label="OCF 2.1 固定戰場與盤中防守">
+            <div class="ocf-battle-header">
+                <div>
+                    <div class="ocf-battle-kicker">OCF 2.1｜固定先驗 + 盤中防守確認</div>
+                    <div class="ocf-battle-title">固定戰場藍圖</div>
                 </div>
-                <div id="fixed-dir-bm2" style="color:#d4af37; font-size:11px; padding:2px 8px; background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); border-radius:10px;">--</div>
-                <div style="display:flex; align-items:center; gap:4px; color:var(--red);">
-                    <span style="font-size:9px;">🔴 撐</span>
-                    <span id="fixed-s-bo2" style="font-size:14px;">--</span>
+                <span id="ocf-model-status" class="ocf-model-badge is-stale">等待資料</span>
+            </div>
+
+            <div class="ocf-command-grid">
+                <div class="ocf-command-item direction">
+                    <span class="ocf-command-label">目前選擇權主力動向（AH2）</span>
+                    <strong id="ocf-live-direction" class="ocf-command-value ocf-tone-neutral">--</strong>
+                    <span id="ocf-live-mode" class="ocf-command-sub">事件模式：--</span>
+                </div>
+                <div class="ocf-command-item">
+                    <span class="ocf-command-label">OCF 信心／資料品質</span>
+                    <strong id="ocf-live-confidence" class="ocf-command-value">--</strong>
+                    <span id="ocf-live-event" class="ocf-command-sub">事件：--</span>
+                </div>
+                <div class="ocf-command-item">
+                    <span class="ocf-command-label">主導履約價（AK2）</span>
+                    <strong id="ocf-target-strike" class="ocf-command-value">--</strong>
+                    <span id="ocf-event-strength" class="ocf-command-sub">事件強度：--</span>
                 </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding-top:6px; border-top:1px dashed rgba(191,90,242,0.3); font-weight:bold;">
-                <div style="display:flex; align-items:center; gap:4px; color:#d4af37;">
-                    <span style="font-size:9px;">觸發</span>
-                    <span id="fixed-trigger-bq2" style="font-size:14px;">--</span>
+
+            <div class="ocf-defense-grid">
+                <article id="ocf-support-card" class="ocf-defense-card support">
+                    <div class="ocf-defense-head">
+                        <span class="ocf-defense-name">支撐防守（SP／多方）</span>
+                        <span id="ocf-support-state" class="ocf-defense-state">--</span>
+                    </div>
+                    <div id="ocf-support-zone" class="ocf-defense-zone">--</div>
+                    <div id="ocf-support-detail" class="ocf-defense-detail">等待 OCF 支撐資料</div>
+                    <div class="ocf-meter"><span id="ocf-support-meter" class="ocf-meter-fill"></span></div>
+                    <div class="ocf-defense-stats">
+                        <span class="ocf-defense-stat">確認<strong id="ocf-support-hits">0/3</strong></span>
+                        <span class="ocf-defense-stat">吸收<strong id="ocf-support-absorption">--</strong></span>
+                        <span class="ocf-defense-stat">強度<strong id="ocf-support-strength">--</strong></span>
+                    </div>
+                    <div id="ocf-support-action" class="ocf-defense-action">候選區不可直接接多。</div>
+                </article>
+
+                <article id="ocf-resistance-card" class="ocf-defense-card resistance">
+                    <div class="ocf-defense-head">
+                        <span class="ocf-defense-name">壓力防守（SC／空方）</span>
+                        <span id="ocf-resistance-state" class="ocf-defense-state">--</span>
+                    </div>
+                    <div id="ocf-resistance-zone" class="ocf-defense-zone">--</div>
+                    <div id="ocf-resistance-detail" class="ocf-defense-detail">等待 OCF 壓力資料</div>
+                    <div class="ocf-meter"><span id="ocf-resistance-meter" class="ocf-meter-fill"></span></div>
+                    <div class="ocf-defense-stats">
+                        <span class="ocf-defense-stat">確認<strong id="ocf-resistance-hits">0/3</strong></span>
+                        <span class="ocf-defense-stat">吸收<strong id="ocf-resistance-absorption">--</strong></span>
+                        <span class="ocf-defense-stat">強度<strong id="ocf-resistance-strength">--</strong></span>
+                    </div>
+                    <div id="ocf-resistance-action" class="ocf-defense-action">候選區不可直接放空。</div>
+                </article>
+            </div>
+
+            <div id="ocf-action-band" class="ocf-action-band">
+                <div class="ocf-action-label">BK2 最終建議動作</div>
+                <div id="ocf-bk-advice" class="ocf-action-text" aria-live="polite">等待完整訊號</div>
+                <div id="ocf-action-context" class="ocf-action-context">尚無有效防守確認，先觀察。</div>
+            </div>
+
+            <div class="ocf-prior-band">
+                <div class="ocf-prior-head">
+                    <span class="ocf-prior-title">上一盤固定先驗</span>
+                    <span id="fixed-blueprint-status" class="ocf-prior-status">--</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:4px; color:#64d2ff;">
-                    <span style="font-size:9px;">防守</span>
-                    <span id="fixed-defense-br2" style="font-size:14px;">--</span>
+                <div class="ocf-prior-grid">
+                    <div class="ocf-prior-item">
+                        <div class="ocf-prior-label">方向</div>
+                        <div id="fixed-dir-bm2" class="ocf-prior-value">--</div>
+                    </div>
+                    <div class="ocf-prior-item">
+                        <div class="ocf-prior-label">固定支撐（BO2）</div>
+                        <div id="fixed-s-bo2" class="ocf-prior-value ocf-tone-bull">--</div>
+                    </div>
+                    <div class="ocf-prior-item">
+                        <div class="ocf-prior-label">固定壓力（BP2）</div>
+                        <div id="fixed-p-bp2" class="ocf-prior-value ocf-tone-bear">--</div>
+                    </div>
+                    <div class="ocf-prior-item">
+                        <div class="ocf-prior-label">觸發／防守（BQ2／BR2）</div>
+                        <div class="ocf-prior-value"><span id="fixed-trigger-bq2">--</span>／<span id="fixed-defense-br2">--</span></div>
+                    </div>
                 </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding-top:6px; border-top:1px dashed rgba(191,90,242,0.3); font-weight:bold;">
-                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
-                    <span style="font-size:11px;">力道(BU2)</span>
-                    <span id="fixed-fmf-bu2" style="font-size:11px;">--</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
-                    <span style="font-size:11px;">BV2</span>
-                    <span id="fixed-fmf-bv2" style="font-size:11px;">--</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:4px; color:#ff9f0a;">
-                    <span style="font-size:11px;">CB2</span>
-                    <span id="fixed-fmf-cb2" style="font-size:11px;">--</span>
-                </div>
-            </div>
-        </div>
+
+        </section>
         <div class="range-box upgrade-prompt lock-lvl-4" style="margin-top:10px; display:flex; height:60px; border:1px solid rgba(191,90,242,0.4);">
             <div>🔒 戰場固定藍圖</div>
             <div class="upgrade-btn">需要 Level 4</div>
@@ -795,6 +911,199 @@
         if (value < 60) return `${Math.round(value)}秒`;
         if (value < 3600) return `${(value / 60).toFixed(1)}分`;
         return `${(value / 3600).toFixed(1)}小時`;
+    }
+
+    const OCF_DEFENSE_STATES = {
+        0: { label: "無", className: "state-none" },
+        1: { label: "候選", className: "state-candidate" },
+        2: { label: "防守中", className: "state-active" },
+        3: { label: "確認中", className: "state-confirming" },
+        4: { label: "防守有效", className: "state-valid" },
+        5: { label: "防守失效", className: "state-failed" }
+    };
+
+    function setOCFText(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value === null || value === undefined || value === "" ? "--" : String(value);
+    }
+
+    function formatOCFLevel(value) {
+        const number = toFiniteNumberOrNull(value);
+        if (number === null || number <= 0) return "--";
+        return Number.isInteger(number) ? String(number) : number.toFixed(1);
+    }
+
+    function formatOCFZone(data, side) {
+        const displayValue = String(data[`ocf_${side}_defense_zone_display`] || "").trim();
+        if (displayValue && displayValue !== "-") return displayValue.replace(/\|/g, "｜");
+        const low = toFiniteNumberOrNull(data[`ocf_${side}_defense_low`]);
+        const high = toFiniteNumberOrNull(data[`ocf_${side}_defense_high`]);
+        if (low === null || high === null || low <= 0 || high <= 0) return "--";
+        const lowText = formatOCFLevel(low);
+        const highText = formatOCFLevel(high);
+        return low === high ? lowText : `${lowText}-${highText}`;
+    }
+
+    function getOCFDefenseAction(side, stateCode, hits, isLive) {
+        const isSupport = side === "support";
+        if (!isLive) return "資料未通過新鮮度，停止依此區域操作。";
+        if (stateCode === 1) return isSupport ? "候選區只觀察，不可直接接多。" : "候選區只觀察，不可直接放空。";
+        if (stateCode === 2) return isSupport ? "SP 吸收防守中，等待三次確認。" : "SC 吸收防守中，等待三次確認。";
+        if (stateCode === 3) {
+            if (hits >= 3) return isSupport ? "選擇權已確認，等待價格收復或守住支撐。" : "選擇權已確認，等待價格跌回或守住壓力。";
+            return `確認 ${hits}/3，尚不可提前進場。`;
+        }
+        if (stateCode === 4) return isSupport ? "防守有效；BK2 同意後，回測不破可偏多。" : "防守有效；BK2 同意後，反彈不過可偏空。";
+        if (stateCode === 5) return isSupport ? "支撐已失效，停止接多並等待新區域。" : "壓力已失效，停止放空並等待新區域。";
+        return isSupport ? "尚無有效支撐，禁止預設接多。" : "尚無有效壓力，禁止預設放空。";
+    }
+
+    function renderOCFDefenseSide(data, side, isLive) {
+        const stateNumber = Math.round(toFiniteNumberOrNull(data[`ocf_${side}_defense_state`]) ?? 0);
+        const stateMeta = OCF_DEFENSE_STATES[stateNumber] || OCF_DEFENSE_STATES[0];
+        const stateDisplay = String(data[`ocf_${side}_defense_state_display`] || "").trim();
+        const detailDisplay = String(data[`ocf_${side}_defense_detail_display`] || "").trim();
+        const hits = Math.max(0, Math.min(3, Math.round(toFiniteNumberOrNull(data[`ocf_${side}_defense_hits`]) ?? 0)));
+        const absorption = toFiniteNumberOrNull(data[`ocf_${side}_defense_absorption`]);
+        const strength = toFiniteNumberOrNull(data[`ocf_${side}_defense_strength`]);
+        const stateElement = document.getElementById(`ocf-${side}-state`);
+        const meterElement = document.getElementById(`ocf-${side}-meter`);
+
+        if (stateElement) {
+            let visibleState = stateDisplay || stateMeta.label;
+            if (stateNumber === 3) visibleState = hits >= 3 ? "等待價格反應" : `確認中 ${hits}/3`;
+            if (visibleState.length > 8 && stateNumber !== 3) visibleState = stateMeta.label;
+            if (!isLive) visibleState = "資料暫停";
+            stateElement.textContent = visibleState.replace(/\|/g, "｜");
+            stateElement.className = `ocf-defense-state ${isLive ? stateMeta.className : "state-stale"}`;
+        }
+        setOCFText(`ocf-${side}-zone`, formatOCFZone(data, side));
+        setOCFText(`ocf-${side}-detail`, detailDisplay ? detailDisplay.replace(/\|/g, "｜") : "尚無防守細節");
+        setOCFText(`ocf-${side}-hits`, `${hits}/3`);
+        setOCFText(`ocf-${side}-absorption`, absorption === null ? "--" : Math.round(absorption));
+        setOCFText(`ocf-${side}-strength`, strength === null ? "--" : Math.round(strength));
+        setOCFText(`ocf-${side}-action`, getOCFDefenseAction(side, stateNumber, hits, isLive));
+        if (meterElement) meterElement.style.width = `${Math.max(0, Math.min(100, strength ?? 0))}%`;
+
+        return stateNumber;
+    }
+
+    function getOCFActionContext(direction, supportState, resistanceState, isLive) {
+        if (!isLive) return "OCF 2.1 尚未取得有效即時資料，BK2 與防守區均不可採用。";
+        if (supportState === 4 && resistanceState === 4) return "雙邊防守同時有效，視為區間控制；只執行 BK2 明確方向。";
+        if (supportState === 4) {
+            if (direction > 0) return "主力方向與支撐防守一致；等待 BK2 與回測條件。";
+            if (direction < 0) return "空方主力動向與多方支撐分歧，降低進場信任。";
+            return "支撐已確認，但主力方向尚未鎖定；等待 BK2。";
+        }
+        if (resistanceState === 4) {
+            if (direction < 0) return "主力方向與壓力防守一致；等待 BK2 與反彈條件。";
+            if (direction > 0) return "多方主力動向與空方壓力分歧，降低進場信任。";
+            return "壓力已確認，但主力方向尚未鎖定；等待 BK2。";
+        }
+        if (supportState === 3 || resistanceState === 3) return "選擇權防守正在確認，尚未通過價格反應；不得提前進場。";
+        return "目前只有候選區或無防守證據，區域本身不能當進場訊號。";
+    }
+
+    function classifyOCFAdvice(advice) {
+        const text = String(advice || "");
+        if (!text || /觀望|等待|暖機|禁止|不可|暫停|資料|失效/.test(text)) return "wait";
+        if (/空單|做空|偏空|賣出/.test(text)) return "bear";
+        if (/多單|做多|偏多|買進/.test(text)) return "bull";
+        return "wait";
+    }
+
+    function renderOCFBattlePanel(data) {
+        const hasOCFData = Object.prototype.hasOwnProperty.call(data, "ocf_valid");
+        const isLive = hasOCFData && toRadarBoolean(data.ocf_valid);
+        const fallbackActive = toRadarBoolean(data.ocf_legacy_fallback);
+        const statusElement = document.getElementById("ocf-model-status");
+        if (statusElement) {
+            if (isLive) {
+                statusElement.textContent = String(data.ocf_version || "OCF-2.1") + " 即時";
+                statusElement.className = "ocf-model-badge is-live";
+            } else if (fallbackActive) {
+                statusElement.textContent = "舊引擎備援中";
+                statusElement.className = "ocf-model-badge is-warn";
+            } else {
+                statusElement.textContent = hasOCFData ? "暖機／資料不足" : "等待 OCF 2.1";
+                statusElement.className = "ocf-model-badge is-stale";
+            }
+        }
+
+        const campaignDirection = Math.sign(toFiniteNumberOrNull(data.mdi_live_campaign_direction) ?? 0);
+        const campaignScore = toFiniteNumberOrNull(data.ocf_campaign_score);
+        const campaignDisplay = String(data.mdi_live_campaign_display || "").trim();
+        const directionText = campaignDisplay || (campaignDirection > 0
+            ? `+${formatRadarNumber(campaignScore, 1)}｜多方主導`
+            : (campaignDirection < 0 ? `${formatRadarNumber(campaignScore, 1)}｜空方主導` : "方向尚未鎖定"));
+        const directionElement = document.getElementById("ocf-live-direction");
+        if (directionElement) {
+            directionElement.textContent = directionText;
+            directionElement.className = "ocf-command-value " + (campaignDirection > 0
+                ? "ocf-tone-bull" : (campaignDirection < 0 ? "ocf-tone-bear" : "ocf-tone-neutral"));
+        }
+
+        const eventMode = Math.round(toFiniteNumberOrNull(data.ocf_event_mode) ?? 0);
+        const modeText = String(data.omi_state || "").trim()
+            || (eventMode === 1 ? "買方攻擊" : (eventMode === 2 ? "賣方防守" : "無新事件"));
+        setOCFText("ocf-live-mode", `事件模式：${modeText}`);
+
+        const confidence = toFiniteNumberOrNull(data.ocf_confidence);
+        const dataQuality = toFiniteNumberOrNull(data.mdi_data_quality);
+        setOCFText("ocf-live-confidence", `${confidence === null ? "--" : Math.round(confidence)}／${dataQuality === null ? "--" : Math.round(dataQuality)}`);
+
+        const eventDirection = Math.sign(toFiniteNumberOrNull(data.ocf_event_direction) ?? 0);
+        const eventDirectionText = eventDirection > 0 ? "多方" : (eventDirection < 0 ? "空方" : "無");
+        setOCFText("ocf-live-event", `事件：${eventDirectionText}${eventMode === 1 ? "攻擊" : (eventMode === 2 ? "防守" : "")}`);
+        setOCFText("ocf-target-strike", formatOCFLevel(data.ocf_target_strike ?? data.omi_attack_strike));
+        const eventStrength = toFiniteNumberOrNull(data.ocf_event_strength);
+        setOCFText("ocf-event-strength", `事件強度：${eventStrength === null ? "--" : Math.round(eventStrength)}`);
+
+        const supportState = renderOCFDefenseSide(data, "support", isLive);
+        const resistanceState = renderOCFDefenseSide(data, "resistance", isLive);
+
+        const advice = String(data.mdi_execution_advice || data.omi_trade_advice || "").trim() || "等待完整訊號";
+        const adviceClass = classifyOCFAdvice(advice);
+        const actionBand = document.getElementById("ocf-action-band");
+        const actionText = document.getElementById("ocf-bk-advice");
+        if (actionBand) actionBand.className = `ocf-action-band action-${adviceClass}`;
+        if (actionText) {
+            actionText.textContent = advice;
+            actionText.className = `ocf-action-text ocf-tone-${adviceClass}`;
+        }
+        setOCFText("ocf-action-context", getOCFActionContext(campaignDirection, supportState, resistanceState, isLive));
+
+        const blueprintReady = toRadarBoolean(data.omi3_blueprint_ready);
+        const blueprintState = String(data.omi3_blueprint_state || "").trim();
+        const blueprintQuality = String(data.omi3_blueprint_quality || "").trim();
+        setOCFText("fixed-blueprint-status", blueprintReady
+            ? `${blueprintState || "FIXED"}｜可用`
+            : `${blueprintState || blueprintQuality || "尚未固定"}｜參考`);
+
+        const rawDirection = String(data.omi3_blueprint_direction || "").toUpperCase();
+        const directionMap = { BULL: "多方", BEAR: "空方", NEUTRAL: "區間", CONFLICT: "分歧" };
+        const fixedDirectionElement = document.getElementById("fixed-dir-bm2");
+        if (fixedDirectionElement) {
+            fixedDirectionElement.textContent = directionMap[rawDirection] || rawDirection || "--";
+            fixedDirectionElement.className = "ocf-prior-value " + (rawDirection === "BULL"
+                ? "ocf-tone-bull" : (rawDirection === "BEAR" ? "ocf-tone-bear" : "ocf-tone-neutral"));
+        }
+
+        const fixedSupportLow = toFiniteNumberOrNull(data.omi3_blueprint_support_low);
+        const fixedSupportHigh = toFiniteNumberOrNull(data.omi3_blueprint_support_high);
+        const fixedResistanceLow = toFiniteNumberOrNull(data.omi3_blueprint_resistance_low);
+        const fixedResistanceHigh = toFiniteNumberOrNull(data.omi3_blueprint_resistance_high);
+        setOCFText("fixed-s-bo2", fixedSupportLow !== null && fixedSupportLow > 0
+            ? (fixedSupportHigh !== null && fixedSupportHigh > 0 && fixedSupportHigh !== fixedSupportLow
+                ? `${formatOCFLevel(fixedSupportLow)}-${formatOCFLevel(fixedSupportHigh)}` : formatOCFLevel(fixedSupportLow))
+            : "--");
+        setOCFText("fixed-p-bp2", fixedResistanceLow !== null && fixedResistanceLow > 0
+            ? (fixedResistanceHigh !== null && fixedResistanceHigh > 0 && fixedResistanceHigh !== fixedResistanceLow
+                ? `${formatOCFLevel(fixedResistanceLow)}-${formatOCFLevel(fixedResistanceHigh)}` : formatOCFLevel(fixedResistanceLow))
+            : "--");
+        setOCFText("fixed-trigger-bq2", formatOCFLevel(data.omi3_blueprint_trigger));
+        setOCFText("fixed-defense-br2", formatOCFLevel(data.omi3_blueprint_defense));
     }
 
     function translateMainCostState(rawState) {
@@ -1545,33 +1854,8 @@
       }
       document.getElementById('vwap-cross').innerText = lastCrossVwap;
 
-      // Populate fixed blueprint
-      if (data.omi3_blueprint_direction !== undefined) {
-          let fixedDirEl = document.getElementById('fixed-dir-bm2');
-          if(fixedDirEl) fixedDirEl.innerText = data.omi3_blueprint_direction;
-      }
-      if (data.omi3_blueprint_support_low !== undefined) {
-          let fixedSupEl = document.getElementById('fixed-s-bo2');
-          let fixedSupLow = Number(data.omi3_blueprint_support_low);
-          let fixedSupHigh = Number(data.omi3_blueprint_support_high);
-          if(fixedSupEl) fixedSupEl.innerText = fixedSupLow > 0 ?
-              (fixedSupHigh > 0 && fixedSupHigh !== fixedSupLow ? fixedSupLow + "-" + fixedSupHigh : fixedSupLow) : "--";
-      }
-      if (data.omi3_blueprint_resistance_low !== undefined) {
-          let fixedResEl = document.getElementById('fixed-p-bp2');
-          let fixedResLow = Number(data.omi3_blueprint_resistance_low);
-          let fixedResHigh = Number(data.omi3_blueprint_resistance_high);
-          if(fixedResEl) fixedResEl.innerText = fixedResLow > 0 ?
-              (fixedResHigh > 0 && fixedResHigh !== fixedResLow ? fixedResLow + "-" + fixedResHigh : fixedResLow) : "--";
-      }
-      if (data.omi3_blueprint_trigger !== undefined) {
-          let fixedTriggerEl = document.getElementById('fixed-trigger-bq2');
-          if(fixedTriggerEl) fixedTriggerEl.innerText = data.omi3_blueprint_trigger > 0 ? data.omi3_blueprint_trigger : "--";
-      }
-      if (data.omi3_blueprint_defense !== undefined) {
-          let fixedDefenseEl = document.getElementById('fixed-defense-br2');
-          if(fixedDefenseEl) fixedDefenseEl.innerText = data.omi3_blueprint_defense > 0 ? data.omi3_blueprint_defense : "--";
-      }
+      // Level 4: fixed prior plus OCF 2.1 live support/resistance defense.
+      renderOCFBattlePanel(data);
 
       let bu2 = "--";
       if (data.futures_force_score !== undefined && data.futures_force_phase !== undefined) {
@@ -2020,5 +2304,4 @@
   </script>
 </body>
 </html>
-
 
