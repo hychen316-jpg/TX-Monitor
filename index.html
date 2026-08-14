@@ -331,99 +331,6 @@
             <div>跨月差: <span id="spread-next" style="color:#fff; font-weight:800; font-size:14px;">--</span></div>
         </div>
 
-        <section id="ocf-battle-panel" class="ocf-battle-panel req-level-4-block" aria-label="OCF 2.1 固定戰場與盤中防守">
-            <div class="ocf-battle-header">
-                <div>
-                    <div class="ocf-battle-kicker">OCF 2.1｜固定先驗 + 盤中防守確認</div>
-                    <div class="ocf-battle-title">固定戰場藍圖</div>
-                </div>
-                <span id="ocf-model-status" class="ocf-model-badge is-stale">等待資料</span>
-            </div>
-
-            <div class="ocf-command-grid">
-                <div class="ocf-command-item direction">
-                    <span class="ocf-command-label">目前選擇權主力動向（AH2）</span>
-                    <strong id="ocf-live-direction" class="ocf-command-value ocf-tone-neutral">--</strong>
-                    <span id="ocf-live-mode" class="ocf-command-sub">事件模式：--</span>
-                </div>
-                <div class="ocf-command-item">
-                    <span class="ocf-command-label">OCF 信心／資料品質</span>
-                    <strong id="ocf-live-confidence" class="ocf-command-value">--</strong>
-                    <span id="ocf-live-event" class="ocf-command-sub">事件：--</span>
-                </div>
-                <div class="ocf-command-item">
-                    <span class="ocf-command-label">主導履約價（AK2）</span>
-                    <strong id="ocf-target-strike" class="ocf-command-value">--</strong>
-                    <span id="ocf-event-strength" class="ocf-command-sub">事件強度：--</span>
-                </div>
-            </div>
-
-            <div class="ocf-defense-grid">
-                <article id="ocf-support-card" class="ocf-defense-card support">
-                    <div class="ocf-defense-head">
-                        <span class="ocf-defense-name">支撐防守（SP／多方）</span>
-                        <span id="ocf-support-state" class="ocf-defense-state">--</span>
-                    </div>
-                    <div id="ocf-support-zone" class="ocf-defense-zone">--</div>
-                    <div id="ocf-support-detail" class="ocf-defense-detail">等待 OCF 支撐資料</div>
-                    <div class="ocf-meter"><span id="ocf-support-meter" class="ocf-meter-fill"></span></div>
-                    <div class="ocf-defense-stats">
-                        <span class="ocf-defense-stat">確認<strong id="ocf-support-hits">0/3</strong></span>
-                        <span class="ocf-defense-stat">吸收<strong id="ocf-support-absorption">--</strong></span>
-                        <span class="ocf-defense-stat">強度<strong id="ocf-support-strength">--</strong></span>
-                    </div>
-                    <div id="ocf-support-action" class="ocf-defense-action">候選區不可直接接多。</div>
-                </article>
-
-                <article id="ocf-resistance-card" class="ocf-defense-card resistance">
-                    <div class="ocf-defense-head">
-                        <span class="ocf-defense-name">壓力防守（SC／空方）</span>
-                        <span id="ocf-resistance-state" class="ocf-defense-state">--</span>
-                    </div>
-                    <div id="ocf-resistance-zone" class="ocf-defense-zone">--</div>
-                    <div id="ocf-resistance-detail" class="ocf-defense-detail">等待 OCF 壓力資料</div>
-                    <div class="ocf-meter"><span id="ocf-resistance-meter" class="ocf-meter-fill"></span></div>
-                    <div class="ocf-defense-stats">
-                        <span class="ocf-defense-stat">確認<strong id="ocf-resistance-hits">0/3</strong></span>
-                        <span class="ocf-defense-stat">吸收<strong id="ocf-resistance-absorption">--</strong></span>
-                        <span class="ocf-defense-stat">強度<strong id="ocf-resistance-strength">--</strong></span>
-                    </div>
-                    <div id="ocf-resistance-action" class="ocf-defense-action">候選區不可直接放空。</div>
-                </article>
-            </div>
-
-            <div id="ocf-action-band" class="ocf-action-band">
-                <div class="ocf-action-label">BK2 最終建議動作</div>
-                <div id="ocf-bk-advice" class="ocf-action-text" aria-live="polite">等待完整訊號</div>
-                <div id="ocf-action-context" class="ocf-action-context">尚無有效防守確認，先觀察。</div>
-            </div>
-
-            <div class="ocf-prior-band">
-                <div class="ocf-prior-head">
-                    <span class="ocf-prior-title">上一盤固定先驗</span>
-                    <span id="fixed-blueprint-status" class="ocf-prior-status">--</span>
-                </div>
-                <div class="ocf-prior-grid">
-                    <div class="ocf-prior-item">
-                        <div class="ocf-prior-label">方向</div>
-                        <div id="fixed-dir-bm2" class="ocf-prior-value">--</div>
-                    </div>
-                    <div class="ocf-prior-item">
-                        <div class="ocf-prior-label">固定支撐（BO2）</div>
-                        <div id="fixed-s-bo2" class="ocf-prior-value ocf-tone-bull">--</div>
-                    </div>
-                    <div class="ocf-prior-item">
-                        <div class="ocf-prior-label">固定壓力（BP2）</div>
-                        <div id="fixed-p-bp2" class="ocf-prior-value ocf-tone-bear">--</div>
-                    </div>
-                    <div class="ocf-prior-item">
-                        <div class="ocf-prior-label">觸發／防守（BQ2／BR2）</div>
-                        <div class="ocf-prior-value"><span id="fixed-trigger-bq2">--</span>／<span id="fixed-defense-br2">--</span></div>
-                    </div>
-                </div>
-            </div>
-
-        </section>
         <div class="range-box upgrade-prompt lock-lvl-4" style="margin-top:10px; display:flex; height:60px; border:1px solid rgba(191,90,242,0.4);">
             <div>🔒 戰場固定藍圖</div>
             <div class="upgrade-btn">需要 Level 4</div>
@@ -2305,3 +2212,4 @@
 </body>
 </html>
 
+  
